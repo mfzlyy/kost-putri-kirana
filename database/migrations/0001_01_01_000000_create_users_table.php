@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,15 +12,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
-        });
+        DB::statement("
+            CREATE TABLE \"users\" (
+              \"id\" BIGSERIAL PRIMARY KEY,
+              \"nama\" varchar(100) NOT NULL,
+              \"email\" varchar(255) UNIQUE NOT NULL,
+              \"password_hash\" varchar(255) NOT NULL,
+              \"peran\" peran_pengguna NOT NULL,
+              \"status_akun\" status_akun NOT NULL DEFAULT 'aktif'
+            )
+        ");
+
+        DB::statement("COMMENT ON TABLE \"users\" IS 'Akun semua peran. Akun penghuni dan vendor dibuat pengelola (ASM-05).'");
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -42,8 +46,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

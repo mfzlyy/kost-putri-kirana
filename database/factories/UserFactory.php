@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\PeranPengguna;
+use App\Enums\StatusAkun;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
@@ -25,36 +25,47 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'nama' => fake('id_ID')->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
+            'password_hash' => static::$password ??= 'password',
+            'peran' => PeranPengguna::Pengelola,
+            'status_akun' => StatusAkun::Aktif,
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function pemilik(): static
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+            'peran' => PeranPengguna::Pemilik,
         ]);
     }
 
-    /**
-     * Indicate that the model has two-factor authentication configured.
-     */
-    public function withTwoFactor(): static
+    public function pengelola(): static
     {
         return $this->state(fn (array $attributes) => [
-            'two_factor_secret' => encrypt('secret'),
-            'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
-            'two_factor_confirmed_at' => now(),
+            'peran' => PeranPengguna::Pengelola,
+        ]);
+    }
+
+    public function penghuni(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'peran' => PeranPengguna::Penghuni,
+        ]);
+    }
+
+    public function vendor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'peran' => PeranPengguna::Vendor,
+        ]);
+    }
+
+    public function nonaktif(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status_akun' => StatusAkun::Nonaktif,
         ]);
     }
 }
+
