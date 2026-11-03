@@ -28,6 +28,19 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    | Odoo Community 19 (JSON-2 API). Nilai dibaca dari .env; kode lain memakai config(),
+    | bukan env(). API key tidak boleh dikirim ke browser, ditulis ke log, atau disimpan di DB.
+    */
+    'odoo' => [
+        'url' => env('ODOO_URL'),
+        'db' => env('ODOO_DB'),
+        'api_key' => env('ODOO_API_KEY'),
+        'api_key_expires_at' => env('ODOO_API_KEY_EXPIRES_AT'),
+        'timeout' => 30,
+        'user_agent' => 'KostPutriKirana/1.0',
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
