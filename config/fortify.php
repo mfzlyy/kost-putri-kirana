@@ -73,7 +73,12 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/beranda',
+
+    // Setelah keluar, pengguna kembali ke halaman login.
+    'redirects' => [
+        'logout' => '/login',
+    ],
 
     /*
     |--------------------------------------------------------------------------

@@ -1,19 +1,19 @@
 <?php
 
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
-use Flux\Flux;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Security settings')] class extends Component {
+new #[Title('Ganti Password')] class extends Component {
     public string $current_password = '';
     public string $password = '';
     public string $password_confirmation = '';
 
     /**
-     * Update the password for the currently authenticated user.
+     * Ganti password pengguna yang sedang login (F-01). Disimpan ke kolom password_hash.
      */
     public function updatePassword(): void
     {
@@ -21,11 +21,6 @@ new #[Title('Security settings')] class extends Component {
             $validated = $this->validate([
                 'current_password' => ['required', 'string', 'current_password:web'],
                 'password' => ['required', 'string', Password::default(), 'confirmed'],
-            ], [
-                'current_password.required' => 'Kata sandi saat ini wajib diisi.',
-                'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
-                'password.required' => 'Kata sandi baru wajib diisi.',
-                'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
             ]);
         } catch (ValidationException $e) {
             $this->reset('current_password', 'password', 'password_confirmation');
@@ -39,20 +34,20 @@ new #[Title('Security settings')] class extends Component {
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
-        Flux::toast(variant: 'success', text: __('Password updated.'));
+        Flux::toast(variant: 'success', text: 'Password berhasil diganti.');
     }
 }; ?>
 
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading level="2" class="sr-only">{{ __('Security settings') }}</flux:heading>
+    <flux:heading level="2" class="sr-only">Ganti Password</flux:heading>
 
-    <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+    <x-pages::settings.layout heading="Ganti Password" subheading="Gunakan password yang sulit ditebak, minimal 8 karakter dengan huruf dan angka">
         <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
             <flux:input
                 wire:model="current_password"
-                :label="__('Current password')"
+                label="Password lama"
                 type="password"
                 required
                 autocomplete="current-password"
@@ -60,26 +55,24 @@ new #[Title('Security settings')] class extends Component {
             />
             <flux:input
                 wire:model="password"
-                :label="__('New password')"
+                label="Password baru"
                 type="password"
                 required
                 autocomplete="new-password"
-                passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
                 viewable
             />
             <flux:input
                 wire:model="password_confirmation"
-                :label="__('Confirm password')"
+                label="Konfirmasi password baru"
                 type="password"
                 required
                 autocomplete="new-password"
-                passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
                 viewable
             />
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
-                    {{ __('Save') }}
+                <flux:button variant="primary" type="submit" wire:loading.attr="disabled" data-test="update-password-button">
+                    Simpan
                 </flux:button>
             </div>
         </form>

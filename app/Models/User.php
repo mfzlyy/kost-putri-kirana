@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -103,5 +104,25 @@ class User extends Authenticatable
     public function isAktif(): bool
     {
         return $this->status_akun === StatusAkun::Aktif;
+    }
+
+    /**
+     * Nonaktifkan akun (F-02). Session milik akun ini dihapus agar pengguna langsung keluar.
+     * Akun tidak pernah dihapus (ATB-11).
+     */
+    public function nonaktifkan(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill(['status_akun' => StatusAkun::Nonaktif])->save();
+
+            DB::table('sessions')->where('user_id', $this->id)->delete();
+        });
+    }
+
+    public function aktifkan(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill(['status_akun' => StatusAkun::Aktif])->save();
+        });
     }
 }

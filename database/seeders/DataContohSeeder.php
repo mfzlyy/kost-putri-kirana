@@ -49,6 +49,8 @@ class DataContohSeeder extends Seeder
 
     private const BATAS_PERINGATAN_HARI = 30;
 
+    private const PANJANG_PASSWORD_MINIMAL = 12;
+
     public function run(): void
     {
         if (! app()->environment('local')) {
@@ -65,6 +67,13 @@ class DataContohSeeder extends Seeder
 
         $pengelola = User::query()->where('peran', PeranPengguna::Pengelola->value)->orderBy('id')->first()
             ?? throw new RuntimeException('Akun pengelola belum ada. Jalankan AkunAwalSeeder terlebih dahulu.');
+
+        if (! $this->demoPasswordValid()) {
+            $this->command?->warn(
+                'SEED_DEMO_PASSWORD kosong atau kurang dari '.self::PANJANG_PASSWORD_MINIMAL.' karakter: '
+                .'akun contoh penghuni dan vendor memakai password acak sehingga tidak bisa dipakai login.'
+            );
+        }
 
         DB::transaction(function () use ($pengelola) {
             PengaturanOperasional::aktif()->update([
@@ -170,10 +179,25 @@ class DataContohSeeder extends Seeder
         return $penghuni;
     }
 
+    private function demoPasswordValid(): bool
+    {
+        return mb_strlen((string) config('seeder.demo_password')) >= self::PANJANG_PASSWORD_MINIMAL;
+    }
+
+    /**
+     * Password akun contoh: SEED_DEMO_PASSWORD bila valid, selain itu acak (tidak bisa dipakai login).
+     */
+    private function passwordContoh(): string
+    {
+        return $this->demoPasswordValid()
+            ? (string) config('seeder.demo_password')
+            : Str::random(40);
+    }
+
     private function buatPenghuni(bool $aktif = true): Penghuni
     {
         $user = User::factory()->penghuni()->create([
-            'password_hash' => Str::random(40),
+            'password_hash' => $this->passwordContoh(),
             'status_akun' => $aktif ? StatusAkun::Aktif : StatusAkun::Nonaktif,
         ]);
 
@@ -190,7 +214,7 @@ class DataContohSeeder extends Seeder
         $buat = function (string $nama, string $layanan): Vendor {
             $user = User::factory()->vendor()->create([
                 'nama' => $nama,
-                'password_hash' => Str::random(40),
+                'password_hash' => $this->passwordContoh(),
             ]);
 
             return Vendor::factory()->create([

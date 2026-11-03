@@ -22,4 +22,7 @@ return [
         'email' => env('SEED_PENGELOLA_EMAIL'),
         'password' => env('SEED_PENGELOLA_PASSWORD'),
     ],
+
+    // Password akun contoh penghuni dan vendor; hanya dipakai DataContohSeeder di environment local.
+    'demo_password' => env('SEED_DEMO_PASSWORD'),
 ];
