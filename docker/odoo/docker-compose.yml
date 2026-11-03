@@ -1,0 +1,49 @@
+# Odoo Community 19 untuk integrasi ERP (F-22 s.d. F-28).
+# Terpisah dari PostgreSQL web (kpk-postgres di docker-compose.yml root proyek).
+# Image dikunci ke odoo:19.0; tag "latest" sudah mengarah ke Odoo 20.
+name: kpk-odoo
+
+services:
+  odoo-db:
+    image: postgres:17
+    container_name: kpk-odoo-db
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${ODOO_DB_PASSWORD:?isi ODOO_DB_PASSWORD di docker/odoo/.env}
+    volumes:
+      - kpk_odoo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:19.0
+    container_name: kpk-odoo
+    depends_on:
+      odoo-db:
+        condition: service_healthy
+    environment:
+      HOST: odoo-db
+      USER: odoo
+      PASSWORD: ${ODOO_DB_PASSWORD:?isi ODOO_DB_PASSWORD di docker/odoo/.env}
+    ports:
+      - "8069:8069"
+    volumes:
+      - kpk_odoo_data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8069/web/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  kpk_odoo_pgdata:
+  kpk_odoo_data:
