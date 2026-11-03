@@ -6,6 +6,7 @@ use App\Enums\PeranPengguna;
 use App\Enums\StatusAkun;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -67,6 +68,16 @@ class User extends Authenticatable
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
+    }
+
+    public function penghuni(): HasOne
+    {
+        return $this->hasOne(Penghuni::class, 'user_id');
+    }
+
+    public function vendor(): HasOne
+    {
+        return $this->hasOne(Vendor::class, 'user_id');
     }
 
     public function isPemilik(): bool

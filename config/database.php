@@ -97,6 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Sesi mengikuti zona waktu aplikasi agar kolom timestamptz (mis. pembayaran.diunggah_pada)
+            // tidak bergeser; aturan tunggakan ATB-05 membandingkan tanggal kalender WIB.
+            'timezone' => env('DB_TIMEZONE', env('APP_TIMEZONE', 'Asia/Jakarta')),
         ],
 
         'sqlsrv' => [
