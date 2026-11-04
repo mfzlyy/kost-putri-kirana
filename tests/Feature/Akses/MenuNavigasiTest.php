@@ -14,14 +14,14 @@ it('F-03: menu setiap peran sesuai daftar PRD', function () {
     $label = fn (PeranPengguna $peran) => array_column(MenuNavigasi::untuk($peran), 'label');
 
     expect($label(PeranPengguna::Pemilik))->toBe([
-        'Dashboard', 'Kamar', 'Penghuni', 'Kontrak', 'Tagihan', 'Riwayat Transaksi', 'Tiket Keluhan', 'Pengaturan',
+        'Dashboard', 'Kamar', 'Penghuni', 'Kontrak', 'Tagihan', 'Riwayat transaksi', 'Tiket keluhan', 'Pengaturan',
     ])
         ->and($label(PeranPengguna::Pengelola))->toBe([
-            'Verifikasi Pembayaran', 'Tagihan', 'Kamar', 'Penghuni', 'Kontrak', 'Riwayat Transaksi',
-            'Tiket Keluhan', 'Sinkronisasi ERP', 'Akun Pengguna', 'Pengaturan',
+            'Verifikasi pembayaran', 'Tagihan', 'Kamar', 'Penghuni', 'Kontrak', 'Riwayat transaksi',
+            'Tiket keluhan', 'Sinkronisasi ERP', 'Akun pengguna', 'Pengaturan',
         ])
-        ->and($label(PeranPengguna::Penghuni))->toBe(['Tagihan Saya', 'Riwayat Transaksi', 'Keluhan Saya', 'Profil Saya'])
-        ->and($label(PeranPengguna::Vendor))->toBe(['Permintaan Kerja']);
+        ->and($label(PeranPengguna::Penghuni))->toBe(['Tagihan saya', 'Riwayat transaksi', 'Keluhan saya', 'Profil saya'])
+        ->and($label(PeranPengguna::Vendor))->toBe(['Permintaan kerja']);
 });
 
 it('F-03: setiap item menu mengarah ke route yang bisa dibuka perannya', function (string $peran) {
@@ -57,7 +57,7 @@ it('F-03: setiap peran hanya melihat menu miliknya di halaman utamanya', functio
         // Tautan menu peran lain tidak boleh ada.
         $halaman->assertDontSee('href="'.route($item['route']).'"', false);
 
-        // Label dilewati bila sama dengan, atau bagian dari, teks milik sendiri (mis. "Tagihan" dan "Tagihan Saya").
+        // Label dilewati bila sama dengan, atau bagian dari, teks milik sendiri (mis. "Tagihan" dan "Tagihan saya").
         $adaDiTeksSendiri = $item['label'] === $user->peran->label()
             || collect($labelMilik)->contains(fn (string $saya) => Str::contains($saya, $item['label']));
 
@@ -67,15 +67,15 @@ it('F-03: setiap peran hanya melihat menu miliknya di halaman utamanya', functio
     }
 })->with('semua_peran');
 
-it('F-03: contoh menu terlarang tidak muncul (penghuni tanpa Akun Pengguna, vendor tanpa Tagihan)', function () {
+it('F-03: contoh menu terlarang tidak muncul (penghuni tanpa Akun pengguna, vendor tanpa Tagihan)', function () {
     $this->actingAs(User::factory()->penghuni()->create())
-        ->get('/tagihan-saya')->assertOk()->assertDontSee('Akun Pengguna');
+        ->get('/tagihan-saya')->assertOk()->assertDontSee('Akun pengguna');
 
     $this->actingAs(User::factory()->vendor()->create())
         ->get('/permintaan-kerja')->assertOk()->assertDontSee('Tagihan');
 
     $this->actingAs(User::factory()->pemilik()->create())
-        ->get('/dashboard')->assertOk()->assertDontSee('Akun Pengguna')->assertDontSee('Verifikasi Pembayaran');
+        ->get('/dashboard')->assertOk()->assertDontSee('Akun pengguna')->assertDontSee('Verifikasi pembayaran');
 });
 
 it('F-03: menu pengguna menampilkan nama, peran, Ganti password, dan Keluar', function () {

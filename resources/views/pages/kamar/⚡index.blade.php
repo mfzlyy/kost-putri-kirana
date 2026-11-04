@@ -22,6 +22,10 @@ new #[Title('Kamar')] class extends Component {
     public function mount(): void
     {
         $this->authorize('viewAny', Kamar::class);
+
+        if ($pesan = session('toast')) {
+            Flux::toast(variant: 'success', text: $pesan);
+        }
     }
 
     /**
@@ -124,13 +128,13 @@ new #[Title('Kamar')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full flex-col gap-6">
+<section class="flex w-full flex-col gap-4 lg:gap-6">
     <x-judul-halaman
         judul="Kamar"
         :deskripsi="$this->hitungan['semua'].' kamar, '.$this->hitungan['terisi'].' terisi. Status mengikuti kontrak aktif dan tidak bisa diubah manual.'"
     >
         @if ($this->bisaKelola)
-            <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="h-11! w-full sm:w-auto" data-test="tambah-kamar">
+            <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-kamar">
                 Tambah kamar
             </flux:button>
         @endif
@@ -245,7 +249,7 @@ new #[Title('Kamar')] class extends Component {
 
                 <div class="flex justify-end gap-2">
                     <flux:modal.close>
-                        <flux:button variant="ghost">Batal</flux:button>
+                        <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
                     </flux:modal.close>
 
                     <flux:button variant="danger" wire:click="hapus({{ (int) $idHapus }})" wire:loading.attr="disabled" wire:target="hapus" data-test="konfirmasi-hapus-kamar">

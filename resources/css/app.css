@@ -78,6 +78,17 @@
         color-scheme: light;
     }
 
+    /* Tautan teks hijau primer, berat 600, tanpa garis bawah (mockup v2). Kelas text-* di elemen menimpa ini. */
+    a {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: var(--color-primary-hover);
+    }
+
     body {
         @apply bg-background text-ink;
         font-size: 15px;
@@ -89,12 +100,50 @@
     font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Field form: label 6px di atas kontrol, bantuan dan galat 6px di bawah kontrol.
+ * Aturan ini tanpa layer sehingga mengalahkan utilitas jarak bawaan Flux.
+ */
 [data-flux-field]:not(ui-radio, ui-checkbox) {
-    @apply grid gap-2;
+    display: block;
 }
 
-[data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+[data-flux-field] > [data-flux-label] {
+    margin-bottom: 6px !important;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3 !important;
+    color: var(--color-ink);
+}
+
+[data-flux-field] > [data-flux-label]:has(+ [data-flux-description]) {
+    margin-bottom: 2px !important;
+}
+
+[data-flux-field] [data-flux-description] {
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-ink-muted);
+}
+
+[data-flux-field] > [data-flux-label] + [data-flux-description] {
+    margin-top: 0 !important;
+    margin-bottom: 6px !important;
+}
+
+[data-flux-field] [data-flux-error] {
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--color-status-late);
+}
+
+/* Tinggi input 46px (DESIGN.md). */
+input[data-flux-control]:not([type='checkbox'], [type='radio'], [type='file']) {
+    height: 46px;
 }
 
 input:focus[data-flux-control],

@@ -13,9 +13,9 @@
             sticky
             collapsible="mobile"
             aria-label="Menu"
-            class="w-[232px] gap-0.5 border-0 bg-sidebar px-3.5 py-[22px] text-on-sidebar max-lg:w-72"
+            class="h-dvh! max-h-dvh! w-[232px] gap-0 overflow-y-hidden! border-0 bg-sidebar px-3.5 py-[22px] text-on-sidebar max-lg:w-72"
         >
-            <div class="flex items-start justify-between gap-2 pb-[26px] ps-2.5">
+            <div class="flex shrink-0 items-start justify-between gap-2 pb-[26px] ps-2.5">
                 <x-app-logo :sidebar="true" />
 
                 <button
@@ -29,7 +29,7 @@
                 </button>
             </div>
 
-            <nav aria-label="Menu utama" class="flex flex-col gap-0.5">
+            <nav aria-label="Menu utama" class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto [scrollbar-color:rgba(220,237,234,.25)_transparent] [scrollbar-width:thin]">
                 @foreach ($menu as $item)
                     <x-menu-samping.item
                         :href="route($item['route'])"
@@ -41,10 +41,8 @@
                 @endforeach
             </nav>
 
-            <flux:spacer />
-
-            <div class="mt-4 flex flex-col gap-0.5 border-t border-primary-container/15 px-3 pt-4">
-                <span class="truncate font-semibold text-white">{{ $pengguna->nama }}</span>
+            <div class="mt-3 flex shrink-0 flex-col gap-0.5 border-t border-primary-container/15 px-3 pt-4">
+                <span class="line-clamp-2 font-semibold text-white">{{ $pengguna->nama }}</span>
                 <span class="text-[13px]">{{ $pengguna->peran->label() }}</span>
 
                 <a

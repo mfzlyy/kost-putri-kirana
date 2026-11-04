@@ -68,7 +68,7 @@ new #[Title('Pengaturan')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full max-w-[760px] flex-col gap-6">
+<section class="flex w-full max-w-[760px] flex-col gap-4 lg:gap-6">
     <x-judul-halaman
         judul="Pengaturan"
         deskripsi="Aturan operasional kos. Perubahan berlaku untuk tagihan yang terbit setelahnya."
@@ -133,7 +133,7 @@ new #[Title('Pengaturan')] class extends Component {
             </div>
 
             <div class="flex flex-col gap-3 border-t border-divider pt-[18px] sm:flex-row sm:items-center sm:gap-4">
-                <flux:button type="submit" variant="primary" class="h-11! w-full sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
+                <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
                     <span wire:loading.remove wire:target="simpan">Simpan pengaturan</span>
                     <span wire:loading wire:target="simpan">Menyimpan</span>
                 </flux:button>

@@ -8,7 +8,7 @@
     <div class="min-w-0">
         <h1 class="m-0 text-[26px] leading-[1.1] font-[750] font-stretch-expanded tracking-[-0.01em] lg:text-[34px] lg:leading-[1.05]">{{ $judul }}</h1>
         @if (filled($deskripsi))
-            <p class="mt-2 mb-0 text-sm text-ink-muted lg:text-[15px]">{{ $deskripsi }}</p>
+            <p class="mt-1.5 mb-0 text-sm text-ink-muted lg:mt-2 lg:text-[15px]">{{ $deskripsi }}</p>
         @endif
     </div>
 

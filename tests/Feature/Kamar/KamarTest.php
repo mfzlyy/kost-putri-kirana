@@ -237,3 +237,29 @@ it('F-05: pengelola menghapus kamar dari halaman ubah', function () {
 
     expect(Kamar::query()->whereKey($kamar->id)->exists())->toBeFalse();
 });
+
+it('F-05: pesan sukses simpan kamar sampai ke halaman daftar', function () {
+    $pengelola = User::factory()->pengelola()->create();
+
+    formKamarSebagai($pengelola)
+        ->set('nomor_kamar', '09')
+        ->set('tarif_bulanan', '1.400.000')
+        ->call('simpan')
+        ->assertSessionHas('toast', 'Kamar 09 disimpan.')
+        ->assertRedirect(route('kamar.index'));
+
+    // Halaman tujuan membaca flash tersebut dan menampilkannya sebagai toast.
+    $this->actingAs($pengelola)
+        ->withSession(['toast' => 'Kamar 09 disimpan.'])
+        ->get(route('kamar.index'))
+        ->assertOk()
+        ->assertSee('Kamar 09 disimpan.', false);
+});
+
+it('F-05: pesan sukses hapus kamar dari halaman ubah sampai ke halaman daftar', function () {
+    $kamar = Kamar::factory()->create(['nomor_kamar' => '09']);
+
+    formKamarSebagai(User::factory()->pengelola()->create(), $kamar)
+        ->call('hapus')
+        ->assertSessionHas('toast', 'Kamar 09 dihapus.');
+});

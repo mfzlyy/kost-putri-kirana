@@ -15,7 +15,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Title('Akun Pengguna')] class extends Component {
+new #[Title('Akun pengguna')] class extends Component {
     use WithPagination;
 
     #[Url(as: 'peran')]
@@ -199,13 +199,13 @@ new #[Title('Akun Pengguna')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full flex-col gap-6">
+<section class="flex w-full flex-col gap-4 lg:gap-6">
     <x-judul-halaman
         judul="Akun pengguna"
         deskripsi="Akun penghuni dan vendor. Akun yang dinonaktifkan tidak bisa masuk, datanya tetap tersimpan."
     >
         <flux:modal.trigger name="tambah-akun">
-            <flux:button variant="primary" class="h-11! w-full sm:w-auto" data-test="tambah-akun-button">
+            <flux:button variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-akun-button">
                 Tambah akun
             </flux:button>
         </flux:modal.trigger>
@@ -346,7 +346,7 @@ new #[Title('Akun Pengguna')] class extends Component {
 
             <div class="flex justify-end gap-2">
                 <flux:modal.close>
-                    <flux:button variant="ghost">Batal</flux:button>
+                    <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
                 </flux:modal.close>
 
                 <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">

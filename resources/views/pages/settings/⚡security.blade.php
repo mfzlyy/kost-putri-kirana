@@ -7,7 +7,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Ganti Password')] class extends Component {
+new #[Title('Ganti password')] class extends Component {
     public string $current_password = '';
     public string $password = '';
     public string $password_confirmation = '';
@@ -38,7 +38,7 @@ new #[Title('Ganti Password')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full max-w-[520px] flex-col gap-6">
+<section class="flex w-full max-w-[520px] flex-col gap-4 lg:gap-6">
     <x-judul-halaman judul="Ganti password" deskripsi="Minimal 8 karakter, berisi huruf dan angka." />
 
     <form wire:submit="updatePassword" class="flex flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
@@ -71,9 +71,7 @@ new #[Title('Ganti Password')] class extends Component {
             <flux:button variant="primary" type="submit" class="h-11! sm:w-auto" wire:loading.attr="disabled" data-test="update-password-button">
                 Simpan password
             </flux:button>
-            <flux:button variant="ghost" :href="url('/beranda')" class="h-11!" wire:navigate>
-                Batal
-            </flux:button>
+            <x-tautan-batal :href="url('/beranda')" />
         </div>
     </form>
 </section>

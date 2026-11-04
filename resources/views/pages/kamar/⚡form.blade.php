@@ -107,7 +107,8 @@ new #[Title('Kamar')] class extends Component {
             }
         });
 
-        Flux::toast(variant: 'success', text: "Kamar {$this->nomor_kamar} disimpan.");
+        // Toast dibawa lewat session flash karena halaman daftar dimuat ulang oleh redirect.
+        session()->flash('toast', "Kamar {$this->nomor_kamar} disimpan.");
 
         $this->redirectRoute('kamar.index', navigate: true);
     }
@@ -130,21 +131,21 @@ new #[Title('Kamar')] class extends Component {
 
         DB::transaction(fn () => $kamar->delete());
 
-        Flux::toast(variant: 'success', text: "Kamar {$kamar->nomor_kamar} dihapus.");
+        session()->flash('toast', "Kamar {$kamar->nomor_kamar} dihapus.");
 
         $this->redirectRoute('kamar.index', navigate: true);
     }
 }; ?>
 
-<section class="flex w-full flex-col gap-6">
+<section class="flex w-full flex-col gap-4 lg:gap-6">
     <div class="flex flex-col gap-2.5">
-        <a href="{{ route('kamar.index') }}" wire:navigate class="w-fit font-semibold no-underline">Kamar</a>
+        <a href="{{ route('kamar.index') }}" wire:navigate class="w-fit">Kamar</a>
         <x-judul-halaman :judul="$this->kamar ? 'Ubah Kamar '.$this->kamar->nomor_kamar : 'Tambah kamar'" />
     </div>
 
-    <div class="flex flex-wrap items-start gap-6">
+    <div @class(['flex flex-wrap items-start gap-6', 'max-w-[760px]' => ! $this->kamar])>
         <form wire:submit="simpan" class="flex flex-[2_1_460px] flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                 <flux:field>
                     <flux:label>Nomor kamar</flux:label>
                     <flux:input wire:model="nomor_kamar" maxlength="10" autocomplete="off" required data-test="input-nomor-kamar" />
@@ -154,20 +155,19 @@ new #[Title('Kamar')] class extends Component {
 
                 <flux:field>
                     <flux:label>Tarif per bulan</flux:label>
-                    <flux:input
-                        wire:model="tarif_bulanan"
-                        inputmode="numeric"
-                        autocomplete="off"
-                        required
-                        class:input="num ps-1"
-                        x-data
-                        x-on:input="$el.value = $el.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')"
-                        data-test="input-tarif"
-                    >
-                        <x-slot name="iconLeading">
-                            <span aria-hidden="true" class="ps-3 text-sm font-semibold text-ink-muted">Rp</span>
-                        </x-slot>
-                    </flux:input>
+                    <flux:input.group>
+                        <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
+                        <flux:input
+                            wire:model="tarif_bulanan"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            required
+                            class:input="num"
+                            x-data
+                            x-on:input="$el.value = $el.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')"
+                            data-test="input-tarif"
+                        />
+                    </flux:input.group>
                     <flux:error name="tarif_bulanan" />
                 </flux:field>
             </div>
@@ -187,10 +187,10 @@ new #[Title('Kamar')] class extends Component {
             @endif
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-                <flux:button type="submit" variant="primary" class="h-11! w-full sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
+                <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
                     {{ $this->kamar ? 'Simpan perubahan' : 'Simpan kamar' }}
                 </flux:button>
-                <flux:button variant="ghost" :href="route('kamar.index')" wire:navigate class="h-11!">Batal</flux:button>
+                <x-tautan-batal :href="route('kamar.index')" />
             </div>
         </form>
 
@@ -218,7 +218,7 @@ new #[Title('Kamar')] class extends Component {
 
                     <div class="flex justify-end gap-2">
                         <flux:modal.close>
-                            <flux:button variant="ghost">Batal</flux:button>
+                            <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
                         </flux:modal.close>
 
                         <flux:button variant="danger" wire:click="hapus" wire:loading.attr="disabled" wire:target="hapus" data-test="konfirmasi-hapus-kamar">

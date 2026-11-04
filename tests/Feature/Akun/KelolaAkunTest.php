@@ -309,7 +309,7 @@ it('TB-04: pemilik, penghuni, dan vendor mendapat 403 saat membuka /akun', funct
     $this->actingAs(User::factory()->{$peran}()->create())->get('/akun')->assertForbidden();
 })->with(['pemilik', 'penghuni', 'vendor']);
 
-it('TB-04: pemilik, penghuni, dan vendor tidak bisa membuka komponen Akun Pengguna', function (string $peran) {
+it('TB-04: pemilik, penghuni, dan vendor tidak bisa membuka komponen Akun pengguna', function (string $peran) {
     Livewire::actingAs(User::factory()->{$peran}()->create())
         ->test('pages::akun.index')
         ->assertForbidden();
