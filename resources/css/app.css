@@ -167,7 +167,7 @@ select:focus[data-flux-control] {
     font-size: 16px;
 }
 
-/* Tautan dan tombol di blok pengguna sidebar: tampil identik (14px, berat 400, tanpa garis bawah). */
+/* Tautan dan tombol di blok pengguna sidebar: tampil identik (14px, berat 400, garis bawah lewat utilitas underline di markup). */
 .tautan-sidebar {
     display: inline-flex;
     align-items: center;
@@ -181,12 +181,10 @@ select:focus[data-flux-control] {
     font-weight: 400;
     line-height: 1.4;
     color: var(--color-primary-container);
-    text-decoration: none;
 }
 
 .tautan-sidebar:hover {
     color: #ffffff;
-    text-decoration: underline;
 }
 
 @media (max-height: 760px) {

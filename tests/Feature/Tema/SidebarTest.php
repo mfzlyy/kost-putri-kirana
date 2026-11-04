@@ -13,7 +13,8 @@ it('sidebar semua peran memakai blok pengguna yang sama dengan tautan dan tombol
     expect($tautan)->not->toBeEmpty()
         ->and($tombol)->not->toBeEmpty()
         ->and($tautan[1])->toBe($tombol[1])
-        ->and($tautan[1])->not->toMatch('/underline|font-semibold|font-bold/')
+        ->and($tautan[1])->toMatch('/\bunderline\b/')
+        ->and($tautan[1])->not->toMatch('/font-semibold|font-bold/')
         ->and($html)->toContain('Nama Uji '.$peran)
         ->and(substr_count($html, 'Ganti password'))->toBe(1)
         ->and(substr_count($html, 'data-test="logout-button"'))->toBe(1);
