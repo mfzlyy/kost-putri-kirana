@@ -1,0 +1,643 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-04T02:00:00Z"
+  },
+  "title": "Redesign Kost Putri Kirana",
+  "launch": {
+    "page": "fondasi",
+    "view": "canvas"
+  },
+  "pages": [
+    {
+      "id": "fondasi",
+      "name": "Fondasi"
+    },
+    {
+      "id": "pemilik",
+      "name": "Khusus pemilik"
+    },
+    {
+      "id": "pengelola",
+      "name": "Khusus pengelola"
+    },
+    {
+      "id": "kantor",
+      "name": "Dipakai pengelola dan pemilik"
+    },
+    {
+      "id": "penghuni",
+      "name": "Penghuni"
+    },
+    {
+      "id": "vendor",
+      "name": "Vendor"
+    }
+  ],
+  "boards": {
+    "Logo.dc.html": {
+      "page": "fondasi",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Logo"
+    },
+    "Main.dc.html": {
+      "page": "fondasi",
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 1180,
+      "title": "Sistem desain"
+    },
+    "Login.dc.html": {
+      "page": "fondasi",
+      "x": 0,
+      "y": 1300,
+      "w": 1280,
+      "h": 800,
+      "title": "Masuk (desktop)",
+      "expand": "fill"
+    },
+    "LoginPonsel.dc.html": {
+      "page": "fondasi",
+      "x": 1320,
+      "y": 1300,
+      "w": 360,
+      "h": 780,
+      "title": "Masuk (ponsel)"
+    },
+    "GantiPassword.dc.html": {
+      "page": "fondasi",
+      "x": 1800,
+      "y": 1300,
+      "w": 1280,
+      "h": 800,
+      "title": "Ganti password (desktop)",
+      "expand": "fill"
+    },
+    "GantiPasswordPonsel.dc.html": {
+      "page": "fondasi",
+      "x": 3120,
+      "y": 1300,
+      "w": 360,
+      "h": 640,
+      "title": "Ganti password (ponsel)"
+    },
+    "AksesDitolak.dc.html": {
+      "page": "fondasi",
+      "x": 3600,
+      "y": 1300,
+      "w": 1280,
+      "h": 800,
+      "title": "Akses ditolak (desktop)",
+      "expand": "fill"
+    },
+    "AksesDitolakPonsel.dc.html": {
+      "page": "fondasi",
+      "x": 4920,
+      "y": 1300,
+      "w": 360,
+      "h": 640,
+      "title": "Akses ditolak (ponsel)"
+    },
+    "Dashboard.dc.html": {
+      "page": "pemilik",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 1120,
+      "title": "Dashboard (desktop)",
+      "expand": "fill"
+    },
+    "MDashboard.dc.html": {
+      "page": "pemilik",
+      "x": 1320,
+      "y": 0,
+      "w": 360,
+      "h": 1500,
+      "title": "Dashboard (ponsel)"
+    },
+    "Tagihan.dc.html": {
+      "page": "kantor",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 1120,
+      "title": "Tagihan (desktop)",
+      "expand": "fill"
+    },
+    "MTagihan.dc.html": {
+      "page": "kantor",
+      "x": 1320,
+      "y": 0,
+      "w": 360,
+      "h": 1640,
+      "title": "Tagihan (ponsel)"
+    },
+    "Kamar.dc.html": {
+      "page": "kantor",
+      "x": 1840,
+      "y": 0,
+      "w": 1280,
+      "h": 1000,
+      "title": "Kamar (desktop)",
+      "expand": "fill"
+    },
+    "MKamar.dc.html": {
+      "page": "kantor",
+      "x": 3160,
+      "y": 0,
+      "w": 360,
+      "h": 1500,
+      "title": "Kamar (ponsel)"
+    },
+    "Penghuni.dc.html": {
+      "page": "kantor",
+      "x": 3680,
+      "y": 0,
+      "w": 1280,
+      "h": 960,
+      "title": "Penghuni (desktop)",
+      "expand": "fill"
+    },
+    "MPenghuni.dc.html": {
+      "page": "kantor",
+      "x": 5000,
+      "y": 0,
+      "w": 360,
+      "h": 1300,
+      "title": "Penghuni (ponsel)"
+    },
+    "Kontrak.dc.html": {
+      "page": "kantor",
+      "x": 0,
+      "y": 1840,
+      "w": 1280,
+      "h": 1080,
+      "title": "Kontrak (desktop)",
+      "expand": "fill"
+    },
+    "MKontrak.dc.html": {
+      "page": "kantor",
+      "x": 1320,
+      "y": 1840,
+      "w": 360,
+      "h": 1360,
+      "title": "Kontrak (ponsel)"
+    },
+    "Riwayat.dc.html": {
+      "page": "kantor",
+      "x": 1840,
+      "y": 1840,
+      "w": 1280,
+      "h": 960,
+      "title": "Riwayat transaksi (desktop)",
+      "expand": "fill"
+    },
+    "MRiwayat.dc.html": {
+      "page": "kantor",
+      "x": 3160,
+      "y": 1840,
+      "w": 360,
+      "h": 1420,
+      "title": "Riwayat transaksi (ponsel)"
+    },
+    "Tiket.dc.html": {
+      "page": "kantor",
+      "x": 0,
+      "y": 3460,
+      "w": 1280,
+      "h": 1100,
+      "title": "Tiket keluhan (desktop)",
+      "expand": "fill"
+    },
+    "MTiket.dc.html": {
+      "page": "kantor",
+      "x": 1320,
+      "y": 3460,
+      "w": 360,
+      "h": 1000,
+      "title": "Tiket keluhan (ponsel)"
+    },
+    "MTiketDetail.dc.html": {
+      "page": "kantor",
+      "x": 1720,
+      "y": 3460,
+      "w": 360,
+      "h": 1000,
+      "title": "Detail tiket (ponsel)"
+    },
+    "Pengaturan.dc.html": {
+      "page": "kantor",
+      "x": 2240,
+      "y": 3460,
+      "w": 1280,
+      "h": 800,
+      "title": "Pengaturan (desktop)",
+      "expand": "fill"
+    },
+    "MPengaturan.dc.html": {
+      "page": "kantor",
+      "x": 3560,
+      "y": 3460,
+      "w": 360,
+      "h": 860,
+      "title": "Pengaturan (ponsel)"
+    },
+    "MMenu.dc.html": {
+      "page": "kantor",
+      "x": 4080,
+      "y": 3460,
+      "w": 360,
+      "h": 780,
+      "title": "Menu geser (ponsel)"
+    },
+    "Verifikasi.dc.html": {
+      "page": "pengelola",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 980,
+      "title": "Verifikasi pembayaran (desktop)",
+      "expand": "fill"
+    },
+    "MVerifikasi.dc.html": {
+      "page": "pengelola",
+      "x": 1320,
+      "y": 0,
+      "w": 360,
+      "h": 760,
+      "title": "Verifikasi pembayaran (ponsel)"
+    },
+    "MVerifikasiDetail.dc.html": {
+      "page": "pengelola",
+      "x": 1720,
+      "y": 0,
+      "w": 360,
+      "h": 1000,
+      "title": "Detail bukti (ponsel)"
+    },
+    "Tolak.dc.html": {
+      "page": "pengelola",
+      "x": 2240,
+      "y": 0,
+      "w": 1280,
+      "h": 800,
+      "title": "Dialog tolak bukti (desktop)",
+      "expand": "fill"
+    },
+    "MTolak.dc.html": {
+      "page": "pengelola",
+      "x": 3560,
+      "y": 0,
+      "w": 360,
+      "h": 860,
+      "title": "Dialog tolak bukti (ponsel)"
+    },
+    "Sinkronisasi.dc.html": {
+      "page": "pengelola",
+      "x": 0,
+      "y": 1200,
+      "w": 1280,
+      "h": 880,
+      "title": "Sinkronisasi ERP (desktop)",
+      "expand": "fill"
+    },
+    "MSinkronisasi.dc.html": {
+      "page": "pengelola",
+      "x": 1320,
+      "y": 1200,
+      "w": 360,
+      "h": 1100,
+      "title": "Sinkronisasi ERP (ponsel)"
+    },
+    "Akun.dc.html": {
+      "page": "pengelola",
+      "x": 1840,
+      "y": 1200,
+      "w": 1280,
+      "h": 920,
+      "title": "Akun pengguna (desktop)",
+      "expand": "fill"
+    },
+    "MAkun.dc.html": {
+      "page": "pengelola",
+      "x": 3160,
+      "y": 1200,
+      "w": 360,
+      "h": 1540,
+      "title": "Akun pengguna (ponsel)"
+    },
+    "AkunDialog.dc.html": {
+      "page": "pengelola",
+      "x": 3680,
+      "y": 1200,
+      "w": 1280,
+      "h": 880,
+      "title": "Dialog tambah akun (desktop)",
+      "expand": "fill"
+    },
+    "MAkunDialog.dc.html": {
+      "page": "pengelola",
+      "x": 5000,
+      "y": 1200,
+      "w": 360,
+      "h": 1180,
+      "title": "Dialog tambah akun (ponsel)"
+    },
+    "KamarForm.dc.html": {
+      "page": "pengelola",
+      "x": 0,
+      "y": 2940,
+      "w": 1280,
+      "h": 860,
+      "title": "Ubah kamar (desktop)",
+      "expand": "fill"
+    },
+    "MKamarForm.dc.html": {
+      "page": "pengelola",
+      "x": 1320,
+      "y": 2940,
+      "w": 360,
+      "h": 860,
+      "title": "Ubah kamar (ponsel)"
+    },
+    "PenghuniForm.dc.html": {
+      "page": "pengelola",
+      "x": 1840,
+      "y": 2940,
+      "w": 1280,
+      "h": 960,
+      "title": "Tambah penghuni (desktop)",
+      "expand": "fill"
+    },
+    "MPenghuniForm.dc.html": {
+      "page": "pengelola",
+      "x": 3160,
+      "y": 2940,
+      "w": 360,
+      "h": 1040,
+      "title": "Tambah penghuni (ponsel)"
+    },
+    "KontrakForm.dc.html": {
+      "page": "pengelola",
+      "x": 3680,
+      "y": 2940,
+      "w": 1280,
+      "h": 980,
+      "title": "Buat kontrak (desktop)",
+      "expand": "fill"
+    },
+    "MKontrakForm.dc.html": {
+      "page": "pengelola",
+      "x": 5000,
+      "y": 2940,
+      "w": 360,
+      "h": 1000,
+      "title": "Buat kontrak (ponsel)"
+    },
+    "PTagihan.dc.html": {
+      "page": "penghuni",
+      "x": 0,
+      "y": 0,
+      "w": 360,
+      "h": 860,
+      "title": "Tagihan saya (ponsel)"
+    },
+    "DPTagihan.dc.html": {
+      "page": "penghuni",
+      "x": 400,
+      "y": 0,
+      "w": 1280,
+      "h": 900,
+      "title": "Tagihan saya (desktop)",
+      "expand": "fill"
+    },
+    "PUnggah.dc.html": {
+      "page": "penghuni",
+      "x": 1840,
+      "y": 0,
+      "w": 360,
+      "h": 860,
+      "title": "Unggah bukti (ponsel)"
+    },
+    "DPUnggah.dc.html": {
+      "page": "penghuni",
+      "x": 2240,
+      "y": 0,
+      "w": 1280,
+      "h": 860,
+      "title": "Unggah bukti (desktop)",
+      "expand": "fill"
+    },
+    "PRiwayat.dc.html": {
+      "page": "penghuni",
+      "x": 0,
+      "y": 1100,
+      "w": 360,
+      "h": 860,
+      "title": "Riwayat transaksi (ponsel)"
+    },
+    "DPRiwayat.dc.html": {
+      "page": "penghuni",
+      "x": 400,
+      "y": 1100,
+      "w": 1280,
+      "h": 900,
+      "title": "Riwayat transaksi (desktop)",
+      "expand": "fill"
+    },
+    "PKeluhan.dc.html": {
+      "page": "penghuni",
+      "x": 1840,
+      "y": 1100,
+      "w": 360,
+      "h": 860,
+      "title": "Keluhan saya (ponsel)"
+    },
+    "DPKeluhan.dc.html": {
+      "page": "penghuni",
+      "x": 2240,
+      "y": 1100,
+      "w": 1280,
+      "h": 860,
+      "title": "Keluhan saya (desktop)",
+      "expand": "fill"
+    },
+    "PAjukan.dc.html": {
+      "page": "penghuni",
+      "x": 0,
+      "y": 2200,
+      "w": 360,
+      "h": 860,
+      "title": "Ajukan keluhan (ponsel)"
+    },
+    "DPAjukan.dc.html": {
+      "page": "penghuni",
+      "x": 400,
+      "y": 2200,
+      "w": 1280,
+      "h": 860,
+      "title": "Ajukan keluhan (desktop)",
+      "expand": "fill"
+    },
+    "PProfil.dc.html": {
+      "page": "penghuni",
+      "x": 1840,
+      "y": 2200,
+      "w": 360,
+      "h": 860,
+      "title": "Profil saya (ponsel)"
+    },
+    "DPProfil.dc.html": {
+      "page": "penghuni",
+      "x": 2240,
+      "y": 2200,
+      "w": 1280,
+      "h": 760,
+      "title": "Profil saya (desktop)",
+      "expand": "fill"
+    },
+    "VDaftar.dc.html": {
+      "page": "vendor",
+      "x": 0,
+      "y": 0,
+      "w": 360,
+      "h": 860,
+      "title": "Permintaan kerja (ponsel)"
+    },
+    "DVDaftar.dc.html": {
+      "page": "vendor",
+      "x": 400,
+      "y": 0,
+      "w": 1280,
+      "h": 860,
+      "title": "Permintaan kerja (desktop)",
+      "expand": "fill"
+    },
+    "VKerja.dc.html": {
+      "page": "vendor",
+      "x": 1840,
+      "y": 0,
+      "w": 360,
+      "h": 860,
+      "title": "Detail pekerjaan (ponsel)"
+    },
+    "DVKerja.dc.html": {
+      "page": "vendor",
+      "x": 2240,
+      "y": 0,
+      "w": 1280,
+      "h": 760,
+      "title": "Detail pekerjaan (desktop)",
+      "expand": "fill"
+    }
+  },
+  "order": [
+    "Logo.dc.html",
+    "Main.dc.html",
+    "Login.dc.html",
+    "LoginPonsel.dc.html",
+    "GantiPassword.dc.html",
+    "GantiPasswordPonsel.dc.html",
+    "AksesDitolak.dc.html",
+    "AksesDitolakPonsel.dc.html",
+    "Dashboard.dc.html",
+    "MDashboard.dc.html",
+    "Tagihan.dc.html",
+    "MTagihan.dc.html",
+    "Kamar.dc.html",
+    "MKamar.dc.html",
+    "Penghuni.dc.html",
+    "MPenghuni.dc.html",
+    "Kontrak.dc.html",
+    "MKontrak.dc.html",
+    "Riwayat.dc.html",
+    "MRiwayat.dc.html",
+    "Tiket.dc.html",
+    "MTiket.dc.html",
+    "MTiketDetail.dc.html",
+    "Pengaturan.dc.html",
+    "MPengaturan.dc.html",
+    "MMenu.dc.html",
+    "Verifikasi.dc.html",
+    "MVerifikasi.dc.html",
+    "MVerifikasiDetail.dc.html",
+    "Tolak.dc.html",
+    "MTolak.dc.html",
+    "Sinkronisasi.dc.html",
+    "MSinkronisasi.dc.html",
+    "Akun.dc.html",
+    "MAkun.dc.html",
+    "AkunDialog.dc.html",
+    "MAkunDialog.dc.html",
+    "KamarForm.dc.html",
+    "MKamarForm.dc.html",
+    "PenghuniForm.dc.html",
+    "MPenghuniForm.dc.html",
+    "KontrakForm.dc.html",
+    "MKontrakForm.dc.html",
+    "PTagihan.dc.html",
+    "DPTagihan.dc.html",
+    "PUnggah.dc.html",
+    "DPUnggah.dc.html",
+    "PRiwayat.dc.html",
+    "DPRiwayat.dc.html",
+    "PKeluhan.dc.html",
+    "DPKeluhan.dc.html",
+    "PAjukan.dc.html",
+    "DPAjukan.dc.html",
+    "PProfil.dc.html",
+    "DPProfil.dc.html",
+    "VDaftar.dc.html",
+    "DVDaftar.dc.html",
+    "VKerja.dc.html",
+    "DVKerja.dc.html"
+  ],
+  "notes": {
+    "s1": {
+      "fill": "teal",
+      "page": "kantor",
+      "text": "Dipakai pengelola dan pemilik. Tiap board punya pilihan peran di Tweaks. Pemilik hanya melihat: tombol tambah, ubah, hapus, terbitkan, perpanjang, akhiri, dan tugaskan tidak muncul. Di ponsel, sidebar menjadi menu geser.",
+      "w": 480,
+      "x": -560,
+      "y": 0
+    },
+    "s2": {
+      "fill": "blue",
+      "page": "vendor",
+      "text": "Vendor hanya melihat nomor tiket, lokasi, fasilitas, dan isi keluhan. Tidak ada nama, kontak, kontrak, atau tagihan penghuni.",
+      "w": 480,
+      "x": -560,
+      "y": 0
+    },
+    "s3": {
+      "fill": "teal",
+      "page": "pengelola",
+      "text": "Hanya pengelola: verifikasi bukti bayar, sinkronisasi ERP, akun pengguna, dan semua form tambah atau ubah data. Pemilik yang membuka halaman ini mendapat Akses ditolak.",
+      "w": 480,
+      "x": -560,
+      "y": 0
+    },
+    "s4": {
+      "fill": "teal",
+      "page": "pemilik",
+      "text": "Hanya pemilik: Dashboard. Selain itu pemilik membuka 7 halaman di \"Dipakai pengelola dan pemilik\" dalam mode lihat saja.",
+      "w": 480,
+      "x": -560,
+      "y": 0
+    },
+    "s5": {
+      "fill": "blue",
+      "page": "penghuni",
+      "text": "Kiri ponsel, kanan desktop. Ponsel memakai tab bawah, desktop memakai sidebar yang sama dengan peran lain.",
+      "w": 480,
+      "x": -560,
+      "y": 0
+    }
+  },
+  "designSystems": []
+}

@@ -19,7 +19,7 @@ Bila dokumen saling bertentangan, pakai ERD SQL untuk skema, PRD untuk perilaku 
 - PostgreSQL 17 (Docker) untuk basis data web. Odoo Community 19 berjalan di Docker terpisah dengan basis datanya sendiri.
 - Queue dan session memakai driver `database`.
 - Pengujian memakai Pest. Format kode memakai Laravel Pint.
-- Desain UI mengikuti `docs/design/DESIGN.md` (Stitch): Plus Jakarta Sans, warna primer `#0E5E57`. Semua halaman harus bisa dipakai di layar 360 px tanpa gulir horizontal (NFR-06).
+- Desain UI mengikuti `docs/design/DESIGN.md` (versi 2): huruf Archivo, warna primer `#0E5E57`, sidebar `#0C3533`, status berupa ikon plus teks (bukan badge pil). Mockup desktop dan ponsel per halaman ada di `docs/design/mockup/` (lihat `README.md` di sana), logo di `docs/design/logo/`. Semua halaman harus bisa dipakai di layar 360 px tanpa gulir horizontal (NFR-06).
 
 ## Perintah
 

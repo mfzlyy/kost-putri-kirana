@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Keluhan saya</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap">
+<style>
+body{margin:0;background:#F6F5F1}*{box-sizing:border-box}
+a{color:#0E5E57}:focus-visible{outline:2px solid #0E5E57;outline-offset:2px}
+.btn{display:flex;align-items:center;justify-content:center;height:48px;border-radius:8px;font:600 15px 'Archivo',system-ui,sans-serif;text-decoration:none;background:#0E5E57;color:#fff}
+.prog{display:inline-flex;gap:3px}
+.prog i{display:block;width:14px;height:5px;border-radius:2px;background:#DEDBD3}
+.prog i.f{background:#0E5E57}
+.card{background:#fff;border:1px solid #DEDBD3;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.kd{font-variant-numeric:tabular-nums;font-size:13px;color:#4D5755}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{position:relative;padding:0 0 10px 20px;font-size:14px}
+.tl li::before{content:"";position:absolute;left:3px;top:6px;width:8px;height:8px;border-radius:999px;background:#0E5E57}
+.tl li::after{content:"";position:absolute;left:6.5px;top:15px;bottom:0;width:1px;background:#CFCBC1}
+.tl li:last-child{padding-bottom:0}.tl li:last-child::after{display:none}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:550;color:#4D5755;text-decoration:none}
+.tab.on{color:#0E5E57}
+</style>
+</helmet>
+<div style="position: relative; width: 360px; height: 860px; overflow: hidden; background: #F6F5F1; color: #18211F; font-family: 'Archivo', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <header style="padding: 18px 16px 14px">
+    <h1 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 750; font-stretch: 125%">Keluhan</h1>
+    <p style="margin: 4px 0 0; font-size: 14px; color: #4D5755">Laporkan kerusakan di kamar atau area bersama.</p>
+  </header>
+  <main style="padding: 0 16px 96px; display: flex; flex-direction: column; gap: 14px">
+    <div role="status" style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: #DCEDEA; color: #0C3533; font-size: 14px">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex: none; margin-top: 2px; color: #1D6532"><circle cx="8" cy="8" r="7" fill="currentColor"></circle><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <span>Keluhan terkirim dengan nomor <strong style="font-weight: 650">KLH-0013</strong>. Pengelola akan menugaskan vendor.</span>
+    </div>
+    <a class="btn" href="#">Ajukan keluhan</a>
+    <article class="card">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span class="kd">KLH-0013</span><span class="kd">3 Nov</span></div>
+      <h2 style="margin: 0; font-size: 17px; font-weight: 650">Kipas angin, Kamar 05</h2>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600"><span class="prog" aria-hidden="true"><i class="f"></i><i></i><i></i><i></i></span>Diajukan, menunggu vendor</div>
+    </article>
+    <article class="card">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span class="kd">KLH-0008</span><span class="kd">20 Okt</span></div>
+      <h2 style="margin: 0; font-size: 17px; font-weight: 650">Kran wastafel, Kamar 05</h2>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600"><span class="prog" aria-hidden="true"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>Selesai</div>
+      <details style="border-top: 1px solid #E7E4DD; padding-top: 10px" open>
+        <summary style="cursor: pointer; font-weight: 600; font-size: 14px; color: #0E5E57">Jejak status</summary>
+        <ol class="tl" style="margin-top: 10px">
+          <li>Diajukan <span style="color: #4D5755">20 Okt, 07.10</span></li>
+          <li>Ditugaskan ke vendor <span style="color: #4D5755">20 Okt, 09.00</span></li>
+          <li>Dikerjakan <span style="color: #4D5755">21 Okt, 10.30</span></li>
+          <li>Selesai <span style="color: #4D5755">21 Okt, 12.05</span></li>
+        </ol>
+      </details>
+    </article>
+  </main>
+  <nav aria-label="Menu penghuni" style="position: absolute; left: 0; right: 0; bottom: 0; height: 68px; background: #FFFFFF; border-top: 1px solid #DEDBD3; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+    <a class="tab" href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Tagihan</a>
+    <a class="tab" href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Riwayat</a>
+    <a class="tab on" href="#" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"></path></svg>Keluhan</a>
+    <a class="tab" href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>Profil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

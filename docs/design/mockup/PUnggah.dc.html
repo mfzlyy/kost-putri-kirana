@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Unggah bukti bayar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap">
+<style>
+body{margin:0;background:#F6F5F1}
+*{box-sizing:border-box}
+a{color:#0E5E57}a:hover{color:#0A4842}
+:focus-visible{outline:2px solid #0E5E57;outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.lbl{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+.inp{width:100%;height:48px;border:1px solid #CFCBC1;border-radius:8px;padding:0 12px;font:400 16px 'Archivo',system-ui,sans-serif;color:#18211F;background:#fff}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:50px;border-radius:8px;font:600 15px 'Archivo',system-ui,sans-serif;border:0;cursor:pointer}
+.bp{background:#0E5E57;color:#fff}.bp:hover{background:#0A4842}
+</style>
+</helmet>
+<div style="position: relative; width: 360px; height: 860px; overflow: hidden; background: #F6F5F1; color: #18211F; font-family: 'Archivo', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <header style="height: 60px; padding: 0 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #E7E4DD; background: #FFFFFF">
+    <a href="#" aria-label="Kembali ke tagihan" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #18211F"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></a>
+    <h1 style="margin: 0; font-size: 17px; font-weight: 650">Unggah bukti November</h1>
+  </header>
+  <form style="padding: 20px 16px 24px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+      <span style="color: #4D5755">Transfer tepat</span>
+      <span class="num" style="font-size: 30px; line-height: 1; font-weight: 750; font-stretch: 125%">Rp1.400.000</span>
+    </div>
+    <p style="margin: -10px 0 0; font-size: 14px; color: #4D5755">Satu bukti untuk satu tagihan penuh. Bukti dengan nominal berbeda akan ditolak.</p>
+
+    <div>
+      <span class="lbl" id="bk">Foto atau PDF bukti</span>
+      <label for="file" aria-labelledby="bk" style="display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #DEDBD3; cursor: pointer">
+        <span aria-hidden="true" style="width: 52px; height: 64px; border-radius: 6px; background: #F1EFE9; border: 1px solid #E7E4DD; display: flex; align-items: center; justify-content: center; color: #4D5755">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
+        </span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+          <span style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">transfer-november.jpg</span>
+          <span style="font-size: 13px; color: #4D5755">1,8 MB</span>
+        </span>
+        <span style="font-weight: 600; color: #0E5E57; font-size: 14px">Ganti</span>
+        <input id="file" type="file" accept=".jpg,.jpeg,.png,.pdf" style="position: absolute; width: 1px; height: 1px; opacity: 0">
+      </label>
+      <p style="margin: 6px 0 0; font-size: 13px; color: #4D5755">JPG, PNG, atau PDF, paling besar 5 MB.</p>
+    </div>
+
+    <div>
+      <label class="lbl" for="tgl">Tanggal transfer</label>
+      <input class="inp" id="tgl" type="date" value="2026-11-03">
+    </div>
+
+    <div style="padding: 14px; border-radius: 12px; background: #DCEDEA; color: #0C3533; font-size: 14px">Jatuh tempo 10 Nov. Bukti yang terkirim sampai tanggal itu tidak dihitung telat, walau baru dicek setelahnya.</div>
+
+    <button class="btn bp" type="submit">Kirim bukti</button>
+    <p style="margin: -10px 0 0; text-align: center; font-size: 13px; color: #4D5755">Setelah terkirim, statusnya jadi Menunggu dicek.</p>
+  </form>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

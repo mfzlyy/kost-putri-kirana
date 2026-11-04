@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Riwayat transaksi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap">
+<style>
+body{margin:0;background:#F6F5F1}*{box-sizing:border-box}a{color:#0E5E57}a:hover{color:#0A4842}:focus-visible{outline:2px solid #0E5E57;outline-offset:2px}
+.side{flex:1 1 232px;background:#0C3533;color:#B9D6D2;padding:22px 14px;display:flex;flex-direction:column;gap:2px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px 26px;text-decoration:none}
+.nav{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border-radius:8px;color:#B9D6D2;text-decoration:none;font-weight:500}
+.nav:hover{background:rgba(220,237,234,.08);color:#fff}
+.nav.on{background:#DCEDEA;color:#0C3533;font-weight:650}
+.cnt{font-size:13px;padding:1px 8px;border-radius:999px;background:rgba(220,237,234,.14);color:#fff;font-variant-numeric:tabular-nums}
+.me{margin-top:auto;padding:16px 12px 0;border-top:1px solid rgba(220,237,234,.16);display:flex;flex-direction:column;gap:2px}
+.me a{color:#DCEDEA;font-size:14px}
+.main{flex:999 1 560px;min-width:0;padding:40px 48px}
+.h1{margin:0;font-size:34px;line-height:1.05;font-weight:750;font-stretch:125%;letter-spacing:-.01em}
+.sub{margin:8px 0 0;color:#4D5755}
+.st{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;white-space:nowrap}
+.st svg{width:14px;height:14px;flex:none}
+.s-ok{color:#1D6532}.s-late{color:#9E2418}
+.lbl{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+.inp{width:100%;height:44px;border:1px solid #CFCBC1;border-radius:8px;padding:0 12px;font:400 15px 'Archivo',system-ui,sans-serif;color:#18211F;background:#fff}
+.tb{overflow-x:auto;background:#fff;border:1px solid #DEDBD3;border-radius:16px}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{text-align:left;font-size:13px;font-weight:550;color:#4D5755;padding:14px 20px;border-bottom:1px solid #DEDBD3;white-space:nowrap}
+td{padding:0 20px;height:60px;border-top:1px solid #EFEDE8;white-space:nowrap}
+tbody tr:first-child td{border-top:0}
+.r{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.mut{color:#4D5755}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F6F5F1; color: #18211F; font-family: 'Archivo', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <nav class="side" aria-label="Menu">
+    <a class="brand" href="#"><svg width="26" height="31" viewBox="0 0 40 48" role="img" aria-label="Logo Kirana"><rect x="2" y="2" width="36" height="44" rx="9" fill="#DCEDEA"></rect><circle cx="20" cy="9.5" r="3" fill="#0C3533"></circle><path d="M11 17h4.6v21H11z" fill="#0C3533"></path><path d="M15.6 25.2 24.4 16.4H30.8L15.6 31.6z" fill="#0E5E57"></path><path d="M16.8 30.4 20 27.2 30.8 38H24.4z" fill="#0C3533"></path></svg><span style="display: flex; flex-direction: column; line-height: 1.1"><span style="font-size: 11px; color: #9FC2BD">Kost Putri</span><span style="font-size: 18px; font-weight: 750; font-stretch: 125%; color: #FFFFFF">Kirana</span></span></a>
+    <sc-for list="{{menu}}" as="m" hint-placeholder-count="9"><a class="{{m.cls}}" href="#" aria-current="{{m.cur}}">{{m.label}}<sc-if value="{{m.count}}" hint-placeholder-val="{{ false }}"><span class="cnt">{{m.count}}</span></sc-if></a></sc-for>
+    <div class="me"><span style="color: #FFFFFF; font-weight: 600">{{nama}}</span><span style="font-size: 13px">{{peranLabel}}</span><a href="#" style="margin-top: 8px">Ganti password</a><a href="#">Keluar</a></div>
+  </nav>
+  <main class="main">
+    <div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+      <header>
+        <h1 class="h1">Riwayat transaksi</h1>
+        <p class="sub">Pembayaran yang sudah lunas, termasuk milik penghuni yang sudah keluar.</p>
+      </header>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end">
+        <div style="flex: 1 1 220px; max-width: 280px"><label class="lbl" for="fp">Penghuni</label><select class="inp" id="fp"><option>Semua penghuni</option><option>Dina Pratiwi (sudah keluar)</option></select></div>
+        <div style="flex: 1 1 180px; max-width: 220px"><label class="lbl" for="fr">Periode</label><select class="inp" id="fr"><option>Semua periode</option><option>November 2026</option></select></div>
+        <p style="margin: 0 0 10px auto; color: #4D5755">Total <strong class="r" style="color: #18211F; font-size: 17px">Rp8.800.000</strong></p>
+      </div>
+      <div class="tb">
+        <table>
+          <thead><tr><th scope="col">Periode</th><th scope="col">Penghuni</th><th scope="col">Kamar</th><th scope="col" style="text-align: right">Nominal</th><th scope="col">Dibayar</th><th scope="col">Diterima</th><th scope="col">Odoo</th></tr></thead>
+          <tbody>
+            <sc-for list="{{baris}}" as="b" hint-placeholder-count="7">
+              <tr>
+                <td>{{b.per}}</td><td style="font-weight: 600">{{b.nama}} <span class="mut" style="font-weight: 400">{{b.ket}}</span></td><td>{{b.kamar}}</td><td class="r">{{b.nom}}</td><td>{{b.bayar}}</td><td class="mut">{{b.terima}}</td>
+                <td>
+                  <sc-if value="{{b.ok}}" hint-placeholder-val="{{ true }}"><span class="st s-ok"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"></circle><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>Terkirim</span></sc-if>
+                  <sc-if value="{{b.gagal}}" hint-placeholder-val="{{ false }}"><a href="#" class="st s-late" style="text-decoration: none"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"></circle><path d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg>Gagal, lihat</a></sc-if>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"peran":{"editor":"enum","options":["pengelola","pemilik"],"default":"pengelola"},"$preview":{"width":1280,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const peran = this.props.peran ?? 'pengelola';
+    const aktif = 'Riwayat transaksi';
+    const P = [['Verifikasi pembayaran', 3], ['Tagihan', 0], ['Kamar', 0], ['Penghuni', 0], ['Kontrak', 0], ['Riwayat transaksi', 0], ['Tiket keluhan', 1], ['Sinkronisasi ERP', 2], ['Akun pengguna', 0], ['Pengaturan', 0]];
+    const O = [['Dashboard', 0], ['Kamar', 0], ['Penghuni', 0], ['Kontrak', 0], ['Tagihan', 0], ['Riwayat transaksi', 0], ['Tiket keluhan', 1], ['Pengaturan', 0]];
+    const kelola = peran === 'pengelola';
+    const menu = (kelola ? P : O).map(([label, count]) => ({ label, count: count || '', cls: label === aktif ? 'nav on' : 'nav', cur: label === aktif ? 'page' : 'false' }));
+    const R = (per, nama, kamar, nom, bayar, terima, gagal, ket) => ({ per, nama, kamar, nom, bayar, terima, ok: !gagal, gagal: !!gagal, ket: ket || '' });
+    const baris = [
+      R('Nov 2026', 'Anisa Putri', '01', 'Rp1.250.000', '31 Okt', '1 Nov, 09.10', true),
+      R('Okt 2026', 'Anisa Putri', '01', 'Rp1.250.000', '8 Okt', '8 Okt, 20.05'),
+      R('Okt 2026', 'Rina Maharani', '02', 'Rp1.250.000', '9 Okt', '9 Okt, 07.48'),
+      R('Okt 2026', 'Salsa Nabila', '03', 'Rp1.250.000', '5 Okt', '5 Okt, 18.30'),
+      R('Okt 2026', 'Fitri Handayani', '04', 'Rp1.250.000', '10 Okt', '10 Okt, 21.12'),
+      R('Okt 2026', 'Laila Kusuma', '06', 'Rp1.400.000', '7 Okt', '7 Okt, 12.00'),
+      R('Agu 2026', 'Dina Pratiwi', '04', 'Rp1.150.000', '4 Agu', '4 Agu, 16.20', false, 'sudah keluar')
+    ];
+    return { menu, kelola, baris, nama: kelola ? '[Nama pengelola]' : '[Nama pemilik]', peranLabel: kelola ? 'Pengelola' : 'Pemilik' };
+  }
+}
+</script>
+</body>
+</html>
