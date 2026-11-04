@@ -233,14 +233,14 @@ new #[Title('Akun pengguna')] class extends Component {
         </flux:modal.trigger>
     </x-judul-halaman>
 
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3 lg:-m-1 lg:flex-row lg:flex-wrap lg:gap-x-4 lg:gap-y-3 lg:overflow-hidden lg:p-1">
         <div role="group" aria-label="Saring peran" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
             <x-chip-filter :aktif="$filterPeran === ''" wire:click="$set('filterPeran', '')">Semua peran</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'penghuni'" :jumlah="$this->hitungan['penghuni']" wire:click="$set('filterPeran', 'penghuni')">Penghuni</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'vendor'" :jumlah="$this->hitungan['vendor']" wire:click="$set('filterPeran', 'vendor')">Vendor</x-chip-filter>
         </div>
 
-        <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+        <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:relative lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:before:absolute lg:before:-start-2 lg:before:top-1.5 lg:before:h-6 lg:before:w-px lg:before:bg-border lg:before:content-['']">
             <x-chip-filter :aktif="$filterStatus === ''" wire:click="$set('filterStatus', '')">Semua status</x-chip-filter>
             <x-chip-filter :aktif="$filterStatus === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
             <x-chip-filter :aktif="$filterStatus === 'nonaktif'" :jumlah="$this->hitungan['nonaktif']" wire:click="$set('filterStatus', 'nonaktif')">Nonaktif</x-chip-filter>

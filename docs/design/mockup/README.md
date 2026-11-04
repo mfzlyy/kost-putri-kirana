@@ -2,6 +2,8 @@
 
 Sumber mockup dari kanvas desain (versi 2, Archivo). Setiap file `.dc.html` berisi HTML dan CSS satu layar. Beberapa file memakai templat kanvas (`{{...}}`, `<sc-for>`, `<sc-if>`) dan butuh runtime kanvas untuk tampil utuh, jadi untuk melihat tampilannya buka kanvas di claude.ai. Untuk membangun halaman, baca HTML dan CSS-nya sebagai acuan ukuran, warna, teks, dan urutan elemen. Token dan aturan ada di `../DESIGN.md`.
 
+Versi HTML statis (tanpa templat, bisa dibuka langsung di browser) ada di `../mockup-html/index.html`. Board dengan pilihan peran punya file `-pemilik.html`, Login punya `-galat.html`, dan daftar vendor punya `-kosong.html`.
+
 File berawalan `M` adalah versi ponsel halaman kantor, `D` adalah versi desktop halaman penghuni dan vendor. File dengan pilihan peran (pengelola atau pemilik) membaca prop `peran`; pemilik hanya melihat.
 
 ## Fondasi

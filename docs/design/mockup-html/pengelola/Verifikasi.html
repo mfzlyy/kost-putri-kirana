@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<title>Verifikasi pembayaran</title>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap">
+<style>
+body{margin:0;background:#F6F5F1}
+*{box-sizing:border-box}
+a{color:#0E5E57}a:hover{color:#0A4842}
+:focus-visible{outline:2px solid #0E5E57;outline-offset:2px}
+.side{flex:1 1 232px;background:#0C3533;color:#B9D6D2;padding:24px 14px;display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 12px;border-radius:8px;color:#B9D6D2;text-decoration:none;font-weight:500}
+.nav:hover{background:rgba(220,237,234,.08);color:#fff}
+.nav.on{background:#DCEDEA;color:#0C3533;font-weight:650}
+.cnt{font-size:13px;padding:1px 8px;border-radius:999px;background:rgba(220,237,234,.14);color:#fff;font-variant-numeric:tabular-nums}
+.nav.on .cnt{background:#0C3533;color:#DCEDEA}
+.main{flex:999 1 560px;min-width:0;padding:40px 48px}
+.badge{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:550;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:999px;background:currentColor}
+.st{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;white-space:nowrap}.st svg{width:14px;height:14px;flex:none}.s-wait{color:#714A00}.s-late{color:#9E2418}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:16px 18px;border-top:1px solid #E7E4DD;text-decoration:none;color:#18211F}
+.q:hover{background:#FAF9F6;color:#18211F}
+.q.sel{background:#DCEDEA}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 20px;border-radius:8px;font:600 15px 'Archivo',system-ui,sans-serif;border:1px solid transparent;cursor:pointer}
+.bp{background:#0E5E57;color:#fff}.bp:hover{background:#0A4842}
+.bd{background:#fff;color:#9E2418;border-color:#E9B9B2}
+dl{margin:0;display:grid;grid-template-columns:140px minmax(0,1fr);gap:10px 16px}
+dt{color:#4D5755}dd{margin:0;font-weight:500}
+</style>
+</head>
+<body>
+
+
+<div style="display: flex; flex-wrap: wrap; min-height: 980px; background: #F6F5F1; color: #18211F; font-family: 'Archivo', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <nav class="side" aria-label="Menu pengelola">
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 0 10px 26px; text-decoration: none"><svg width="26" height="31" viewBox="0 0 40 48" role="img" aria-label="Logo Kirana"><rect x="2" y="2" width="36" height="44" rx="9" fill="#DCEDEA"></rect><circle cx="20" cy="9.5" r="3" fill="#0C3533"></circle><path d="M11 17h4.6v21H11z" fill="#0C3533"></path><path d="M15.6 25.2 24.4 16.4H30.8L15.6 31.6z" fill="#0E5E57"></path><path d="M16.8 30.4 20 27.2 30.8 38H24.4z" fill="#0C3533"></path></svg><span style="display: flex; flex-direction: column; line-height: 1.1"><span style="font-size: 11px; color: #9FC2BD">Kost Putri</span><span style="font-size: 18px; font-weight: 750; font-stretch: 125%; color: #FFFFFF">Kirana</span></span></a>
+    <a class="nav on" href="#" aria-current="page">Verifikasi pembayaran <span class="cnt">3</span></a>
+    <a class="nav" href="#">Tagihan</a>
+    <a class="nav" href="#">Kamar</a>
+    <a class="nav" href="#">Penghuni</a>
+    <a class="nav" href="#">Kontrak</a>
+    <a class="nav" href="#">Riwayat transaksi</a>
+    <a class="nav" href="#">Tiket keluhan <span class="cnt">1</span></a>
+    <a class="nav" href="#">Sinkronisasi ERP <span class="cnt">2</span></a>
+    <a class="nav" href="#">Akun pengguna</a>
+    <a class="nav" href="#">Pengaturan</a>
+    <div style="margin-top: auto; padding: 16px 12px 0; border-top: 1px solid rgba(220,237,234,.16); display: flex; flex-direction: column; gap: 2px">
+      <span style="color: #FFFFFF; font-weight: 600">[Nama pengelola]</span>
+      <span style="font-size: 13px">Pengelola</span>
+      <a href="#" style="margin-top: 8px; color: #DCEDEA; font-size: 14px">Ganti password</a><a href="#" style="color: #DCEDEA; font-size: 14px">Keluar</a>
+    </div>
+  </nav>
+  <main class="main">
+    <div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px">
+      <header>
+        <h1 style="margin: 0; font-size: 34px; line-height: 1.05; font-weight: 750; font-stretch: 125%; letter-spacing: -0.01em">3 bukti bayar menunggu</h1>
+        <p style="margin: 8px 0 0; color: #4D5755">Yang paling lama diunggah ada di atas. Cocokkan nominal di bukti dengan tagihan sebelum menerima.</p>
+      </header>
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+        <section aria-label="Antrean bukti bayar" style="flex: 1 1 320px; min-width: 0; background: #FFFFFF; border: 1px solid #DEDBD3; border-radius: 16px; overflow: hidden">
+          <a class="q sel" href="#" aria-current="true" style="border-top: 0">
+            <span style="font-weight: 650">Kamar 02, Rina</span><span class="num" style="font-weight: 650">Rp1.250.000</span>
+            <span style="font-size: 13px; color: #33403D">November, diunggah Minggu 19.42</span><span></span>
+          </a>
+          <a class="q" href="#">
+            <span style="font-weight: 650">Kamar 04, Fitri</span><span class="num" style="font-weight: 650">Rp1.250.000</span>
+            <span style="font-size: 13px; color: #4D5755">November, diunggah Senin 08.15</span><span></span>
+          </a>
+          <a class="q" href="#">
+            <span style="font-weight: 650">Kamar 05, Maya</span><span class="num" style="font-weight: 650">Rp1.400.000</span>
+            <span style="font-size: 13px; color: #4D5755">Oktober, diunggah hari ini 07.30</span><span class="st s-late" style="justify-self: end"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="currentColor"></path><path d="M8 6v3.6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path><circle cx="8" cy="11.8" r=".95" fill="#fff"></circle></svg>Telat 24 hari</span>
+          </a>
+        </section>
+        <section aria-labelledby="rv" style="flex: 1.4 1 440px; min-width: 0; background: #FFFFFF; border: 1px solid #DEDBD3; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 20px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px">
+            <div>
+              <h2 id="rv" style="margin: 0; font-size: 20px; font-weight: 650">Kamar 02, tagihan November</h2>
+              <p style="margin: 4px 0 0; color: #4D5755">Rina Maharani</p>
+            </div>
+            <span class="st s-wait"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M8 4.8V8l2.2 1.4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg>Menunggu dicek</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch">
+            <figure style="margin: 0; flex: 1 1 220px; min-height: 280px; border-radius: 12px; background: #F1EFE9; border: 1px solid #E7E4DD; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #4D5755; text-align: center; padding: 16px">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
+              <figcaption style="font-size: 14px">[Pratinjau bukti]<br>bukti-transfer-nov.jpg, 412 KB</figcaption>
+              <a href="#" style="font-weight: 600; font-size: 14px">Buka ukuran penuh</a>
+            </figure>
+            <div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 18px">
+              <div>
+                <p style="margin: 0; color: #4D5755">Nominal tagihan</p>
+                <p class="num" style="margin: 2px 0 0; font-size: 34px; line-height: 1.1; font-weight: 700; font-stretch: 125%">Rp1.250.000</p>
+              </div>
+              <dl>
+                <dt>Tanggal bayar</dt><dd>1 November 2026</dd>
+                <dt>Diunggah</dt><dd>1 November, 19.42</dd>
+                <dt>Jatuh tempo</dt><dd>10 November</dd>
+              </dl>
+              <p style="margin: 0; font-size: 14px; color: #4D5755">Setelah diterima, tagihan jadi lunas dan dicatat ke Odoo.</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; border-top: 1px solid #E7E4DD; padding-top: 20px">
+            <button class="btn bp" type="button">Terima pembayaran</button>
+            <button class="btn bd" type="button">Tolak bukti</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+
+
+</body></html>
