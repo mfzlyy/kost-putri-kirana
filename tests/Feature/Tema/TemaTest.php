@@ -70,3 +70,8 @@ it('sidebar pengelola menandai item aktif dengan aria-current di /kamar', functi
     expect($html)->toMatch('/<a\s+href="[^"]*\/kamar"\s+wire:navigate\s+aria-current="page"/')
         ->and(substr_count($html, 'aria-current="page"'))->toBe(1);
 });
+
+it('bilah progres wire:navigate memakai warna primer', function () {
+    expect(config('livewire.navigate.progress_bar_color'))->toBe('#0E5E57')
+        ->and(config('livewire.navigate.show_progress_bar'))->toBeTrue();
+});

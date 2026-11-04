@@ -152,6 +152,7 @@ new #[Title('Kamar')] class extends Component {
         <x-chip-filter :aktif="$this->filterAktif === 'kosong'" :jumlah="$this->hitungan['kosong']" wire:click="$set('filterStatus', 'kosong')">Kosong</x-chip-filter>
     </div>
 
+    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4 lg:gap-6">
     @if ($this->daftarKamar->isEmpty())
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kamar.' : 'Tidak ada kamar yang sesuai filter.' }}</p>
@@ -236,6 +237,7 @@ new #[Title('Kamar')] class extends Component {
             @endforeach
         </ul>
     @endif
+    </div>
 
     <p class="m-0 text-sm text-ink-muted">Kamar yang masih punya kontrak tidak bisa dihapus. Mengubah tarif tidak mengubah tarif kontrak yang sedang berjalan.</p>
 

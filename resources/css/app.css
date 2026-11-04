@@ -192,3 +192,61 @@ select:focus[data-flux-control] {
         min-height: 32px;
     }
 }
+
+/*
+ * Gerak dasar (docs/design/DESIGN.md, bagian Gerak): umpan balik aksi, bukan hiasan.
+ * 150ms ease-out untuk warna, latar, garis, dan cincin fokus. Elemen muncul/hilang
+ * (modal, menu geser, toast) memakai transisi bawaan Flux. Dimatikan bila pengguna
+ * meminta gerak dikurangi.
+ */
+@media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    label,
+    [role='button'],
+    [data-flux-button] {
+        transition:
+            color 150ms ease-out,
+            background-color 150ms ease-out,
+            border-color 150ms ease-out,
+            box-shadow 150ms ease-out,
+            outline-color 150ms ease-out,
+            transform 150ms ease-out;
+    }
+
+    input,
+    select,
+    textarea,
+    [data-flux-control] {
+        transition:
+            border-color 150ms ease-out,
+            box-shadow 150ms ease-out,
+            outline-color 150ms ease-out;
+    }
+
+    button:not(:disabled):active,
+    a[data-flux-button]:active,
+    [role='button']:active {
+        transform: scale(0.98);
+    }
+
+    tbody tr {
+        transition: background-color 150ms ease-out;
+    }
+
+    .transisi-opasitas {
+        transition: opacity 150ms ease-out;
+    }
+}
+
+/* Baris tabel disorot hanya di perangkat dengan hover. */
+@media (hover: hover) {
+    tbody tr:hover {
+        background-color: #fbfaf7;
+    }
+}
+
+/* Overlay dialog dan menu geser (DESIGN.md). */
+[data-modal]::backdrop {
+    background-color: rgba(12, 53, 51, 0.55);
+}

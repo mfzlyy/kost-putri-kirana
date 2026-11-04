@@ -153,3 +153,21 @@ it('F-01: setiap peran punya halaman utama yang terdaftar sebagai route', functi
         expect(Route::has($peran->halamanUtama()))->toBeTrue();
     }
 });
+
+it('F-01: galat login hanya tampil sekali di kotak atas, tanpa galat di bawah field email', function () {
+    $user = User::factory()->penghuni()->create(['password_hash' => 'SandiUji12345']);
+
+    $html = $this->from(route('login'))->followingRedirects()
+        ->post(route('login.store'), ['email' => $user->email, 'password' => 'salah-sekali'])
+        ->assertOk()
+        ->getContent();
+
+    // Elemen galat Flux yang kosong tetap ada tetapi tersembunyi; tidak boleh ada yang tampil.
+    preg_match_all('/class="([^"]*)" data-flux-error/', $html, $elemenGalat);
+    $galatTampil = array_filter($elemenGalat[1], fn ($kelas) => ! str_contains($kelas, 'hidden'));
+
+    expect(substr_count($html, 'Email atau password salah.'))->toBe(1)
+        ->and($html)->toContain('role="alert"')
+        ->and($galatTampil)->toBeEmpty()
+        ->and($html)->not->toContain('aria-invalid="true"');
+});

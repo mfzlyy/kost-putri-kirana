@@ -137,7 +137,9 @@ it('F-02: peran pemilik atau pengelola ditolak walaupun nilainya dimanipulasi', 
 it('F-02: field wajib kosong menghasilkan galat per field', function () {
     $pengelola = User::factory()->pengelola()->create();
 
+    // Peran bawaan di dialog adalah Penghuni, jadi peran dikosongkan dulu agar galat peran teruji.
     halamanAkunSebagai($pengelola)
+        ->set('peran', '')
         ->call('simpan')
         ->assertHasErrors(['nama', 'email', 'peran', 'password']);
 

@@ -270,6 +270,24 @@ Skala jarak berbasis 4 px: 4, 8, 12, 16, 24, 32, 48.
 Desain datar. Pemisahan memakai Surface di atas Background dan garis Border 1 px. Bayangan hanya untuk dialog
 (0 24px 60px, rgba(12, 53, 51, .28)). Overlay dialog dan menu geser memakai rgba(12, 53, 51, .55).
 
+## Gerak
+
+Gerak hanya menjadi umpan balik atas aksi pengguna, bukan hiasan. Semua gerak diatur sekali di `resources/css/app.css`, bukan per halaman.
+
+- **Durasi dan kurva**: 150 ms ease-out untuk perubahan warna, latar, garis, dan cincin fokus. 200 ms ease-out untuk
+  elemen yang muncul atau hilang (dialog, menu geser, toast); ketiganya memakai transisi bawaan Flux.
+- **Yang bergerak**:
+  - Tombol, tautan, item menu, chip filter, tombol tanggal, dan segmented control: warna dan latar saat hover dan fokus.
+  - Input, select, dan textarea: warna garis dan cincin fokus.
+  - Baris tabel: latar berubah ke #FBFAF7 saat disorot, hanya di perangkat dengan hover.
+  - Tombol yang ditekan: scale 0,98, kembali normal saat dilepas.
+  - Daftar yang dimuat ulang karena filter: memudar ke opacity 0,6 selama memuat.
+  - Perpindahan halaman (`wire:navigate`): bilah progres tipis berwarna Primary di atas layar.
+- **Yang tidak boleh**: animasi saat halaman dibuka, elemen muncul bertahap saat digulir, animasi berulang, angka yang
+  berjalan, dan efek parallax.
+- **Reduced motion**: bila pengguna memilih `prefers-reduced-motion: reduce`, semua transisi buatan sendiri dimatikan
+  (durasi 0, tanpa scale).
+
 ## Shapes
 
 - 8 px: tombol, input, item menu, segmented control.
