@@ -32,14 +32,16 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     // Pengelola
     Route::middleware('peran:pengelola')->group(function () use ($disiapkan) {
         Route::livewire('akun', 'pages::akun.index')->name('akun.index');
+        Route::livewire('kamar/tambah', 'pages::kamar.form')->name('kamar.tambah');
+        Route::livewire('kamar/{kamar}/ubah', 'pages::kamar.form')->name('kamar.ubah');
         $disiapkan('verifikasi-pembayaran', 'verifikasi-pembayaran.index', 'Verifikasi Pembayaran', 'F-13');
         $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi ERP', 'F-25');
     });
 
     // Pengelola dan pemilik
     Route::middleware('peran:pengelola,pemilik')->group(function () use ($disiapkan) {
-        $disiapkan('pengaturan', 'pengaturan.index', 'Pengaturan', 'F-04');
-        $disiapkan('kamar', 'kamar.index', 'Kamar', 'F-05');
+        Route::livewire('pengaturan', 'pages::pengaturan.index')->name('pengaturan.index');
+        Route::livewire('kamar', 'pages::kamar.index')->name('kamar.index');
         $disiapkan('penghuni', 'penghuni.index', 'Penghuni', 'F-06');
         $disiapkan('kontrak', 'kontrak.index', 'Kontrak', 'F-07, F-08');
         $disiapkan('tagihan', 'tagihan.index', 'Tagihan', 'F-10, F-15');

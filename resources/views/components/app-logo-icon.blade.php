@@ -1,8 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 42" {{ $attributes }}>
-    <path 
-        fill="currentColor" 
-        fill-rule="evenodd" 
-        clip-rule="evenodd"
-        d="M17.2 5.633 8.6.855 0 5.633v26.51l16.2 9 16.2-9v-8.442l7.6-4.223V9.856l-8.6-4.777-8.6 4.777V18.3l-5.6 3.111V5.633ZM38 18.301l-5.6 3.11v-6.157l5.6-3.11V18.3Zm-1.06-7.856-5.54 3.078-5.54-3.079 5.54-3.078 5.54 3.079ZM24.8 18.3v-6.157l5.6 3.111v6.158L24.8 18.3Zm-1 1.732 5.54 3.078-13.14 7.302-5.54-3.078 13.14-7.3v-.002Zm-16.2 7.89 7.6 4.222V38.3L2 30.966V7.92l5.6 3.111v16.892ZM8.6 9.3 3.06 6.222 8.6 3.143l5.54 3.08L8.6 9.3Zm21.8 15.51-13.2 7.334V38.3l13.2-7.334v-6.156ZM9.6 11.034l5.6-3.11v14.6l-5.6 3.11v-14.6Z"
-    />
+{{-- Logo gantungan kunci (docs/design/logo). 'terang' = logo.svg untuk latar terang, 'gelap' = logo-gelap.svg untuk latar hijau tua. --}}
+@props([
+    'varian' => 'terang',
+])
+
+@php
+    $dekoratif = $attributes->has('aria-hidden');
+@endphp
+
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 40 48"
+    @unless ($dekoratif) role="img" aria-label="Kost Putri Kirana" @endunless
+    {{ $attributes }}
+>
+    @if ($varian === 'gelap')
+        <rect x="2" y="2" width="36" height="44" rx="9" fill="#DCEDEA"/>
+        <circle cx="20" cy="9.5" r="3" fill="#0C3533"/>
+        <path d="M11 17h4.6v21H11z" fill="#0C3533"/>
+        <path d="M15.6 25.2 24.4 16.4H30.8L15.6 31.6z" fill="#0E5E57"/>
+        <path d="M16.8 30.4 20 27.2 30.8 38H24.4z" fill="#0C3533"/>
+    @else
+        <rect x="2" y="2" width="36" height="44" rx="9" fill="#0C3533"/>
+        <circle cx="20" cy="9.5" r="3" fill="#F6F5F1"/>
+        <path d="M11 17h4.6v21H11z" fill="#F6F5F1"/>
+        <path d="M15.6 25.2 24.4 16.4H30.8L15.6 31.6z" fill="#7CC6BA"/>
+        <path d="M16.8 30.4 20 27.2 30.8 38H24.4z" fill="#F6F5F1"/>
+    @endif
 </svg>

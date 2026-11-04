@@ -6,34 +6,62 @@
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
+/* Aplikasi hanya memakai mode terang (docs/design/DESIGN.md). Varian dark tidak pernah aktif. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
 
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f5f5f5;
-    --color-zinc-200: #e5e5e5;
-    --color-zinc-300: #d4d4d4;
-    --color-zinc-400: #a3a3a3;
-    --color-zinc-500: #737373;
-    --color-zinc-600: #525252;
-    --color-zinc-700: #404040;
-    --color-zinc-800: #262626;
-    --color-zinc-900: #171717;
-    --color-zinc-950: #0a0a0a;
+    /* Token warna DESIGN.md */
+    --color-primary: #0e5e57;
+    --color-primary-hover: #0a4842;
+    --color-primary-container: #dcedea;
+    --color-on-primary-container: #0c3533;
+    --color-sidebar: #0c3533;
+    --color-on-sidebar: #b9d6d2;
+    --color-on-sidebar-strong: #ffffff;
+    --color-on-sidebar-muted: #9fc2bd;
+    --color-logo-ray: #7cc6ba;
+    --color-background: #f6f5f1;
+    --color-surface: #ffffff;
+    --color-surface-muted: #efede8;
+    --color-surface-disabled: #f1efe9;
+    --color-ink: #18211f;
+    --color-ink-muted: #4d5755;
+    --color-border: #dedbd3;
+    --color-border-strong: #cfcbc1;
+    --color-divider: #e7e4dd;
+    --color-row-divider: #efede8;
+    --color-chip-active: #18211f;
+    --color-status-ok: #1d6532;
+    --color-status-wait: #714a00;
+    --color-status-none: #474d4b;
+    --color-status-late: #9e2418;
+    --color-danger: #9e2418;
+    --color-danger-container: #fadfdb;
+    --color-on-danger-container: #7e1c12;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
-}
+    /* Skala netral hangat menggantikan zinc bawaan; dipakai Flux untuk garis, teks, dan latar. */
+    --color-zinc-50: #f6f5f1;
+    --color-zinc-100: #efede8;
+    --color-zinc-200: #dedbd3;
+    --color-zinc-300: #cfcbc1;
+    --color-zinc-400: #a7a297;
+    --color-zinc-500: #737a77;
+    --color-zinc-600: #4d5755;
+    --color-zinc-700: #353d3b;
+    --color-zinc-800: #18211f;
+    --color-zinc-900: #121917;
+    --color-zinc-950: #0b100f;
 
-@layer theme {
-    .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
-    }
+    /* Merah tombol danger dan pesan galat Flux mengikuti DESIGN.md. */
+    --color-red-400: #b3261e;
+    --color-red-500: #9e2418;
+    --color-red-600: #7e1c12;
+
+    --color-accent: #0e5e57;
+    --color-accent-content: #0e5e57;
+    --color-accent-foreground: #ffffff;
 }
 
 @layer base {
@@ -43,8 +71,22 @@
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--color-border, currentColor);
     }
+
+    html {
+        color-scheme: light;
+    }
+
+    body {
+        @apply bg-background text-ink;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+}
+
+.num {
+    font-variant-numeric: tabular-nums;
 }
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {
@@ -61,6 +103,13 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Isian form 16px agar tidak diperbesar otomatis di ponsel. */
+[data-flux-input] input,
+[data-flux-control] {
+    font-size: 16px;
+}

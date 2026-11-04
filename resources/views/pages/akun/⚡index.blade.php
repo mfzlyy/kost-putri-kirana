@@ -86,6 +86,31 @@ new #[Title('Akun Pengguna')] class extends Component {
             ->paginate(15);
     }
 
+    /**
+     * Jumlah akun per peran dan per status untuk angka di chip filter (tidak terpengaruh filter).
+     *
+     * @return array{penghuni: int, vendor: int, aktif: int, nonaktif: int}
+     */
+    #[Computed]
+    public function hitungan(): array
+    {
+        $baris = User::query()
+            ->whereIn('peran', $this->peranDikelola())
+            ->toBase()
+            ->selectRaw('peran, status_akun, count(*) as total')
+            ->groupBy('peran', 'status_akun')
+            ->get();
+
+        $jumlah = fn (string $kolom, string $nilai): int => (int) $baris->where($kolom, $nilai)->sum('total');
+
+        return [
+            'penghuni' => $jumlah('peran', PeranPengguna::Penghuni->value),
+            'vendor' => $jumlah('peran', PeranPengguna::Vendor->value),
+            'aktif' => $jumlah('status_akun', StatusAkun::Aktif->value),
+            'nonaktif' => $jumlah('status_akun', StatusAkun::Nonaktif->value),
+        ];
+    }
+
     #[Computed]
     public function adaFilter(): bool
     {
@@ -174,87 +199,130 @@ new #[Title('Akun Pengguna')] class extends Component {
     }
 }; ?>
 
-<section class="w-full">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <flux:heading size="xl" level="1">Akun Pengguna</flux:heading>
-            <flux:subheading>Kelola akun penghuni dan vendor.</flux:subheading>
-        </div>
-
+<section class="flex w-full flex-col gap-6">
+    <x-judul-halaman
+        judul="Akun pengguna"
+        deskripsi="Akun penghuni dan vendor. Akun yang dinonaktifkan tidak bisa masuk, datanya tetap tersimpan."
+    >
         <flux:modal.trigger name="tambah-akun">
-            <flux:button variant="primary" icon="plus" class="w-full sm:w-auto" data-test="tambah-akun-button">
-                Tambah Akun
+            <flux:button variant="primary" class="h-11! w-full sm:w-auto" data-test="tambah-akun-button">
+                Tambah akun
             </flux:button>
         </flux:modal.trigger>
+    </x-judul-halaman>
+
+    <div class="flex flex-col gap-3">
+        <div role="group" aria-label="Saring peran" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+            <x-chip-filter :aktif="$filterPeran === ''" wire:click="$set('filterPeran', '')">Semua peran</x-chip-filter>
+            <x-chip-filter :aktif="$filterPeran === 'penghuni'" :jumlah="$this->hitungan['penghuni']" wire:click="$set('filterPeran', 'penghuni')">Penghuni</x-chip-filter>
+            <x-chip-filter :aktif="$filterPeran === 'vendor'" :jumlah="$this->hitungan['vendor']" wire:click="$set('filterPeran', 'vendor')">Vendor</x-chip-filter>
+        </div>
+
+        <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+            <x-chip-filter :aktif="$filterStatus === ''" wire:click="$set('filterStatus', '')">Semua status</x-chip-filter>
+            <x-chip-filter :aktif="$filterStatus === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
+            <x-chip-filter :aktif="$filterStatus === 'nonaktif'" :jumlah="$this->hitungan['nonaktif']" wire:click="$set('filterStatus', 'nonaktif')">Nonaktif</x-chip-filter>
+        </div>
     </div>
 
-    <div class="mt-6 grid grid-cols-1 gap-3 sm:max-w-md sm:grid-cols-2">
-        <flux:select wire:model.live="filterPeran" label="Peran">
-            <flux:select.option value="">Semua</flux:select.option>
-            <flux:select.option value="penghuni">Penghuni</flux:select.option>
-            <flux:select.option value="vendor">Vendor</flux:select.option>
-        </flux:select>
-
-        <flux:select wire:model.live="filterStatus" label="Status">
-            <flux:select.option value="">Semua</flux:select.option>
-            <flux:select.option value="aktif">Aktif</flux:select.option>
-            <flux:select.option value="nonaktif">Nonaktif</flux:select.option>
-        </flux:select>
-    </div>
-
-    <div class="mt-6 max-w-full overflow-x-auto">
-        @if ($this->daftarAkun->isEmpty())
-            <flux:text class="py-8 text-center" data-test="pesan-kosong">
-                {{ $this->adaFilter ? 'Tidak ada akun yang sesuai filter.' : 'Belum ada akun.' }}
-            </flux:text>
-        @else
-            <flux:table :paginate="$this->daftarAkun">
-                <flux:table.columns>
-                    <flux:table.column>Nama</flux:table.column>
-                    <flux:table.column>Email</flux:table.column>
-                    <flux:table.column>Peran</flux:table.column>
-                    <flux:table.column>Status</flux:table.column>
-                    <flux:table.column>Aksi</flux:table.column>
-                </flux:table.columns>
-
-                <flux:table.rows>
+    @if ($this->daftarAkun->isEmpty())
+        <p class="m-0 rounded-2xl border border-border bg-surface py-10 text-center text-ink-muted" data-test="pesan-kosong">
+            {{ $this->adaFilter ? 'Tidak ada akun yang sesuai filter.' : 'Belum ada akun.' }}
+        </p>
+    @else
+        {{-- Desktop: tabel dalam kartu --}}
+        <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
+            <table class="w-full min-w-[720px] border-collapse">
+                <thead>
+                    <tr>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nama</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Email</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Peran</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
+                    </tr>
+                </thead>
+                <tbody>
                     @foreach ($this->daftarAkun as $akun)
-                        <flux:table.row :key="$akun->id">
-                            <flux:table.cell class="whitespace-normal">{{ $akun->nama }}</flux:table.cell>
-                            <flux:table.cell class="break-all whitespace-normal">{{ $akun->email }}</flux:table.cell>
-                            <flux:table.cell>{{ $akun->peran->label() }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:badge size="sm" :color="$akun->isAktif() ? 'green' : 'zinc'" inset="top bottom">
-                                    {{ $akun->status_akun->label() }}
-                                </flux:badge>
-                            </flux:table.cell>
-                            <flux:table.cell>
+                        <tr wire:key="akun-tabel-{{ $akun->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
+                            <td class="px-5 font-semibold">{{ $akun->nama }}</td>
+                            <td class="px-5 break-all text-ink-muted">{{ $akun->email }}</td>
+                            <td class="px-5">{{ $akun->peran->label() }}</td>
+                            <td class="px-5">
                                 @if ($akun->isAktif())
-                                    <flux:button
-                                        size="sm"
-                                        variant="danger"
+                                    <x-status jenis="ok">{{ $akun->status_akun->label() }}</x-status>
+                                @else
+                                    <x-status jenis="belum">{{ $akun->status_akun->label() }}</x-status>
+                                @endif
+                            </td>
+                            <td class="px-5 text-end whitespace-nowrap">
+                                @if ($akun->isAktif())
+                                    <button
+                                        type="button"
+                                        class="min-h-10 cursor-pointer px-2 text-sm font-semibold text-danger"
                                         wire:click="nonaktifkan({{ $akun->id }})"
                                         wire:confirm="Nonaktifkan akun {{ $akun->nama }}? Pengguna ini tidak bisa masuk sampai diaktifkan kembali."
                                     >
                                         Nonaktifkan
-                                    </flux:button>
+                                    </button>
                                 @else
-                                    <flux:button size="sm" wire:click="aktifkan({{ $akun->id }})">
+                                    <button
+                                        type="button"
+                                        class="min-h-10 cursor-pointer px-2 text-sm font-semibold text-primary"
+                                        wire:click="aktifkan({{ $akun->id }})"
+                                    >
                                         Aktifkan
-                                    </flux:button>
+                                    </button>
                                 @endif
-                            </flux:table.cell>
-                        </flux:table.row>
+                            </td>
+                        </tr>
                     @endforeach
-                </flux:table.rows>
-            </flux:table>
-        @endif
-    </div>
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Ponsel: daftar kartu --}}
+        <ul class="m-0 list-none overflow-hidden rounded-2xl border border-border bg-surface p-0 md:hidden">
+            @foreach ($this->daftarAkun as $akun)
+                <li wire:key="akun-kartu-{{ $akun->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="min-w-0 font-[650] break-words">{{ $akun->nama }}</span>
+                        <span class="shrink-0 text-sm">{{ $akun->peran->label() }}</span>
+                    </div>
+                    <span class="text-sm break-all text-ink-muted">{{ $akun->email }}</span>
+                    <div class="flex items-center justify-between gap-3">
+                        @if ($akun->isAktif())
+                            <x-status jenis="ok">{{ $akun->status_akun->label() }}</x-status>
+                            <button
+                                type="button"
+                                class="min-h-10 cursor-pointer px-1 text-sm font-semibold text-danger"
+                                wire:click="nonaktifkan({{ $akun->id }})"
+                                wire:confirm="Nonaktifkan akun {{ $akun->nama }}? Pengguna ini tidak bisa masuk sampai diaktifkan kembali."
+                            >
+                                Nonaktifkan
+                            </button>
+                        @else
+                            <x-status jenis="belum">{{ $akun->status_akun->label() }}</x-status>
+                            <button
+                                type="button"
+                                class="min-h-10 cursor-pointer px-1 text-sm font-semibold text-primary"
+                                wire:click="aktifkan({{ $akun->id }})"
+                            >
+                                Aktifkan
+                            </button>
+                        @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+
+        <flux:pagination :paginator="$this->daftarAkun" />
+    @endif
 
     <flux:modal name="tambah-akun" class="w-full max-w-lg">
         <form wire:submit="simpan" class="space-y-6">
             <div>
-                <flux:heading size="lg">Tambah Akun</flux:heading>
+                <flux:heading size="lg">Tambah akun</flux:heading>
                 <flux:subheading>Akun baru langsung aktif dan dapat dipakai masuk.</flux:subheading>
             </div>
 

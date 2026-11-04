@@ -1,11 +1,14 @@
 <?php
 
 use App\Enums\PeranPengguna;
+use App\Models\PengaturanOperasional;
 use App\Models\User;
 use App\Support\MenuNavigasi;
 use Illuminate\Support\Str;
 
 dataset('semua_peran', ['pemilik', 'pengelola', 'penghuni', 'vendor']);
+
+beforeEach(fn () => PengaturanOperasional::factory()->create());
 
 it('F-03: menu setiap peran sesuai daftar PRD', function () {
     $label = fn (PeranPengguna $peran) => array_column(MenuNavigasi::untuk($peran), 'label');
@@ -75,14 +78,13 @@ it('F-03: contoh menu terlarang tidak muncul (penghuni tanpa Akun Pengguna, vend
         ->get('/dashboard')->assertOk()->assertDontSee('Akun Pengguna')->assertDontSee('Verifikasi Pembayaran');
 });
 
-it('F-03: menu pengguna menampilkan nama, email, peran, Ganti Password, dan Keluar', function () {
+it('F-03: menu pengguna menampilkan nama, peran, Ganti password, dan Keluar', function () {
     $user = User::factory()->pengelola()->create(['nama' => 'Dewi Pengelola Uji']);
 
     $this->actingAs($user)->get('/verifikasi-pembayaran')
         ->assertSee('Dewi Pengelola Uji')
-        ->assertSee($user->email)
         ->assertSee('Pengelola')
-        ->assertSee('Ganti Password')
+        ->assertSee('Ganti password')
         ->assertSee('Keluar')
         ->assertDontSee('Repository')
         ->assertDontSee('Documentation');

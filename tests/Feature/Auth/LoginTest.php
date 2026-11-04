@@ -38,11 +38,11 @@ function loginDengan(string $email, string $password)
 it('menampilkan halaman login berbahasa Indonesia tanpa ingat saya, lupa password, dan daftar', function () {
     $this->get(route('login'))
         ->assertOk()
-        ->assertSee('Masuk ke Akun')
-        ->assertSee('Masukkan email dan password Anda')
         ->assertSee('Masuk')
+        ->assertSee('Pakai email dan password dari pengelola.')
+        ->assertSee('Lupa password? Hubungi pengelola kos.')
         ->assertDontSee('Ingat saya')
-        ->assertDontSee('Lupa password')
+        ->assertDontSee('href="'.url('/forgot-password'))
         ->assertDontSee('Daftar');
 });
 

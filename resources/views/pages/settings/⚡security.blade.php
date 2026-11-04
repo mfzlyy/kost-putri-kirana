@@ -38,43 +38,42 @@ new #[Title('Ganti Password')] class extends Component {
     }
 }; ?>
 
-<section class="w-full">
-    @include('partials.settings-heading')
+<section class="flex w-full max-w-[520px] flex-col gap-6">
+    <x-judul-halaman judul="Ganti password" deskripsi="Minimal 8 karakter, berisi huruf dan angka." />
 
-    <flux:heading level="2" class="sr-only">Ganti Password</flux:heading>
+    <form wire:submit="updatePassword" class="flex flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <flux:input
+            wire:model="current_password"
+            label="Password lama"
+            type="password"
+            required
+            autocomplete="current-password"
+            viewable
+        />
+        <flux:input
+            wire:model="password"
+            label="Password baru"
+            type="password"
+            required
+            autocomplete="new-password"
+            viewable
+        />
+        <flux:input
+            wire:model="password_confirmation"
+            label="Konfirmasi password baru"
+            type="password"
+            required
+            autocomplete="new-password"
+            viewable
+        />
 
-    <x-pages::settings.layout heading="Ganti Password" subheading="Gunakan password yang sulit ditebak, minimal 8 karakter dengan huruf dan angka">
-        <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
-            <flux:input
-                wire:model="current_password"
-                label="Password lama"
-                type="password"
-                required
-                autocomplete="current-password"
-                viewable
-            />
-            <flux:input
-                wire:model="password"
-                label="Password baru"
-                type="password"
-                required
-                autocomplete="new-password"
-                viewable
-            />
-            <flux:input
-                wire:model="password_confirmation"
-                label="Konfirmasi password baru"
-                type="password"
-                required
-                autocomplete="new-password"
-                viewable
-            />
-
-            <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" wire:loading.attr="disabled" data-test="update-password-button">
-                    Simpan
-                </flux:button>
-            </div>
-        </form>
-    </x-pages::settings.layout>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <flux:button variant="primary" type="submit" class="h-11! sm:w-auto" wire:loading.attr="disabled" data-test="update-password-button">
+                Simpan password
+            </flux:button>
+            <flux:button variant="ghost" :href="url('/beranda')" class="h-11!" wire:navigate>
+                Batal
+            </flux:button>
+        </div>
+    </form>
 </section>

@@ -18,7 +18,7 @@ it('menampilkan halaman Ganti Password untuk semua peran', function (string $per
     $this->actingAs(User::factory()->{$peran}()->create())
         ->get(route('security.edit'))
         ->assertOk()
-        ->assertSee('Ganti Password')
+        ->assertSee('Ganti password')
         ->assertSee('Password lama')
         ->assertSee('Konfirmasi password baru');
 })->with(['pemilik', 'pengelola', 'penghuni', 'vendor']);

@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\Kamar;
+use App\Models\PengaturanOperasional;
 use App\Models\User;
+
+beforeEach(fn () => PengaturanOperasional::factory()->create());
 
 /*
 | Matriks akses halaman per peran (PRD Bagian 6, F-03, TB-04).
@@ -14,6 +18,8 @@ dataset('akses_halaman', function () {
         '/akun' => ['pengelola'],
         '/pengaturan' => ['pengelola', 'pemilik'],
         '/kamar' => ['pengelola', 'pemilik'],
+        '/kamar/tambah' => ['pengelola'],
+        '/kamar/tambah' => ['pengelola'],
         '/penghuni' => ['pengelola', 'pemilik'],
         '/kontrak' => ['pengelola', 'pemilik'],
         '/tagihan' => ['pengelola', 'pemilik'],
@@ -49,9 +55,9 @@ it('F-03: peran yang berhak mendapat 200, peran lain mendapat 403 tanpa data hal
     }
 
     $respons->assertForbidden()
-        ->assertSee('Akses Ditolak')
+        ->assertSee('Akses ditolak')
         ->assertSee('Anda tidak memiliki akses ke halaman ini')
-        ->assertSee('Kembali ke Beranda')
+        ->assertSee('Kembali ke beranda')
         ->assertDontSee('sedang disiapkan')
         ->assertDontSee('Tambah Akun');
 })->with('akses_halaman');
@@ -104,3 +110,17 @@ it('F-01: akun yang dinonaktifkan tidak lagi bisa membuka halaman Ganti Password
 
     $this->assertGuest();
 });
+
+it('F-05: halaman ubah kamar hanya untuk pengelola', function (string $peran, bool $boleh) {
+    $kamar = Kamar::factory()->create();
+    $user = User::factory()->{$peran}()->create();
+
+    $respons = $this->actingAs($user)->get(route('kamar.ubah', $kamar));
+
+    $boleh ? $respons->assertOk() : $respons->assertForbidden()->assertSee('Akses ditolak');
+})->with([
+    'pengelola' => ['pengelola', true],
+    'pemilik' => ['pemilik', false],
+    'penghuni' => ['penghuni', false],
+    'vendor' => ['vendor', false],
+]);

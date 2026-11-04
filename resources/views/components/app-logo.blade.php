@@ -1,17 +1,34 @@
+{{-- Logo + wordmark dua baris. Teks tetap (tidak dari config) agar tidak bergantung pada .env. --}}
 @props([
     'sidebar' => false,
+    'href' => url('/beranda'),
+    'ukuran' => 'normal',
 ])
 
-@if($sidebar)
-    <flux:sidebar.brand name="Kost Putri Kirana" {{ $attributes }}>
-        <x-slot name="logo" class="flex aspect-square size-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
-            <x-app-logo-icon class="size-5 fill-current text-white dark:text-black" />
-        </x-slot>
-    </flux:sidebar.brand>
-@else
-    <flux:brand name="Kost Putri Kirana" {{ $attributes }}>
-        <x-slot name="logo" class="flex aspect-square size-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
-            <x-app-logo-icon class="size-5 fill-current text-white dark:text-black" />
-        </x-slot>
-    </flux:brand>
-@endif
+@php
+    $kecil = $ukuran === 'kecil';
+@endphp
+
+<a
+    href="{{ $href }}"
+    {{ $attributes->class(['flex items-center gap-2.5 rounded-lg no-underline']) }}
+>
+    <x-app-logo-icon
+        :varian="$sidebar ? 'gelap' : 'terang'"
+        aria-hidden="true"
+        :class="$kecil ? 'h-6 w-5 shrink-0' : 'h-[31px] w-[26px] shrink-0'"
+    />
+    <span class="sr-only">Kost Putri Kirana, ke beranda</span>
+    <span class="flex flex-col leading-[1.1]" aria-hidden="true">
+        @unless ($kecil)
+            <span @class(['text-[11px]', 'text-on-sidebar-muted' => $sidebar, 'text-ink-muted' => ! $sidebar])>Kost Putri</span>
+        @endunless
+        <span @class([
+            'font-stretch-expanded font-[750]',
+            'text-lg' => ! $kecil,
+            'text-base' => $kecil,
+            'text-white' => $sidebar,
+            'text-ink' => ! $sidebar,
+        ])>Kirana</span>
+    </span>
+</a>
