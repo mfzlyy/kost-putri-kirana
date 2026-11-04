@@ -10,7 +10,7 @@
     wire:navigate
     @if ($aktif) aria-current="page" @endif
     {{ $attributes->class([
-        'flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 no-underline',
+        'flex min-h-11 pendek:min-h-10 items-center justify-between gap-2 rounded-lg px-3 no-underline',
         'bg-primary-container font-[650] text-on-primary-container' => $aktif,
         'font-medium text-on-sidebar hover:bg-white/[.08] hover:text-white' => ! $aktif,
     ]) }}

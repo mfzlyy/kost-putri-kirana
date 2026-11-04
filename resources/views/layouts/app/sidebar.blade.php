@@ -13,7 +13,7 @@
             sticky
             collapsible="mobile"
             aria-label="Menu"
-            class="h-dvh! max-h-dvh! w-[232px] gap-0 overflow-y-hidden! border-0 bg-sidebar px-3.5 py-[22px] text-on-sidebar max-lg:w-72"
+            class="h-dvh! max-h-dvh! w-[232px] gap-0! overflow-y-hidden! border-0 bg-sidebar px-3.5 py-[22px] text-on-sidebar max-lg:w-72"
         >
             <div class="flex shrink-0 items-start justify-between gap-2 pb-[26px] ps-2.5">
                 <x-app-logo :sidebar="true" />
@@ -29,7 +29,7 @@
                 </button>
             </div>
 
-            <nav aria-label="Menu utama" class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto [scrollbar-color:rgba(220,237,234,.25)_transparent] [scrollbar-width:thin]">
+            <nav aria-label="Menu utama" class="flex min-h-0 flex-1 flex-col gap-0.5 pendek:gap-0 overflow-y-auto [scrollbar-color:rgba(220,237,234,.25)_transparent] [scrollbar-width:thin]">
                 @foreach ($menu as $item)
                     <x-menu-samping.item
                         :href="route($item['route'])"
@@ -41,29 +41,7 @@
                 @endforeach
             </nav>
 
-            <div class="mt-3 flex shrink-0 flex-col gap-0.5 border-t border-primary-container/15 px-3 pt-4">
-                <span class="line-clamp-2 font-semibold text-white">{{ $pengguna->nama }}</span>
-                <span class="text-[13px]">{{ $pengguna->peran->label() }}</span>
-
-                <a
-                    href="{{ route('security.edit') }}"
-                    wire:navigate
-                    class="mt-2 inline-flex min-h-9 items-center text-sm text-primary-container no-underline hover:text-white"
-                >
-                    Ganti password
-                </a>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="inline-flex min-h-9 cursor-pointer items-center text-sm text-primary-container hover:text-white"
-                        data-test="logout-button"
-                    >
-                        Keluar
-                    </button>
-                </form>
-            </div>
+            <x-menu-samping.pengguna />
         </flux:sidebar>
 
         {{-- Top bar ponsel --}}

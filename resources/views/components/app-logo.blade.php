@@ -25,8 +25,8 @@
         @endunless
         <span @class([
             'font-stretch-expanded font-[750]',
-            'text-lg' => ! $kecil,
-            'text-base' => $kecil,
+            'text-[18px] leading-[1.1]' => ! $kecil,
+            'text-base leading-[1.1]' => $kecil,
             'text-white' => $sidebar,
             'text-ink' => ! $sidebar,
         ])>Kirana</span>

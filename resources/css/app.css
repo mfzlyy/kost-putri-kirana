@@ -9,6 +9,9 @@
 /* Aplikasi hanya memakai mode terang (docs/design/DESIGN.md). Varian dark tidak pernah aktif. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Layar pendek (laptop): sidebar dipadatkan agar semua menu muat tanpa gulir. */
+@custom-variant pendek (@media (max-height: 760px));
+
 @theme {
     --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
 
@@ -78,14 +81,15 @@
         color-scheme: light;
     }
 
-    /* Tautan teks hijau primer, berat 600, tanpa garis bawah (mockup v2). Kelas text-* di elemen menimpa ini. */
-    a {
+    /* Tautan teks di area konten: hijau primer, berat 600, tanpa garis bawah (mockup v2).
+       Sidebar, top bar, dan tombol Flux tidak terpengaruh. */
+    [data-flux-main] a:not([data-flux-button]) {
         color: var(--color-primary);
         font-weight: 600;
         text-decoration: none;
     }
 
-    a:hover {
+    [data-flux-main] a:not([data-flux-button]):hover {
         color: var(--color-primary-hover);
     }
 
@@ -161,4 +165,32 @@ select:focus[data-flux-control] {
 [data-flux-input] input,
 [data-flux-control] {
     font-size: 16px;
+}
+
+/* Tautan dan tombol di blok pengguna sidebar: tampil identik (14px, berat 400, tanpa garis bawah). */
+.tautan-sidebar {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--color-primary-container);
+    text-decoration: none;
+}
+
+.tautan-sidebar:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+@media (max-height: 760px) {
+    .tautan-sidebar {
+        min-height: 32px;
+    }
 }
