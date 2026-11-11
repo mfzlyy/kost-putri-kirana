@@ -332,12 +332,12 @@ new #[Title('Penghuni')] class extends Component {
                     <flux:label>Nomor identitas (NIK)</flux:label>
                     <flux:input wire:model="nik" inputmode="numeric" autocomplete="off" data-test="input-nik" />
                     @if ($penghuni)
-                        <flux:description class="flex flex-wrap items-center gap-x-2">
+                        <flux:description class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                             <span class="num tracking-[0.02em]" aria-live="polite" data-test="nik-tersimpan">Tersimpan: {{ $this->identitasTerbuka ? $this->identitasUtuh : $penghuni->no_identitas_tersamar }}.</span>
                             @if ($this->identitasTerbuka)
-                                <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="min-h-9 cursor-pointer text-sm font-semibold text-primary" data-test="sembunyikan-identitas">Sembunyikan</button>
+                                <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="sembunyikan-identitas">Sembunyikan</button>
                             @else
-                                <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="min-h-9 cursor-pointer text-sm font-semibold text-primary" data-test="tampilkan-identitas">Tampilkan</button>
+                                <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="tampilkan-identitas">Tampilkan</button>
                             @endif
                             <span>Kosongkan bila tidak berubah.</span>
                         </flux:description>

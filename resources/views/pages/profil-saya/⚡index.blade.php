@@ -80,7 +80,7 @@ new #[Title('Profil saya')] class extends Component {
         <div class="flex flex-wrap items-start gap-4">
             <section class="flex-[1_1_320px] rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-data-diri">
                 <h2 id="judul-data-diri" class="m-0 mb-3.5 text-base font-[650]">Data diri</h2>
-                <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] gap-x-3.5 gap-y-2.5">
+                <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
                     <dt class="text-ink-muted">Email akun</dt>
                     <dd class="m-0 break-words">{{ $penghuni->user?->email }}</dd>
 
@@ -88,12 +88,12 @@ new #[Title('Profil saya')] class extends Component {
                     <dd class="num m-0">{{ Format::telepon($penghuni->no_telepon) }}</dd>
 
                     <dt class="text-ink-muted">Nomor identitas</dt>
-                    <dd class="m-0 flex flex-wrap items-center gap-x-2">
+                    <dd class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                         <span class="num tracking-[0.02em]" aria-live="polite" data-test="nik">{{ $this->identitasTerbuka ? $this->identitasUtuh : $penghuni->no_identitas_tersamar }}</span>
                         @if ($this->identitasTerbuka)
-                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="min-h-10 cursor-pointer text-sm font-semibold text-primary" data-test="sembunyikan-identitas">Sembunyikan</button>
+                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="sembunyikan-identitas">Sembunyikan</button>
                         @else
-                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="min-h-10 cursor-pointer text-sm font-semibold text-primary" data-test="tampilkan-identitas">Tampilkan</button>
+                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="tampilkan-identitas">Tampilkan</button>
                         @endif
                     </dd>
                 </dl>
@@ -102,7 +102,7 @@ new #[Title('Profil saya')] class extends Component {
             <section class="flex-[1_1_280px] rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-kontrak">
                 <h2 id="judul-kontrak" class="m-0 mb-3.5 text-base font-[650]">Kontrak aktif</h2>
                 @if ($kontrak)
-                    <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] gap-x-3.5 gap-y-2.5">
+                    <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
                         <dt class="text-ink-muted">Masa sewa</dt>
                         <dd class="m-0">{{ $kontrak->tanggal_mulai->locale('id')->translatedFormat('j M Y') }} sampai {{ $kontrak->tanggal_berakhir->locale('id')->translatedFormat('j M Y') }}</dd>
 
