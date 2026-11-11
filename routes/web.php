@@ -36,6 +36,8 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('kamar/{kamar}/ubah', 'pages::kamar.form')->name('kamar.ubah');
         Route::livewire('penghuni/tambah', 'pages::penghuni.form')->name('penghuni.tambah');
         Route::livewire('penghuni/{penghuni}/ubah', 'pages::penghuni.form')->name('penghuni.ubah');
+        Route::livewire('kontrak/buat', 'pages::kontrak.form')->name('kontrak.buat');
+        Route::livewire('kontrak/{kontrak}/perpanjang', 'pages::kontrak.form')->name('kontrak.perpanjang');
         $disiapkan('verifikasi-pembayaran', 'verifikasi-pembayaran.index', 'Verifikasi pembayaran', 'F-13');
         $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi ERP', 'F-25');
     });
@@ -45,7 +47,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('pengaturan', 'pages::pengaturan.index')->name('pengaturan.index');
         Route::livewire('kamar', 'pages::kamar.index')->name('kamar.index');
         Route::livewire('penghuni', 'pages::penghuni.index')->name('penghuni.index');
-        $disiapkan('kontrak', 'kontrak.index', 'Kontrak', 'F-07, F-08');
+        Route::livewire('kontrak', 'pages::kontrak.index')->name('kontrak.index');
         $disiapkan('tagihan', 'tagihan.index', 'Tagihan', 'F-10, F-15');
         $disiapkan('tiket-keluhan', 'tiket-keluhan.index', 'Tiket keluhan', 'F-17, F-18');
     });

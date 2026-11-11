@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Kamar;
+use App\Models\Kontrak;
 use App\Models\PengaturanOperasional;
 use App\Models\Penghuni;
 use App\Models\User;
@@ -24,6 +25,8 @@ dataset('akses_halaman', function () {
         '/penghuni' => ['pengelola', 'pemilik'],
         '/penghuni/tambah' => ['pengelola'],
         '/kontrak' => ['pengelola', 'pemilik'],
+        '/kontrak/buat' => ['pengelola'],
+        '/kontrak/buat' => ['pengelola'],
         '/tagihan' => ['pengelola', 'pemilik'],
         '/verifikasi-pembayaran' => ['pengelola'],
         '/riwayat-transaksi' => ['pengelola', 'pemilik', 'penghuni'],
@@ -132,6 +135,20 @@ it('F-06: halaman ubah penghuni hanya untuk pengelola', function (string $peran,
     $user = User::factory()->{$peran}()->create();
 
     $respons = $this->actingAs($user)->get(route('penghuni.ubah', $penghuni));
+
+    $boleh ? $respons->assertOk() : $respons->assertForbidden()->assertSee('Akses ditolak');
+})->with([
+    'pengelola' => ['pengelola', true],
+    'pemilik' => ['pemilik', false],
+    'penghuni' => ['penghuni', false],
+    'vendor' => ['vendor', false],
+]);
+
+it('F-07: halaman perpanjang kontrak hanya untuk pengelola', function (string $peran, bool $boleh) {
+    $kontrak = Kontrak::factory()->aktif()->create();
+    $user = User::factory()->{$peran}()->create();
+
+    $respons = $this->actingAs($user)->get(route('kontrak.perpanjang', $kontrak));
 
     $boleh ? $respons->assertOk() : $respons->assertForbidden()->assertSee('Akses ditolak');
 })->with([

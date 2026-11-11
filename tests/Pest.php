@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Kamar;
+use App\Models\Kontrak;
+use App\Models\Penghuni;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +51,24 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Kamar bernomor $nomor yang dihuni $nama lewat kontrak aktif. $kontrak menimpa isian kontrak (tanggal, tarif, status).
+ */
+function buatKontrakUji(string $nomor, string $nama, array $kontrak = []): Kontrak
+{
+    $kamar = Kamar::query()->firstOrCreate(
+        ['nomor_kamar' => $nomor],
+        ['tarif_bulanan' => 1400000],
+    );
+    $penghuni = Penghuni::factory()->create([
+        'user_id' => User::factory()->penghuni()->create(['nama' => $nama]),
+    ]);
+
+    return Kontrak::factory()->create(array_merge([
+        'penghuni_id' => $penghuni->id,
+        'kamar_id' => $kamar->id,
+        'tarif_bulanan' => $kamar->tarif_bulanan,
+    ], $kontrak));
 }

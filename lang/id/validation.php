@@ -198,6 +198,11 @@ return [
         'no_identitas' => 'nomor identitas',
         'nik' => 'nomor identitas',
         'user_id' => 'akun penghuni',
+        'penghuni_id' => 'penghuni',
+        'kamar_id' => 'kamar',
+        'tanggal_mulai' => 'tanggal mulai',
+        'tanggal_berakhir' => 'tanggal berakhir',
+        'tarif_bulanan' => 'tarif per bulan',
     ],
 
 ];
