@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -88,5 +89,22 @@ class Penghuni extends Model
     public function tiketKeluhan(): HasMany
     {
         return $this->hasMany(TiketKeluhan::class, 'penghuni_id');
+    }
+
+    /**
+     * Menandai penghuni sudah keluar (F-06 butir 6). Data tidak dihapus (ATB-11) dan akun login tidak ikut berubah.
+     */
+    public function nonaktifkan(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill(['status_penghuni' => StatusPenghuni::Nonaktif])->save();
+        });
+    }
+
+    public function aktifkan(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill(['status_penghuni' => StatusPenghuni::Aktif])->save();
+        });
     }
 }

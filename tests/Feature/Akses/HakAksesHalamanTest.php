@@ -2,6 +2,7 @@
 
 use App\Models\Kamar;
 use App\Models\PengaturanOperasional;
+use App\Models\Penghuni;
 use App\Models\User;
 
 beforeEach(fn () => PengaturanOperasional::factory()->create());
@@ -21,6 +22,7 @@ dataset('akses_halaman', function () {
         '/kamar/tambah' => ['pengelola'],
         '/kamar/tambah' => ['pengelola'],
         '/penghuni' => ['pengelola', 'pemilik'],
+        '/penghuni/tambah' => ['pengelola'],
         '/kontrak' => ['pengelola', 'pemilik'],
         '/tagihan' => ['pengelola', 'pemilik'],
         '/verifikasi-pembayaran' => ['pengelola'],
@@ -116,6 +118,20 @@ it('F-05: halaman ubah kamar hanya untuk pengelola', function (string $peran, bo
     $user = User::factory()->{$peran}()->create();
 
     $respons = $this->actingAs($user)->get(route('kamar.ubah', $kamar));
+
+    $boleh ? $respons->assertOk() : $respons->assertForbidden()->assertSee('Akses ditolak');
+})->with([
+    'pengelola' => ['pengelola', true],
+    'pemilik' => ['pemilik', false],
+    'penghuni' => ['penghuni', false],
+    'vendor' => ['vendor', false],
+]);
+
+it('F-06: halaman ubah penghuni hanya untuk pengelola', function (string $peran, bool $boleh) {
+    $penghuni = Penghuni::factory()->create();
+    $user = User::factory()->{$peran}()->create();
+
+    $respons = $this->actingAs($user)->get(route('penghuni.ubah', $penghuni));
 
     $boleh ? $respons->assertOk() : $respons->assertForbidden()->assertSee('Akses ditolak');
 })->with([

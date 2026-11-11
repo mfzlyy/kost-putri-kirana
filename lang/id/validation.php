@@ -195,6 +195,9 @@ return [
         'nama_vendor' => 'nama vendor',
         'jenis_layanan' => 'jenis layanan',
         'no_telepon' => 'nomor telepon',
+        'no_identitas' => 'nomor identitas',
+        'nik' => 'nomor identitas',
+        'user_id' => 'akun penghuni',
     ],
 
 ];

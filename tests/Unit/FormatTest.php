@@ -26,3 +26,17 @@ it('parseRupiah mengembalikan null untuk teks tanpa angka', function () {
         ->and(Format::parseRupiah(''))->toBeNull()
         ->and(Format::parseRupiah('Rp'))->toBeNull();
 });
+
+it('normalisasiTelepon membuang pemisah dan mengganti awalan +62 atau 62 menjadi 0', function () {
+    expect(Format::normalisasiTelepon('+62 812-3456-7801'))->toBe('081234567801')
+        ->and(Format::normalisasiTelepon('0812 3456 7801'))->toBe('081234567801')
+        ->and(Format::normalisasiTelepon('62812.3456.7801'))->toBe('081234567801')
+        ->and(Format::normalisasiTelepon('(0812) 3456-7801'))->toBe('081234567801');
+});
+
+it('telepon dikelompokkan empat angka dari depan, kosong menjadi tanda hubung', function () {
+    expect(Format::telepon('081234567801'))->toBe('0812 3456 7801')
+        ->and(Format::telepon('0812345678012'))->toBe('0812 3456 7801 2')
+        ->and(Format::telepon(null))->toBe('-')
+        ->and(Format::telepon(''))->toBe('-');
+});

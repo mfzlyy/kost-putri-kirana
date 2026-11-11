@@ -34,6 +34,8 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('akun', 'pages::akun.index')->name('akun.index');
         Route::livewire('kamar/tambah', 'pages::kamar.form')->name('kamar.tambah');
         Route::livewire('kamar/{kamar}/ubah', 'pages::kamar.form')->name('kamar.ubah');
+        Route::livewire('penghuni/tambah', 'pages::penghuni.form')->name('penghuni.tambah');
+        Route::livewire('penghuni/{penghuni}/ubah', 'pages::penghuni.form')->name('penghuni.ubah');
         $disiapkan('verifikasi-pembayaran', 'verifikasi-pembayaran.index', 'Verifikasi pembayaran', 'F-13');
         $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi ERP', 'F-25');
     });
@@ -42,7 +44,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     Route::middleware('peran:pengelola,pemilik')->group(function () use ($disiapkan) {
         Route::livewire('pengaturan', 'pages::pengaturan.index')->name('pengaturan.index');
         Route::livewire('kamar', 'pages::kamar.index')->name('kamar.index');
-        $disiapkan('penghuni', 'penghuni.index', 'Penghuni', 'F-06');
+        Route::livewire('penghuni', 'pages::penghuni.index')->name('penghuni.index');
         $disiapkan('kontrak', 'kontrak.index', 'Kontrak', 'F-07, F-08');
         $disiapkan('tagihan', 'tagihan.index', 'Tagihan', 'F-10, F-15');
         $disiapkan('tiket-keluhan', 'tiket-keluhan.index', 'Tiket keluhan', 'F-17, F-18');
@@ -56,7 +58,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     // Penghuni
     Route::middleware('peran:penghuni')->group(function () use ($disiapkan) {
         $disiapkan('tagihan-saya', 'tagihan-saya.index', 'Tagihan saya', 'F-11, F-12');
-        $disiapkan('profil-saya', 'profil-saya.index', 'Profil saya', 'F-06');
+        Route::livewire('profil-saya', 'pages::profil-saya.index')->name('profil-saya.index');
         $disiapkan('keluhan-saya', 'keluhan-saya.index', 'Keluhan saya', 'F-16, F-18');
     });
 
