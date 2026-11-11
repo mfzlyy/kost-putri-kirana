@@ -47,7 +47,13 @@ it('F-07 butir 5: kontrak berjalan diakhiri dengan tanggal keluar hari ini; kama
         ->call('konfirmasiAkhiri', $kontrak->id)
         ->assertSet('tanggal_keluar', '2026-11-11')
         ->assertSee('Akhiri kontrak Kamar 07?')
-        ->assertSee('Nadia Ramadhani. Kamar menjadi kosong dan kontrak pindah ke riwayat.')
+        ->assertSeeInOrder(['Penghuni', 'Nadia Ramadhani', 'Masa sewa', '1 Jan 2026 sampai 30 Jun 2027', 'Tarif', 'Rp1.400.000 per bulan'])
+        ->assertSeeInOrder([
+            'Kamar 07 menjadi kosong.',
+            'Kontrak pindah ke riwayat. Tagihan yang sudah terbit tidak berubah.',
+            'Status penghuni tidak berubah. Tandai sudah keluar di halaman Penghuni bila perlu.',
+        ])
+        ->assertDontSeeHtml('data-test="catatan-dialog"')
         ->assertSee('Tanggal keluar')
         ->assertSee('Tanggal berakhir kontrak diganti dengan tanggal ini.')
         ->call('akhiri')
@@ -110,7 +116,8 @@ it('F-07: kontrak yang belum dimulai diakhiri tanpa field tanggal dan tanggalnya
 
     halamanKontrakSebagai(User::factory()->pengelola()->create())
         ->call('konfirmasiAkhiri', $kontrak->id)
-        ->assertSee('Kontrak ini belum dimulai. Tanggalnya disimpan apa adanya.')
+        ->assertSee('Kontrak ini belum dimulai, jadi tanggalnya tidak diubah.')
+        ->assertSeeHtml('data-test="catatan-dialog"')
         ->assertDontSeeHtml('data-test="input-tanggal-keluar"')
         ->call('akhiri')
         ->assertHasNoErrors();

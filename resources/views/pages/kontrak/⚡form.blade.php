@@ -436,7 +436,7 @@ new #[Title('Kontrak')] class extends Component {
                                 for="kamar-{{ $kamar->id }}"
                                 @class([
                                     'relative flex min-h-[84px] flex-col justify-between rounded-[10px] border px-2.5 pt-[22px] pb-2.5 before:absolute before:top-[7px] before:left-1/2 before:-ml-1 before:size-2 before:rounded-full before:border before:border-border before:bg-background',
-                                    'cursor-pointer border-border bg-surface peer-checked:border-primary peer-checked:bg-primary-container peer-checked:ring-1 peer-checked:ring-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary' => ! $terisi,
+                                    'cursor-pointer border-border bg-surface peer-checked:border-primary peer-checked:bg-primary-container peer-checked:shadow-[inset_0_0_0_1px_var(--color-primary)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary' => ! $terisi,
                                     'cursor-not-allowed border-border bg-surface-disabled text-[#8A918F]' => $terisi,
                                 ])
                             >

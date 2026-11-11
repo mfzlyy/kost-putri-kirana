@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -23,6 +24,10 @@ new #[Title('Akun pengguna')] class extends Component {
 
     #[Url(as: 'status')]
     public string $filterStatus = '';
+
+    /** Akun yang sedang dikonfirmasi untuk dinonaktifkan (dialog). Hanya diisi lewat konfirmasiNonaktifkan. */
+    #[Locked]
+    public ?int $idNonaktif = null;
 
     public string $nama = '';
     public string $email = '';
@@ -197,6 +202,27 @@ new #[Title('Akun pengguna')] class extends Component {
         Flux::toast(variant: 'success', text: 'Akun berhasil dibuat.');
     }
 
+    /**
+     * Akun untuk dialog Nonaktifkan, dimuat ulang dari ID tersimpan.
+     */
+    #[Computed]
+    public function akunNonaktif(): ?User
+    {
+        return $this->idNonaktif === null ? null : User::query()->find($this->idNonaktif);
+    }
+
+    public function konfirmasiNonaktifkan(int $id): void
+    {
+        $akun = User::query()->findOrFail($id);
+
+        $this->authorize('nonaktifkan', $akun);
+
+        $this->idNonaktif = $akun->id;
+        unset($this->akunNonaktif);
+
+        Flux::modal('nonaktifkan-akun')->show();
+    }
+
     public function nonaktifkan(int $id): void
     {
         // ID dari browser tidak dipercaya: cari akunnya, lalu authorize sebelum mengubah.
@@ -206,6 +232,10 @@ new #[Title('Akun pengguna')] class extends Component {
 
         $akun->nonaktifkan();
 
+        $this->reset('idNonaktif');
+        unset($this->akunNonaktif);
+
+        Flux::modal('nonaktifkan-akun')->close();
         Flux::toast(variant: 'success', text: 'Akun dinonaktifkan.');
     }
 
@@ -283,8 +313,7 @@ new #[Title('Akun pengguna')] class extends Component {
                                     <button
                                         type="button"
                                         class="min-h-10 cursor-pointer px-2 text-sm font-semibold text-danger"
-                                        wire:click="nonaktifkan({{ $akun->id }})"
-                                        wire:confirm="Nonaktifkan akun {{ $akun->nama }}? Pengguna ini tidak bisa masuk sampai diaktifkan kembali."
+                                        wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
                                     >
                                         Nonaktifkan
                                     </button>
@@ -319,8 +348,7 @@ new #[Title('Akun pengguna')] class extends Component {
                             <button
                                 type="button"
                                 class="min-h-10 cursor-pointer px-1 text-sm font-semibold text-danger"
-                                wire:click="nonaktifkan({{ $akun->id }})"
-                                wire:confirm="Nonaktifkan akun {{ $akun->nama }}? Pengguna ini tidak bisa masuk sampai diaktifkan kembali."
+                                wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
                             >
                                 Nonaktifkan
                             </button>
@@ -342,6 +370,27 @@ new #[Title('Akun pengguna')] class extends Component {
         <flux:pagination :paginator="$this->daftarAkun" />
     @endif
     </div>
+
+    @php($akunNonaktif = $this->akunNonaktif)
+    <x-dialog-konfirmasi
+        name="nonaktifkan-akun"
+        :judul="'Nonaktifkan akun '.$akunNonaktif?->nama.'?'"
+        label-aksi="Nonaktifkan"
+        wire:click="nonaktifkan({{ (int) $idNonaktif }})"
+        data-test="konfirmasi-nonaktifkan-akun"
+    >
+        <x-slot:ringkasan>
+            <dt>Email</dt>
+            <dd>{{ $akunNonaktif?->email }}</dd>
+            <dt>Peran</dt>
+            <dd>{{ $akunNonaktif?->peran->label() }}</dd>
+        </x-slot:ringkasan>
+
+        <x-slot:akibat>
+            <li>Pengguna ini tidak bisa masuk sampai diaktifkan kembali.</li>
+            <li>Sesi yang sedang berjalan langsung berakhir.</li>
+        </x-slot:akibat>
+    </x-dialog-konfirmasi>
 
     <flux:modal
         name="tambah-akun"

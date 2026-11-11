@@ -242,23 +242,24 @@ new #[Title('Kamar')] class extends Component {
     <p class="m-0 text-sm text-ink-muted">Kamar yang masih punya kontrak tidak bisa dihapus. Mengubah tarif tidak mengubah tarif kontrak yang sedang berjalan.</p>
 
     @if ($this->bisaKelola)
-        <flux:modal name="hapus-kamar" class="w-full max-w-md">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">Hapus Kamar {{ $nomorHapus }}?</flux:heading>
-                    <flux:subheading>Kamar ini akan dihapus permanen.</flux:subheading>
-                </div>
+        @php($kamarHapus = $idHapus ? $this->daftarKamar->firstWhere('id', $idHapus) : null)
+        <x-dialog-konfirmasi
+            name="hapus-kamar"
+            :judul="'Hapus Kamar '.$nomorHapus.'?'"
+            label-aksi="Hapus kamar"
+            wire:click="hapus({{ (int) $idHapus }})"
+            data-test="konfirmasi-hapus-kamar"
+        >
+            <x-slot:ringkasan>
+                <dt>Tarif</dt>
+                <dd>{{ $kamarHapus ? \App\Support\Format::rupiah($kamarHapus->tarif_bulanan).' per bulan' : '' }}</dd>
+                <dt>Keterangan</dt>
+                <dd>{{ filled($kamarHapus?->keterangan) ? $kamarHapus->keterangan : '-' }}</dd>
+            </x-slot:ringkasan>
 
-                <div class="flex justify-end gap-2">
-                    <flux:modal.close>
-                        <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
-                    </flux:modal.close>
-
-                    <flux:button variant="danger" wire:click="hapus({{ (int) $idHapus }})" wire:loading.attr="disabled" wire:target="hapus" data-test="konfirmasi-hapus-kamar">
-                        Hapus kamar
-                    </flux:button>
-                </div>
-            </div>
-        </flux:modal>
+            <x-slot:akibat>
+                <li>Kamar ini akan dihapus permanen.</li>
+            </x-slot:akibat>
+        </x-dialog-konfirmasi>
     @endif
 </section>

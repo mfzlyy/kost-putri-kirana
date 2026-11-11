@@ -209,24 +209,24 @@ new #[Title('Kamar')] class extends Component {
                 @endif
             </aside>
 
-            <flux:modal name="hapus-kamar" class="w-full max-w-md">
-                <div class="space-y-6">
-                    <div>
-                        <flux:heading size="lg">Hapus Kamar {{ $this->kamar->nomor_kamar }}?</flux:heading>
-                        <flux:subheading>Kamar ini akan dihapus permanen.</flux:subheading>
-                    </div>
+            <x-dialog-konfirmasi
+                name="hapus-kamar"
+                :judul="'Hapus Kamar '.$this->kamar->nomor_kamar.'?'"
+                label-aksi="Hapus kamar"
+                wire:click="hapus"
+                data-test="konfirmasi-hapus-kamar"
+            >
+                <x-slot:ringkasan>
+                    <dt>Tarif</dt>
+                    <dd>{{ Format::rupiah($this->kamar->tarif_bulanan) }} per bulan</dd>
+                    <dt>Keterangan</dt>
+                    <dd>{{ filled($this->kamar->keterangan) ? $this->kamar->keterangan : '-' }}</dd>
+                </x-slot:ringkasan>
 
-                    <div class="flex justify-end gap-2">
-                        <flux:modal.close>
-                            <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
-                        </flux:modal.close>
-
-                        <flux:button variant="danger" wire:click="hapus" wire:loading.attr="disabled" wire:target="hapus" data-test="konfirmasi-hapus-kamar">
-                            Hapus kamar
-                        </flux:button>
-                    </div>
-                </div>
-            </flux:modal>
+                <x-slot:akibat>
+                    <li>Kamar ini akan dihapus permanen.</li>
+                </x-slot:akibat>
+            </x-dialog-konfirmasi>
         @endif
     </div>
 </section>

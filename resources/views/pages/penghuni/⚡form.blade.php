@@ -396,23 +396,25 @@ new #[Title('Penghuni')] class extends Component {
     </div>
 
     @if ($penghuni)
-        <flux:modal name="tandai-keluar" class="w-full max-w-md">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">Tandai {{ $namaTampil }} sudah keluar?</flux:heading>
-                    <flux:subheading>Status menjadi nonaktif. Riwayat kontrak, tagihan, dan pembayaran tetap tersimpan. Akun login diatur terpisah di Akun pengguna.</flux:subheading>
-                </div>
+        <x-dialog-konfirmasi
+            name="tandai-keluar"
+            :judul="'Tandai '.$namaTampil.' sudah keluar?'"
+            label-aksi="Tandai sudah keluar"
+            wire:click="nonaktifkanPenghuni"
+            data-test="konfirmasi-tandai-keluar"
+        >
+            <x-slot:ringkasan>
+                <dt>Email akun</dt>
+                <dd>{{ $penghuni->user?->email }}</dd>
+                <dt>Telepon</dt>
+                <dd class="num">{{ Format::telepon($penghuni->no_telepon) }}</dd>
+            </x-slot:ringkasan>
 
-                <div class="flex justify-end gap-2">
-                    <flux:modal.close>
-                        <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
-                    </flux:modal.close>
-
-                    <flux:button variant="danger" wire:click="nonaktifkanPenghuni" wire:loading.attr="disabled" wire:target="nonaktifkanPenghuni" data-test="konfirmasi-tandai-keluar">
-                        Tandai sudah keluar
-                    </flux:button>
-                </div>
-            </div>
-        </flux:modal>
+            <x-slot:akibat>
+                <li>Status menjadi nonaktif.</li>
+                <li>Riwayat kontrak, tagihan, dan pembayaran tetap tersimpan.</li>
+                <li>Akun login diatur terpisah di Akun pengguna.</li>
+            </x-slot:akibat>
+        </x-dialog-konfirmasi>
     @endif
 </section>

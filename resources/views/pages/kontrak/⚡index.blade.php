@@ -411,34 +411,43 @@ new #[Title('Kontrak')] class extends Component {
     </div>
 
     @if ($bisaKelola)
-        <flux:modal name="akhiri-kontrak" class="w-full max-w-md">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">Akhiri kontrak Kamar {{ $kontrakModal?->kamar?->nomor_kamar }}?</flux:heading>
-                    <flux:subheading>{{ $kontrakModal?->penghuni?->user?->nama }}. Kamar menjadi kosong dan kontrak pindah ke riwayat. Tagihan yang sudah terbit tidak berubah. Status penghuni tidak ikut berubah; tandai sudah keluar di halaman Penghuni bila perlu.</flux:subheading>
-                </div>
+        @php($nomorModal = $kontrakModal?->kamar?->nomor_kamar)
+        <x-dialog-konfirmasi
+            name="akhiri-kontrak"
+            :judul="'Akhiri kontrak Kamar '.$nomorModal.'?'"
+            label-aksi="Akhiri kontrak"
+            wire:click="akhiri"
+            data-test="konfirmasi-akhiri-kontrak"
+        >
+            <x-slot:ringkasan>
+                <dt>Penghuni</dt>
+                <dd>{{ $kontrakModal?->penghuni?->user?->nama }}</dd>
+                <dt>Masa sewa</dt>
+                <dd>{{ $kontrakModal ? $tanggalId($kontrakModal->tanggal_mulai).' sampai '.$tanggalId($kontrakModal->tanggal_berakhir) : '' }}</dd>
+                <dt>Tarif</dt>
+                <dd>{{ $kontrakModal ? Format::rupiah($kontrakModal->tarif_bulanan).' per bulan' : '' }}</dd>
+            </x-slot:ringkasan>
 
-                @if ($kontrakModal?->sudahBerjalan())
+            <x-slot:akibat>
+                <li>Kamar {{ $nomorModal }} menjadi kosong.</li>
+                <li>Kontrak pindah ke riwayat. Tagihan yang sudah terbit tidak berubah.</li>
+                <li>Status penghuni tidak berubah. Tandai sudah keluar di halaman Penghuni bila perlu.</li>
+            </x-slot:akibat>
+
+            @if ($kontrakModal && ! $kontrakModal->sudahBerjalan())
+                <x-slot:catatan>Kontrak ini belum dimulai, jadi tanggalnya tidak diubah.</x-slot:catatan>
+            @endif
+
+            @if ($kontrakModal?->sudahBerjalan())
+                <x-slot:isi>
                     <flux:field>
                         <flux:label>Tanggal keluar</flux:label>
                         <flux:input type="date" wire:model="tanggal_keluar" data-test="input-tanggal-keluar" />
                         <flux:description>Tanggal berakhir kontrak diganti dengan tanggal ini.</flux:description>
                         <flux:error name="tanggal_keluar" />
                     </flux:field>
-                @elseif ($kontrakModal)
-                    <p class="m-0 text-sm text-ink-muted" data-test="kontrak-belum-dimulai">Kontrak ini belum dimulai. Tanggalnya disimpan apa adanya.</p>
-                @endif
-
-                <div class="flex justify-end gap-2">
-                    <flux:modal.close>
-                        <flux:button variant="ghost" class="text-primary! font-semibold">Batal</flux:button>
-                    </flux:modal.close>
-
-                    <flux:button variant="danger" wire:click="akhiri" wire:loading.attr="disabled" wire:target="akhiri" data-test="konfirmasi-akhiri-kontrak">
-                        Akhiri kontrak
-                    </flux:button>
-                </div>
-            </div>
-        </flux:modal>
+                </x-slot:isi>
+            @endif
+        </x-dialog-konfirmasi>
     @endif
 </section>
