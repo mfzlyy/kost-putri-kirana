@@ -283,8 +283,9 @@ new #[Title('Tagihan')] class extends Component {
     }
 
     /**
-     * Periode tombol terbitkan: periode yang dilihat bila masih ada kontrak yang belum ditagih, bila tidak
-     * bulan setelahnya (asal masih dalam rentang terbit). Null bila tidak ada yang bisa diterbitkan,
+     * Periode tombol terbitkan: periode yang dilihat bila masih ada kontrak yang belum ditagih, atau bila periode itu
+     * belum punya tagihan sama sekali (dialog lalu menjelaskan bila tidak ada kontrak yang berhak, F-10 butir 7).
+     * Selain itu bulan setelahnya (asal masih dalam rentang terbit). Null bila tidak ada yang bisa diterbitkan,
      * dan tombol tidak tampil. Tanpa tanggal jatuh tempo tombol tampil nonaktif untuk periode yang dilihat.
      */
     #[Computed]
@@ -295,7 +296,9 @@ new #[Title('Tagihan')] class extends Component {
         $terpilih = $this->periodeTerpilih;
         $berikutnya = $terpilih->addMonthNoOverflow();
 
-        if (! $this->jatuhTempoSiap || $this->belumDitagih > 0) {
+        $periodeKosong = $this->infoPeriode === null;
+
+        if (! $this->jatuhTempoSiap || $this->belumDitagih > 0 || $periodeKosong && $dalamRentang($terpilih)) {
             return $dalamRentang($terpilih) ? $terpilih : null;
         }
 

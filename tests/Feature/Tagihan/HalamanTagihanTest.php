@@ -228,6 +228,39 @@ it('11A: periode tanpa tagihan tetapi punya kontrak berhak: tombol "Terbitkan {b
     $komponen->assertSee('November belum diterbitkan.');
 });
 
+it('11B: periode belum punya tagihan dan tanpa kontrak sama sekali: tombol "Terbitkan {bulan itu}" dan dialog menjelaskan tidak ada kontrak', function () {
+    $komponen = halamanTagihan(User::factory()->pengelola()->create(), ['periode' => '2026-11']);
+
+    expect(labelTombolTerbit($komponen))->toBe('Terbitkan November');
+    $komponen->assertSee('Tagihan November belum diterbitkan.')
+        ->assertSeeHtml('data-test="terbitkan-tagihan-kosong"');
+
+    $komponen->call('bukaTerbit')
+        ->assertSet('periodeTerbit', '2026-11')
+        ->assertSee('Terbitkan tagihan November 2026?')
+        ->assertSee('Tidak ada kontrak yang perlu ditagih untuk November 2026.');
+
+    expect($komponen->instance()->pratinjau->dibuat)->toBe(0);
+    expect($komponen->html())->toMatch('/<button[^>]*disabled[^>]*data-test="konfirmasi-terbitkan"|<button[^>]*data-test="konfirmasi-terbitkan"[^>]*disabled/s');
+
+    // Menerbitkan langsung: pesan F-10 butir 7, tidak ada tagihan.
+    $komponen->call('terbitkan')
+        ->assertDispatched('toast-show', fn (string $nama, array $parameter): bool => ($parameter['slots']['text'] ?? null) === 'Tidak ada kontrak aktif pada November 2026. Tidak ada tagihan yang dibuat.');
+    expect(Tagihan::query()->count())->toBe(0);
+});
+
+it('11B: aturan pindah ke bulan berikutnya hanya untuk periode yang sudah punya tagihan', function () {
+    // Periode dengan tagihan tetapi tidak ada kontrak yang tersisa untuk ditagih: pindah ke bulan berikutnya.
+    $kontrak = buatKontrakUji('01', 'Penghuni 01');
+    tagihanUji($kontrak, '2026-11-01', '2026-11-10', StatusTagihan::BelumDibayar);
+    $pengelola = User::factory()->pengelola()->create();
+
+    expect(labelTombolTerbit(halamanTagihan($pengelola, ['periode' => '2026-11'])))->toBe('Terbitkan Desember');
+
+    // Periode lain yang belum punya tagihan sama sekali tetap untuk dirinya sendiri, walau tanpa kontrak berhak.
+    expect(labelTombolTerbit(halamanTagihan($pengelola, ['periode' => '2025-12'])))->toBe('Terbitkan Desember 2025');
+});
+
 it('11A: 1 dari 6 kontrak sudah ditagih: tombol tetap "Terbitkan {bulan itu}" dan deskripsi menyebut 5 kontrak belum ditagih', function () {
     $kontrak = [];
     foreach (['01', '02', '03', '04', '05', '06'] as $nomor) {
@@ -337,11 +370,11 @@ it('dialog: catatan muncul bila jatuh tempo periode itu sudah lewat', function (
 });
 
 it('dialog: tanpa kontrak yang perlu ditagih, tombol Terbitkan nonaktif dan ada teksnya', function () {
-    // Tanpa kontrak, November tidak punya yang perlu ditagih, jadi tombol menunjuk Desember.
+    // Periode kosong tanpa kontrak: tombol tetap untuk November, dialog menjelaskan tidak ada yang perlu ditagih.
     $komponen = halamanTagihan(User::factory()->pengelola()->create())
         ->call('bukaTerbit')
-        ->assertSet('periodeTerbit', '2026-12')
-        ->assertSee('Tidak ada kontrak yang perlu ditagih untuk Desember 2026.');
+        ->assertSet('periodeTerbit', '2026-11')
+        ->assertSee('Tidak ada kontrak yang perlu ditagih untuk November 2026.');
 
     expect($komponen->instance()->pratinjau->dibuat)->toBe(0);
     $komponen->assertSeeHtml('data-test="konfirmasi-terbitkan"');
