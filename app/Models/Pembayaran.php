@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -73,6 +74,21 @@ class Pembayaran extends Model
             'status_verifikasi' => StatusVerifikasi::class,
             'diverifikasi_pada' => 'immutable_datetime',
         ];
+    }
+
+    #[Scope]
+    protected function diterima(Builder $query): void
+    {
+        $query->where('pembayaran.status_verifikasi', StatusVerifikasi::Diterima->value);
+    }
+
+    /**
+     * Pembayaran atas tagihan dari semua kontrak milik $penghuni, termasuk kontrak lama (ATB-10).
+     */
+    #[Scope]
+    protected function milikPenghuni(Builder $query, Penghuni $penghuni): void
+    {
+        $query->whereHas('tagihan.kontrak', fn (Builder $kontrak) => $kontrak->where('kontrak.penghuni_id', $penghuni->id));
     }
 
     #[Scope]
@@ -200,6 +216,15 @@ class Pembayaran extends Model
     public function tagihan(): BelongsTo
     {
         return $this->belongsTo(Tagihan::class, 'tagihan_id');
+    }
+
+    /**
+     * Baris sinkronisasi ERP jenis pembayaran. Tidak ada untuk pembayaran hasil migrasi.
+     */
+    public function sinkronisasi(): HasOne
+    {
+        return $this->hasOne(SinkronisasiErp::class, 'pembayaran_id')
+            ->where('sinkronisasi_erp.jenis_transaksi', JenisTransaksiErp::Pembayaran->value);
     }
 
     public function diverifikasiOleh(): BelongsTo

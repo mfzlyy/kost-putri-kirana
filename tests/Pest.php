@@ -5,6 +5,7 @@ use App\Models\Kamar;
 use App\Models\Kontrak;
 use App\Models\Pembayaran;
 use App\Models\Penghuni;
+use App\Models\SinkronisasiErp;
 use App\Models\Tagihan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -155,4 +156,46 @@ function siapkanBuktiMenunggu(
         'bukti_bayar_path' => $path,
         'diunggah_pada' => Carbon\Carbon::parse($diunggah, 'Asia/Jakarta'),
     ]);
+}
+
+/**
+ * Pembayaran berstatus diterima atas tagihan lunas milik $kontrak. $sinkron: 'terkirim', 'menunggu', 'gagal',
+ * atau null (tanpa baris sinkronisasi, seperti data migrasi).
+ */
+function buatPembayaranDiterima(
+    Kontrak $kontrak,
+    string $periode,
+    string $tanggalBayar,
+    string $diterima,
+    int $nominal = 1400000,
+    ?User $oleh = null,
+    ?string $sinkron = 'terkirim',
+): Pembayaran {
+    $tagihan = Tagihan::factory()->lunas()->create([
+        'kontrak_id' => $kontrak->id,
+        'periode' => $periode,
+        'jatuh_tempo' => substr($periode, 0, 8).'10',
+        'nominal' => $nominal,
+    ]);
+
+    $pembayaran = Pembayaran::factory()->diterima()->create([
+        'tagihan_id' => $tagihan->id,
+        'tanggal_bayar' => $tanggalBayar,
+        'nominal_bayar' => $nominal,
+        'diunggah_pada' => Carbon\Carbon::parse($tanggalBayar.' 08:00', 'Asia/Jakarta'),
+        'diverifikasi_oleh' => ($oleh ?? User::factory()->pengelola()->create())->id,
+        'diverifikasi_pada' => Carbon\Carbon::parse($diterima, 'Asia/Jakarta'),
+    ]);
+
+    if ($sinkron !== null) {
+        $factory = SinkronisasiErp::factory()->untukPembayaran($pembayaran);
+        $factory = match ($sinkron) {
+            'terkirim' => $factory->terkirim(),
+            'gagal' => $factory->gagal(),
+            default => $factory,
+        };
+        $factory->create();
+    }
+
+    return $pembayaran;
 }

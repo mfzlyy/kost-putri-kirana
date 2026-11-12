@@ -57,8 +57,8 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     });
 
     // Pengelola, pemilik, dan penghuni (milik sendiri)
-    Route::middleware('peran:pengelola,pemilik,penghuni')->group(function () use ($disiapkan) {
-        $disiapkan('riwayat-transaksi', 'riwayat-transaksi.index', 'Riwayat transaksi', 'F-14');
+    Route::middleware('peran:pengelola,pemilik,penghuni')->group(function () {
+        Route::livewire('riwayat-transaksi', 'pages::riwayat-transaksi.index')->name('riwayat-transaksi.index');
     });
 
     // Penghuni
