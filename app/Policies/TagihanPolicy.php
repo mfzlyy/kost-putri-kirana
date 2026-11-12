@@ -3,6 +3,8 @@
 namespace App\Policies;
 
 use App\Enums\PeranPengguna;
+use App\Enums\StatusTagihan;
+use App\Exceptions\TagihanTidakBisaDiberiBukti;
 use App\Models\Tagihan;
 use App\Models\User;
 use App\Policies\Concerns\MenentukanKepemilikan;
@@ -42,5 +44,22 @@ class TagihanPolicy
             $this->isStaf($user)
             || ($idPenghuni !== null && $tagihan->kontrak->penghuni_id === $idPenghuni)
         );
+    }
+
+    /**
+     * Unggah bukti bayar (F-12 butir 1): hanya penghuni pemilik tagihan, dan hanya selagi tagihan belum dibayar.
+     * Kepemilikan diperiksa lebih dulu supaya penghuni lain tidak tahu status tagihan orang lain.
+     */
+    public function unggahBukti(User $user, Tagihan $tagihan): Response
+    {
+        $idPenghuni = $this->idProfilPenghuni($user);
+
+        if ($idPenghuni === null || $tagihan->kontrak->penghuni_id !== $idPenghuni) {
+            return $this->tolak();
+        }
+
+        return $tagihan->status_tagihan === StatusTagihan::BelumDibayar
+            ? Response::allow()
+            : Response::deny(TagihanTidakBisaDiberiBukti::PESAN);
     }
 }

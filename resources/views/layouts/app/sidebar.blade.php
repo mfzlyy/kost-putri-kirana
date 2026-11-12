@@ -1,6 +1,9 @@
 @php
     $pengguna = auth()->user();
     $menu = \App\Support\MenuNavigasi::untuk($pengguna->peran);
+    // Penghuni di ponsel memakai tab bawah, bukan bilah gelap atas dan menu geser (F-11). Halaman tertentu
+    // (unggah bukti) menyembunyikan tab lewat parameter layout $tanpaTabPenghuni.
+    $adalahPenghuni = $pengguna->peran === \App\Enums\PeranPengguna::Penghuni;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -45,7 +48,7 @@
         </flux:sidebar>
 
         {{-- Top bar ponsel --}}
-        <header data-flux-header class="z-10 flex h-14 items-center gap-1.5 bg-sidebar ps-1 pe-3 [grid-area:header] lg:hidden">
+        <header data-flux-header @class(['z-10 flex h-14 items-center gap-1.5 bg-sidebar ps-1 pe-3 [grid-area:header] lg:hidden', 'max-md:hidden' => $adalahPenghuni])>
             <button
                 type="button"
                 x-data
@@ -62,6 +65,10 @@
         </header>
 
         {{ $slot }}
+
+        @if ($adalahPenghuni && ! ($tanpaTabPenghuni ?? false))
+            <x-menu-tab-penghuni />
+        @endif
 
         @persist('toast')
             <flux:toast.group>

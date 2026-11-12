@@ -4,6 +4,7 @@ use App\Models\Kamar;
 use App\Models\Kontrak;
 use App\Models\PengaturanOperasional;
 use App\Models\Penghuni;
+use App\Models\Tagihan;
 use App\Models\User;
 
 beforeEach(fn () => PengaturanOperasional::factory()->create());
@@ -155,5 +156,24 @@ it('F-07: halaman perpanjang kontrak hanya untuk pengelola', function (string $p
     'pengelola' => ['pengelola', true],
     'pemilik' => ['pemilik', false],
     'penghuni' => ['penghuni', false],
+    'vendor' => ['vendor', false],
+]);
+
+it('F-12: /tagihan-saya/{tagihan}/unggah hanya untuk penghuni pemilik tagihan; peran lain dan penghuni lain 403', function (string $peran, bool $boleh) {
+    $kontrak = buatKontrakUji('05', 'Maya Sari');
+    $tagihan = Tagihan::factory()->create(['kontrak_id' => $kontrak->id]);
+
+    $user = $peran === 'penghuni_lain'
+        ? buatKontrakUji('06', 'Rina Maharani')->penghuni->user
+        : ($peran === 'penghuni' ? $kontrak->penghuni->user : User::factory()->{$peran}()->create());
+
+    $respons = $this->actingAs($user)->get(route('tagihan-saya.unggah', $tagihan));
+
+    $boleh ? $respons->assertOk() : $respons->assertForbidden();
+})->with([
+    'penghuni pemilik' => ['penghuni', true],
+    'penghuni lain' => ['penghuni_lain', false],
+    'pengelola' => ['pengelola', false],
+    'pemilik' => ['pemilik', false],
     'vendor' => ['vendor', false],
 ]);

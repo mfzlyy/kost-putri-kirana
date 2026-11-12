@@ -40,3 +40,10 @@ it('telepon dikelompokkan empat angka dari depan, kosong menjadi tanda hubung', 
         ->and(Format::telepon(null))->toBe('-')
         ->and(Format::telepon(''))->toBe('-');
 });
+
+it('ukuranBerkas menampilkan MB satu desimal dan KB bulat', function () {
+    expect(Format::ukuranBerkas(1887436))->toBe('1,8 MB')
+        ->and(Format::ukuranBerkas(5242880))->toBe('5,0 MB')
+        ->and(Format::ukuranBerkas(320000))->toBe('313 KB')
+        ->and(Format::ukuranBerkas(100))->toBe('1 KB');
+});

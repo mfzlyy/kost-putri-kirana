@@ -51,6 +51,26 @@ class MenuNavigasi
     }
 
     /**
+     * Tab bawah layar ponsel untuk penghuni: rute yang sama dengan menu penghuni, dengan label pendek dan ikon sendiri.
+     *
+     * @return list<array{label: string, route: string, ikon: string}>
+     */
+    public static function tabPenghuni(): array
+    {
+        $label = [
+            'tagihan-saya.index' => ['Tagihan', 'document-text'],
+            'riwayat-transaksi.index' => ['Riwayat', 'clock'],
+            'keluhan-saya.index' => ['Keluhan', 'wrench-screwdriver'],
+            'profil-saya.index' => ['Profil', 'user-circle'],
+        ];
+
+        return array_map(
+            fn (array $item) => self::item($label[$item['route']][0], $item['route'], $label[$item['route']][1]),
+            self::untuk(PeranPengguna::Penghuni),
+        );
+    }
+
+    /**
      * @return array{label: string, route: string, ikon: string}
      */
     private static function item(string $label, string $route, string $ikon): array

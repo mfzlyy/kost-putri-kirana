@@ -203,6 +203,8 @@ return [
         'tanggal_mulai' => 'tanggal mulai',
         'tanggal_berakhir' => 'tanggal berakhir',
         'tarif_bulanan' => 'tarif per bulan',
+        'bukti' => 'berkas bukti',
+        'tanggal_bayar' => 'tanggal transfer',
     ],
 
 ];

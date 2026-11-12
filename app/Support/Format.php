@@ -25,6 +25,18 @@ class Format
     }
 
     /**
+     * Ukuran berkas untuk tampilan: 1887436 menjadi "1,8 MB", 320000 menjadi "313 KB".
+     */
+    public static function ukuranBerkas(int $byte): string
+    {
+        if ($byte >= 1048576) {
+            return number_format($byte / 1048576, 1, ',', '.').' MB';
+        }
+
+        return number_format(max(1, (int) round($byte / 1024)), 0, ',', '.').' KB';
+    }
+
+    /**
      * Membaca isian tarif ("1.400.000", "Rp 1.400.000", "1400000", "1.400.000,00") menjadi bilangan bulat.
      * Desimal ",00" atau ".00" di ujung dibuang; desimal lain (",50") dan teks tanpa angka menghasilkan null.
      */

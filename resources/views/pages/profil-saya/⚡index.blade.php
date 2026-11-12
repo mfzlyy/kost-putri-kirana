@@ -117,4 +117,16 @@ new #[Title('Profil saya')] class extends Component {
 
         <p class="m-0 text-sm text-ink-muted">Ada data yang salah? Hubungi pengelola kos untuk mengubahnya.</p>
     @endif
+
+    {{-- Ponsel penghuni tidak punya menu pengguna sidebar, jadi Ganti password dan Keluar ada di sini. --}}
+    <section class="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface md:hidden" aria-label="Akun" data-test="kotak-akun">
+        <a href="{{ route('security.edit') }}" wire:navigate class="flex min-h-12 items-center justify-between gap-2 border-b border-row-divider px-4 font-semibold text-ink no-underline hover:text-ink">
+            Ganti password
+            <flux:icon.chevron-right class="size-[18px] text-ink-muted" />
+        </a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="flex min-h-12 w-full cursor-pointer items-center px-4 text-left font-semibold text-danger" data-test="keluar-ponsel">Keluar</button>
+        </form>
+    </section>
 </section>

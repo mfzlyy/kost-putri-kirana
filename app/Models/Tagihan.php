@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\StatusTagihan;
 use App\Enums\StatusVerifikasi;
 use App\Exceptions\PenerbitanTagihanDitolak;
+use App\Exceptions\TagihanTidakBisaDiberiBukti;
 use App\Support\Tagihan\HasilPenerbitan;
 use App\Support\Tagihan\PenghitungNominal;
 use Carbon\CarbonImmutable;
@@ -19,7 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
+use Throwable;
 
 /**
  * @property int $id
@@ -34,6 +40,15 @@ class Tagihan extends Model
 {
     /** @use HasFactory<TagihanFactory> */
     use HasFactory;
+
+    /**
+     * Tipe MIME bukti bayar yang diterima (ASM-P01) dan ekstensi penyimpanannya.
+     */
+    public const EKSTENSI_BUKTI = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'application/pdf' => 'pdf',
+    ];
 
     protected $table = 'tagihan';
 
@@ -261,6 +276,80 @@ class Tagihan extends Model
             'dilewati' => $dilewati,
             'baris' => $baris,
         ];
+    }
+
+    /**
+     * Penghuni mengunggah bukti bayar (F-12, ATB-03). Berkas disimpan di disk privat dengan nama acak (nama asli
+     * tidak dipakai), lalu dalam satu transaksi dibuat pembayaran berstatus menunggu dan tagihan menjadi
+     * menunggu_verifikasi. Bila transaksi gagal, berkas yang baru disimpan dihapus dan status tagihan tidak berubah.
+     * Nominal selalu sama dengan nominal tagihan (ASM-P02). Sinkronisasi ERP baru dibuat saat pembayaran diterima.
+     *
+     * [ASUMSI] Nama method mengikuti pola method status di CLAUDE.md; class diagram belum memuat method unggah.
+     *
+     * @throws TagihanTidakBisaDiberiBukti
+     */
+    public function unggahBukti(UploadedFile $berkas, CarbonInterface $tanggalBayar): Pembayaran
+    {
+        $ekstensi = self::EKSTENSI_BUKTI[self::mimeIsiBerkas($berkas)]
+            ?? throw new InvalidArgumentException('Tipe berkas bukti tidak didukung.');
+
+        $jalur = Storage::disk('local')->putFileAs(
+            'bukti-bayar/'.now()->setTimezone(config('app.timezone'))->format('Y/m'),
+            $berkas,
+            Str::uuid()->toString().'.'.$ekstensi,
+        );
+
+        try {
+            return DB::transaction(function () use ($jalur, $tanggalBayar) {
+                $terkunci = static::query()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+
+                if ($terkunci->status_tagihan !== StatusTagihan::BelumDibayar) {
+                    throw TagihanTidakBisaDiberiBukti::statusTidakSesuai();
+                }
+
+                $pembayaran = new Pembayaran([
+                    'tagihan_id' => $terkunci->id,
+                    'tanggal_bayar' => $tanggalBayar->toDateString(),
+                    'nominal_bayar' => $terkunci->nominal,
+                    'bukti_bayar_path' => $jalur,
+                ]);
+                $pembayaran->forceFill([
+                    'diunggah_pada' => now(),
+                    'status_verifikasi' => StatusVerifikasi::Menunggu,
+                ])->save();
+
+                $terkunci->forceFill(['status_tagihan' => StatusTagihan::MenungguVerifikasi])->save();
+                $this->status_tagihan = StatusTagihan::MenungguVerifikasi;
+
+                return $pembayaran;
+            });
+        } catch (Throwable $e) {
+            Storage::disk('local')->delete($jalur);
+
+            // Kirim ganda: indeks uq_pembayaran_menunggu menolak bukti kedua untuk tagihan yang sama.
+            if ($e instanceof UniqueConstraintViolationException && $e->index === 'uq_pembayaran_menunggu') {
+                throw TagihanTidakBisaDiberiBukti::statusTidakSesuai();
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Tipe MIME dari isi berkas (finfo), bukan dari nama atau ekstensi yang dikirim browser. Berkas teks yang
+     * hanya diberi nama .jpg tidak lolos. Null bila isinya tidak bisa dibaca.
+     */
+    public static function mimeIsiBerkas(UploadedFile $berkas): ?string
+    {
+        $jalur = $berkas->getRealPath();
+
+        if (! is_string($jalur) || ! is_file($jalur)) {
+            return $berkas->getMimeType();
+        }
+
+        $mime = mime_content_type($jalur);
+
+        return $mime === false ? null : $mime;
     }
 
     /**
