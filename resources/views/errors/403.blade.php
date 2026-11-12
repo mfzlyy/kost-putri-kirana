@@ -17,7 +17,7 @@
                 <p class="m-0 text-[17px] text-ink-muted">Anda tidak memiliki akses ke halaman ini.</p>
 
                 <a href="{{ url('/beranda') }}" class="inline-flex h-[46px] items-center justify-center rounded-lg bg-primary px-5 font-semibold text-white no-underline hover:bg-primary-hover">
-                    Kembali ke beranda
+                    Beranda
                 </a>
 
                 <p class="m-0 text-[13px] text-ink-muted">Kode 403</p>

@@ -276,11 +276,7 @@ new #[Title('Penghuni')] class extends Component {
             <a href="{{ route('penghuni.index') }}" wire:navigate aria-label="Kembali ke penghuni" class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg lg:hidden">
                 <flux:icon.arrow-left class="size-5" />
             </a>
-            <x-judul-halaman
-                class="min-w-0 flex-1"
-                :judul="$penghuni ? 'Ubah data '.$namaTampil : 'Tambah penghuni'"
-                deskripsi="Hanya data yang dibutuhkan untuk kontrak dan tagihan."
-            />
+            <x-judul-halaman class="min-w-0 flex-1" :judul="$penghuni ? 'Ubah Penghuni' : 'Tambah Penghuni'" />
         </div>
     </div>
 
@@ -296,40 +292,40 @@ new #[Title('Penghuni')] class extends Component {
                 @if ($tanpaAkun)
                     <flux:callout variant="warning" icon="exclamation-triangle" data-test="tanpa-akun">
                         <flux:callout.text>
-                            Semua akun penghuni sudah punya data. Buat akun baru di <a href="{{ route('akun.index') }}" wire:navigate class="font-semibold">Akun pengguna</a>.
+                            Semua akun penghuni sudah punya data. Buat akun baru di <a href="{{ route('akun.index') }}" wire:navigate class="font-semibold">Akun</a>.
                         </flux:callout.text>
                     </flux:callout>
                 @else
                     <flux:field>
-                        <flux:label>Akun penghuni</flux:label>
+                        <flux:label>Akun</flux:label>
                         <flux:select wire:model.live="user_id" placeholder="Pilih akun penghuni" data-test="pilih-akun">
                             @foreach ($this->akunTersedia as $akun)
                                 <flux:select.option value="{{ $akun->id }}" wire:key="akun-{{ $akun->id }}">{{ $akun->nama }}, {{ $akun->email }}</flux:select.option>
                             @endforeach
                         </flux:select>
                         <flux:description>
-                            Hanya akun penghuni yang belum punya data.<span class="hidden sm:inline"> Buat akun di Akun pengguna.</span>
+                            Hanya akun yang belum punya data.
                         </flux:description>
                         <flux:error name="user_id" />
                     </flux:field>
                 @endif
             @else
                 <flux:field>
-                    <flux:label>Akun penghuni</flux:label>
+                    <flux:label>Akun</flux:label>
                     <p class="m-0 min-h-11 content-center" data-test="akun-terkunci">{{ $penghuni->user?->email }}</p>
                     <flux:description>Akun tidak bisa diganti.</flux:description>
                 </flux:field>
             @endif
 
             <flux:field>
-                <flux:label>Nama lengkap</flux:label>
+                <flux:label>Nama Lengkap</flux:label>
                 <flux:input wire:model="nama" maxlength="100" autocomplete="off" data-test="input-nama" />
                 <flux:error name="nama" />
             </flux:field>
 
             <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>Nomor identitas (NIK)</flux:label>
+                    <flux:label>Nomor Identitas</flux:label>
                     <flux:input wire:model="nik" inputmode="numeric" autocomplete="off" data-test="input-nik" />
                     @if ($penghuni)
                         <flux:description class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -346,7 +342,7 @@ new #[Title('Penghuni')] class extends Component {
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Nomor telepon</flux:label>
+                    <flux:label>Nomor Telepon</flux:label>
                     <flux:input wire:model="no_telepon" inputmode="tel" autocomplete="off" data-test="input-telepon" />
                     <flux:error name="no_telepon" />
                 </flux:field>
@@ -354,41 +350,31 @@ new #[Title('Penghuni')] class extends Component {
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
                 <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaAkun" data-test="simpan-penghuni">
-                    {{ $penghuni ? 'Simpan perubahan' : 'Simpan penghuni' }}
+                    Simpan
                 </flux:button>
                 <x-tautan-batal :href="route('penghuni.index')" />
             </div>
         </form>
 
         <div class="flex flex-[1_1_260px] flex-col gap-4">
-            <aside class="flex flex-col gap-2.5 rounded-2xl bg-primary-container p-5 text-on-primary-container">
-                <h2 class="m-0 text-base font-[650]">Siapa yang bisa melihat NIK</h2>
-                <p class="m-0 text-sm">Pemilik, pengelola, dan penghuni itu sendiri. NIK disimpan terenkripsi dan tidak pernah tampil di layar vendor.</p>
-                @if ($penghuni === null)
-                    <p class="m-0 text-sm">Setelah disimpan, lanjutkan dengan membuat kontrak.</p>
-                @endif
-            </aside>
-
             @if ($penghuni)
                 @if ($penghuni->status_penghuni === StatusPenghuni::Aktif)
                     <section class="flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-status" data-test="kartu-status">
-                        <h2 id="judul-status" class="m-0 text-base font-[650]">Penghuni keluar</h2>
-                        <p class="m-0 text-sm text-ink-muted">Tandai bila penghuni sudah tidak tinggal di kos. Data dan riwayatnya tetap tersimpan.</p>
+                        <h2 id="judul-status" class="m-0 text-base font-[650]">Penghuni Keluar</h2>
 
                         @if ($this->izinNonaktifkan->denied())
                             <p class="m-0 text-sm text-ink-muted" data-test="alasan-tidak-bisa-keluar">{{ $this->izinNonaktifkan->message() }}</p>
-                            <button type="button" disabled class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-sm font-semibold text-[#8A918F]">Tandai sudah keluar</button>
+                            <button type="button" disabled class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-sm font-semibold text-[#8A918F]">Tandai Keluar</button>
                         @else
                             <flux:modal.trigger name="tandai-keluar">
-                                <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-semibold text-danger" data-test="buka-tandai-keluar">Tandai sudah keluar</button>
+                                <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-semibold text-danger" data-test="buka-tandai-keluar">Tandai Keluar</button>
                             </flux:modal.trigger>
                         @endif
                     </section>
                 @else
                     <section class="flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-status" data-test="kartu-status">
-                        <h2 id="judul-status" class="m-0 text-base font-[650]">Penghuni sudah keluar</h2>
-                        <p class="m-0 text-sm text-ink-muted">Data dan riwayatnya tetap tersimpan. Aktifkan kembali bila penghuni tinggal lagi.</p>
-                        <button type="button" wire:click="aktifkanKembali" wire:loading.attr="disabled" wire:target="aktifkanKembali" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-semibold" data-test="aktifkan-kembali">Aktifkan kembali</button>
+                        <h2 id="judul-status" class="m-0 text-base font-[650]">Sudah Keluar</h2>
+                        <button type="button" wire:click="aktifkanKembali" wire:loading.attr="disabled" wire:target="aktifkanKembali" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-semibold" data-test="aktifkan-kembali">Aktifkan</button>
                     </section>
                 @endif
             @endif
@@ -398,13 +384,13 @@ new #[Title('Penghuni')] class extends Component {
     @if ($penghuni)
         <x-dialog-konfirmasi
             name="tandai-keluar"
-            :judul="'Tandai '.$namaTampil.' sudah keluar?'"
-            label-aksi="Tandai sudah keluar"
+            :judul="'Tandai '.$namaTampil.' Keluar?'"
+            label-aksi="Tandai Keluar"
             wire:click="nonaktifkanPenghuni"
             data-test="konfirmasi-tandai-keluar"
         >
             <x-slot:ringkasan>
-                <dt>Email akun</dt>
+                <dt>Email</dt>
                 <dd>{{ $penghuni->user?->email }}</dd>
                 <dt>Telepon</dt>
                 <dd class="num">{{ Format::telepon($penghuni->no_telepon) }}</dd>
@@ -412,8 +398,8 @@ new #[Title('Penghuni')] class extends Component {
 
             <x-slot:akibat>
                 <li>Status menjadi nonaktif.</li>
-                <li>Riwayat kontrak, tagihan, dan pembayaran tetap tersimpan.</li>
-                <li>Akun login diatur terpisah di Akun pengguna.</li>
+                <li>Riwayat tetap tersimpan.</li>
+                <li>Akun login tidak berubah.</li>
             </x-slot:akibat>
         </x-dialog-konfirmasi>
     @endif

@@ -321,7 +321,7 @@ new #[Title('Kontrak')] class extends Component {
     $tanpaPenghuni = ! $perpanjang && $this->penghuniTersedia->isEmpty();
     $batas = $this->batasPeringatan;
     $tanggalPanjang = fn ($tanggal) => $tanggal->locale('id')->translatedFormat('j F Y');
-    $judul = $perpanjang ? 'Perpanjang kontrak Kamar '.$kontrakLama->kamar?->nomor_kamar : 'Buat kontrak';
+    $judul = $perpanjang ? 'Perpanjang Kontrak' : 'Buat Kontrak';
 @endphp
 
 <section class="flex w-full flex-col gap-4 lg:gap-6">
@@ -360,7 +360,7 @@ new #[Title('Kontrak')] class extends Component {
             </dl>
 
             <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-sm text-on-primary-container" data-test="catatan-perpanjang">
-                Kontrak lama ({{ $tanggalPanjang($kontrakLama->tanggal_mulai) }} sampai {{ $tanggalPanjang($kontrakLama->tanggal_berakhir) }}, {{ Format::rupiah($kontrakLama->tarif_bulanan) }} per bulan) ditutup dan tetap tersimpan di riwayat. Kontrak baru dimulai {{ $tanggalPanjang($kontrakLama->tanggal_berakhir->addDay()) }}.
+                Kontrak lama ({{ $tanggalPanjang($kontrakLama->tanggal_mulai) }} sampai {{ $tanggalPanjang($kontrakLama->tanggal_berakhir) }}) ditutup dan tersimpan di riwayat.
             </p>
 
             <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
@@ -371,7 +371,7 @@ new #[Title('Kontrak')] class extends Component {
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Tarif per bulan</flux:label>
+                    <flux:label>Tarif</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
                         <flux:input
@@ -384,14 +384,14 @@ new #[Title('Kontrak')] class extends Component {
                             data-test="input-tarif"
                         />
                     </flux:input.group>
-                    <flux:description>Diisi dari tarif Kamar {{ $kontrakLama->kamar?->nomor_kamar }} saat ini. Tarif kontrak lama {{ Format::rupiah($kontrakLama->tarif_bulanan) }}.</flux:description>
+                    <flux:description>Tarif lama {{ Format::rupiah($kontrakLama->tarif_bulanan) }}.</flux:description>
                     <flux:error name="tarif_bulanan" />
                 </flux:field>
             </div>
         @else
             @if ($tanpaPenghuni)
                 <flux:callout variant="warning" icon="exclamation-triangle" data-test="tanpa-penghuni">
-                    <flux:callout.text>Semua penghuni aktif sudah punya kontrak. <a href="{{ route('penghuni.tambah') }}" wire:navigate class="font-semibold">Tambah data penghuni</a> di halaman Penghuni.</flux:callout.text>
+                    <flux:callout.text>Semua penghuni aktif sudah punya kontrak. <a href="{{ route('penghuni.tambah') }}" wire:navigate class="font-semibold">Tambah penghuni</a> dulu.</flux:callout.text>
                 </flux:callout>
             @else
                 <flux:field>
@@ -464,7 +464,7 @@ new #[Title('Kontrak')] class extends Component {
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Tarif per bulan</flux:label>
+                    <flux:label>Tarif</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
                         <flux:input
@@ -478,7 +478,7 @@ new #[Title('Kontrak')] class extends Component {
                         />
                     </flux:input.group>
                     <flux:description>
-                        {{ $this->kamarTerpilih ? 'Diisi dari tarif Kamar '.$this->kamarTerpilih->nomor_kamar.'. Bisa disesuaikan.' : 'Pilih kamar untuk mengisi tarif.' }}
+                        {{ $this->kamarTerpilih ? 'Diisi dari tarif Kamar '.$this->kamarTerpilih->nomor_kamar.'.' : 'Pilih kamar untuk mengisi tarif.' }}
                     </flux:description>
                     <flux:error name="tarif_bulanan" />
                 </flux:field>
@@ -487,7 +487,7 @@ new #[Title('Kontrak')] class extends Component {
 
         <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
             <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
-                {{ $perpanjang ? 'Simpan perpanjangan' : 'Simpan kontrak' }}
+                Simpan
             </flux:button>
             <x-tautan-batal :href="route('kontrak.index')" />
         </div>

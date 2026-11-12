@@ -48,7 +48,7 @@ it('halaman unggah tidak memuat menu tab', function () {
         ->get(route('tagihan-saya.unggah', $tagihan))
         ->assertOk()
         ->assertDontSee('Menu penghuni')
-        ->assertSee('Kembali ke tagihan');
+        ->assertSee('Kembali');
 });
 
 it('halaman peran lain tidak memuat menu tab penghuni', function (string $peran, string $url) {
@@ -62,14 +62,14 @@ it('halaman peran lain tidak memuat menu tab penghuni', function (string $peran,
     'vendor' => ['vendor', '/permintaan-kerja'],
 ]);
 
-it('Profil saya memuat tautan Ganti password dan tombol Keluar untuk ponsel', function () {
+it('Profil memuat tautan Ganti Password dan tombol Keluar untuk ponsel', function () {
     $penghuni = buatKontrakUji('05', 'Maya Sari')->penghuni->user;
 
     $this->actingAs($penghuni)
         ->get('/profil-saya')
         ->assertOk()
         ->assertSee('data-test="kotak-akun"', false)
-        ->assertSee('Ganti password')
+        ->assertSee('Ganti Password')
         ->assertSee(route('security.edit'), false)
         ->assertSee('data-test="keluar-ponsel"', false)
         ->assertSee('action="'.route('logout').'"', false);

@@ -24,10 +24,11 @@ it('F-08 butir 1-2: kontrak dalam batas 30 hari tampil dengan penghuni, kamar, t
 
     $komponen = bagianAkanBerakhir(User::factory()->pengelola()->create());
 
-    $komponen->assertSeeInOrder(['Berakhir dalam 30 hari', 'Batas diatur di Pengaturan'])
+    $komponen->assertSee('Segera Berakhir')
+        ->assertDontSee('Batas diatur di Pengaturan')
         ->assertSee('Salsa Nabila')
         ->assertSee('Berakhir 1 Desember 2026')
-        ->assertSee('20 hari lagi');
+        ->assertSee('20 Hari Lagi');
 
     expect($komponen->instance()->akanBerakhir->map(fn ($kontrak) => $kontrak->penghuni->user->nama)->all())
         ->toBe(['Salsa Nabila']);
@@ -40,14 +41,14 @@ it('F-08: kontrak yang berakhir tepat pada hari ke-30 masih tampil, hari ke-31 t
     $komponen = bagianAkanBerakhir(User::factory()->pengelola()->create());
 
     expect($komponen->instance()->akanBerakhir->pluck('kamar.nomor_kamar')->all())->toBe(['01']);
-    $komponen->assertSee('30 hari lagi');
+    $komponen->assertSee('30 Hari Lagi');
 });
 
-it('F-08: kontrak yang berakhir hari ini tampil sebagai Berakhir hari ini', function () {
+it('F-08: kontrak yang berakhir hari ini tampil sebagai Berakhir Hari Ini', function () {
     buatKontrakUji('01', 'Berakhir Hari Ini', ['tanggal_berakhir' => '2026-11-11']);
 
     bagianAkanBerakhir(User::factory()->pengelola()->create())
-        ->assertSee('Berakhir hari ini');
+        ->assertSee('Berakhir Hari Ini');
 });
 
 it('F-08: kontrak aktif yang tanggalnya sudah lewat tampil sebagai Lewat n hari sampai command berjalan', function () {
@@ -55,7 +56,7 @@ it('F-08: kontrak aktif yang tanggalnya sudah lewat tampil sebagai Lewat n hari 
 
     bagianAkanBerakhir(User::factory()->pengelola()->create())
         ->assertSee('Laila Kusuma')
-        ->assertSee('Lewat 4 hari');
+        ->assertSee('Lewat 4 Hari');
 });
 
 it('F-08: urutan menurut tanggal berakhir menaik', function () {
@@ -88,7 +89,7 @@ it('F-08 butir 3: bagian akan berakhir juga tampil bagi pemilik', function () {
     buatKontrakUji('01', 'Salsa Nabila', ['tanggal_berakhir' => '2026-11-20']);
 
     bagianAkanBerakhir(User::factory()->pemilik()->create())
-        ->assertSee('Berakhir dalam 30 hari')
+        ->assertSee('Segera Berakhir')
         ->assertSee('Salsa Nabila');
 });
 
@@ -98,9 +99,9 @@ it('ISU-02: batas yang dibaca dari pengaturan menentukan jangkauan daftar', func
     PengaturanOperasional::aktif()->update(['batas_peringatan_kontrak_hari' => 60]);
 
     bagianAkanBerakhir(User::factory()->pengelola()->create())
-        ->assertSee('Berakhir dalam 60 hari')
+        ->assertSee('Segera Berakhir')
         ->assertSee('Dalam Enam Puluh Hari')
-        ->assertSee('55 hari lagi');
+        ->assertSee('55 Hari Lagi');
 });
 
 it('ISU-02: batas belum diatur menampilkan callout dan tidak memakai angka bawaan', function () {
@@ -108,12 +109,11 @@ it('ISU-02: batas belum diatur menampilkan callout dan tidak memakai angka bawaa
     buatKontrakUji('01', 'Salsa Nabila', ['tanggal_berakhir' => '2026-11-20']);
 
     bagianAkanBerakhir(User::factory()->pengelola()->create())
-        ->assertSee('Kontrak akan berakhir')
+        ->assertSee('Segera Berakhir')
         ->assertSee('Batas peringatan belum diatur.')
         ->assertSee('Atur di Pengaturan')
         ->assertSeeHtml(route('pengaturan.index'))
-        ->assertDontSee('Berakhir dalam')
-        ->assertDontSee('hari lagi')
+        ->assertDontSee('Hari Lagi')
         ->assertDontSee('30 hari');
 
     bagianAkanBerakhir(User::factory()->pemilik()->create())

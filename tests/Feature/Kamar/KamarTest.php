@@ -38,7 +38,7 @@ it('F-05: daftar menampilkan nomor, tarif berformat rupiah, penghuni aktif, dan 
         ->assertOk()
         ->assertSeeInOrder(['01', 'Anisa Putri', 'Rp1.250.000', 'Terisi'])
         ->assertSeeInOrder(['02', 'Belum ada', 'Rp1.500.000', 'Kosong'])
-        ->assertSee('2 kamar, 1 terisi.');
+        ->assertDontSee('2 kamar, 1 terisi.');
 });
 
 it('F-05: filter status terisi dan kosong bekerja, nilai lain dianggap Semua', function () {
@@ -125,7 +125,7 @@ it('F-05: mengubah kamar tidak mengubah nomor unik miliknya sendiri dan tidak me
     formKamarSebagai(User::factory()->pengelola()->create(), $kamar)
         ->assertSet('nomor_kamar', '05')
         ->assertSet('tarif_bulanan', '1.400.000')
-        ->assertSee('Tarif baru berlaku untuk kontrak berikutnya. Kontrak Maya Sari tetap Rp1.400.000 sampai')
+        ->assertSee('Kontrak Maya Sari tetap Rp1.400.000 sampai')
         ->set('tarif_bulanan', '1.450.000')
         ->call('simpan')
         ->assertHasNoErrors();

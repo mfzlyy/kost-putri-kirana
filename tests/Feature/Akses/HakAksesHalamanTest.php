@@ -64,7 +64,7 @@ it('F-03: peran yang berhak mendapat 200, peran lain mendapat 403 tanpa data hal
     $respons->assertForbidden()
         ->assertSee('Akses ditolak')
         ->assertSee('Anda tidak memiliki akses ke halaman ini')
-        ->assertSee('Kembali ke beranda')
+        ->assertSee('Beranda')
         ->assertDontSee('sedang disiapkan')
         ->assertDontSee('Tambah Akun');
 })->with('akses_halaman');
@@ -82,7 +82,7 @@ it('F-03: halaman yang belum dibuat menampilkan teks sedang disiapkan tanpa data
     $this->actingAs(User::factory()->pemilik()->create())
         ->get('/dashboard')
         ->assertOk()
-        ->assertSee('Dashboard')
+        ->assertSee('Dasbor')
         ->assertSee('Halaman ini sedang disiapkan.');
 });
 

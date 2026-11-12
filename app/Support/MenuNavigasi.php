@@ -18,35 +18,35 @@ class MenuNavigasi
     {
         return match ($peran) {
             PeranPengguna::Pemilik => [
-                self::item('Dashboard', 'dashboard', 'chart-bar'),
+                self::item('Dasbor', 'dashboard', 'chart-bar'),
                 self::item('Kamar', 'kamar.index', 'home-modern'),
                 self::item('Penghuni', 'penghuni.index', 'users'),
                 self::item('Kontrak', 'kontrak.index', 'document-text'),
                 self::item('Tagihan', 'tagihan.index', 'banknotes'),
-                self::item('Riwayat transaksi', 'riwayat-transaksi.index', 'clipboard-document-list'),
-                self::item('Tiket keluhan', 'tiket-keluhan.index', 'wrench-screwdriver'),
+                self::item('Riwayat', 'riwayat-transaksi.index', 'clipboard-document-list'),
+                self::item('Keluhan', 'tiket-keluhan.index', 'wrench-screwdriver'),
                 self::item('Pengaturan', 'pengaturan.index', 'cog-6-tooth'),
             ],
             PeranPengguna::Pengelola => [
-                self::item('Verifikasi pembayaran', 'verifikasi-pembayaran.index', 'check-badge'),
+                self::item('Verifikasi', 'verifikasi-pembayaran.index', 'check-badge'),
                 self::item('Tagihan', 'tagihan.index', 'banknotes'),
                 self::item('Kamar', 'kamar.index', 'home-modern'),
                 self::item('Penghuni', 'penghuni.index', 'users'),
                 self::item('Kontrak', 'kontrak.index', 'document-text'),
-                self::item('Riwayat transaksi', 'riwayat-transaksi.index', 'clipboard-document-list'),
-                self::item('Tiket keluhan', 'tiket-keluhan.index', 'wrench-screwdriver'),
-                self::item('Sinkronisasi ERP', 'sinkronisasi-erp.index', 'arrow-path'),
-                self::item('Akun pengguna', 'akun.index', 'user-circle'),
+                self::item('Riwayat', 'riwayat-transaksi.index', 'clipboard-document-list'),
+                self::item('Keluhan', 'tiket-keluhan.index', 'wrench-screwdriver'),
+                self::item('Sinkronisasi', 'sinkronisasi-erp.index', 'arrow-path'),
+                self::item('Akun', 'akun.index', 'user-circle'),
                 self::item('Pengaturan', 'pengaturan.index', 'cog-6-tooth'),
             ],
             PeranPengguna::Penghuni => [
-                self::item('Tagihan saya', 'tagihan-saya.index', 'banknotes'),
-                self::item('Riwayat transaksi', 'riwayat-transaksi.index', 'clipboard-document-list'),
-                self::item('Keluhan saya', 'keluhan-saya.index', 'wrench-screwdriver'),
-                self::item('Profil saya', 'profil-saya.index', 'identification'),
+                self::item('Tagihan', 'tagihan-saya.index', 'banknotes'),
+                self::item('Riwayat', 'riwayat-transaksi.index', 'clipboard-document-list'),
+                self::item('Keluhan', 'keluhan-saya.index', 'wrench-screwdriver'),
+                self::item('Profil', 'profil-saya.index', 'identification'),
             ],
             PeranPengguna::Vendor => [
-                self::item('Permintaan kerja', 'permintaan-kerja.index', 'wrench-screwdriver'),
+                self::item('Pekerjaan', 'permintaan-kerja.index', 'wrench-screwdriver'),
             ],
         };
     }

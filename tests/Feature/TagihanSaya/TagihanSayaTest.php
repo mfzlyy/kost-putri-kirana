@@ -47,14 +47,14 @@ it('F-11 butir 1: penghuni melihat periode, nominal, jatuh tempo, dan status tag
     buatTagihanSaya($lain, '2026-11-01', '2026-11-10', StatusTagihan::BelumDibayar, 1750000);
 
     halamanTagihanSaya($kontrak->penghuni->user)
-        ->assertSee('Halo, Maya')
-        ->assertSee('Kamar 05. Tarif Rp1.400.000 per bulan.')
+        ->assertDontSee('Halo, Maya')
+        ->assertDontSee('Kamar 05. Tarif Rp1.400.000 per bulan.')
         ->assertSee('November 2026')
         ->assertSee('Oktober 2026')
         ->assertSee('10 Nov')
         ->assertSee('Rp1.400.000')
-        ->assertSee('Belum bayar')
-        ->assertSee('Lunas, dibayar 8 Okt')
+        ->assertSee('Belum Bayar')
+        ->assertSee('Lunas, 8 Okt')
         ->assertDontSee('Rp1.750.000')
         ->assertDontSee('Rina');
 });
@@ -69,8 +69,8 @@ it('F-11 butir 2: bukti yang ditolak menampilkan alasan, dan alasan berisi HTML 
     ]);
 
     $komponen = halamanTagihanSaya($kontrak->penghuni->user)
-        ->assertSee('Bukti sebelumnya ditolak: Nominal tidak sesuai &lt;script&gt;alert(1)&lt;/script&gt;. Unggah bukti baru.', false)
-        ->assertSee('Bukti ditolak 3 Nov: Nominal tidak sesuai &lt;script&gt;alert(1)&lt;/script&gt;', false)
+        ->assertSee('Ditolak, 3 Nov: Nominal tidak sesuai &lt;script&gt;alert(1)&lt;/script&gt;', false)
+        ->assertSee('Ditolak, 3 Nov: Nominal tidak sesuai &lt;script&gt;alert(1)&lt;/script&gt;', false)
         ->assertDontSee('<script>alert(1)</script>', false);
 
     expect($komponen->html())->toContain('role="status"');
@@ -81,8 +81,8 @@ it('F-11 butir 3: tagihan tunggakan diberi penanda "Telat n hari"', function () 
     buatTagihanSaya($kontrak, '2026-10-01', '2026-10-10', StatusTagihan::BelumDibayar);
 
     halamanTagihanSaya($kontrak->penghuni->user)
-        ->assertSee('Lewat jatuh tempo 10 Okt, telat 26 hari')
-        ->assertSee('Telat 26 hari');
+        ->assertSee('Jatuh Tempo 10 Okt, Telat 26 Hari')
+        ->assertSee('Telat 26 Hari');
 });
 
 it('F-11 butir 3: bukti menunggu yang diunggah setelah jatuh tempo tetap telat dan diberi keterangan', function () {
@@ -94,9 +94,9 @@ it('F-11 butir 3: bukti menunggu yang diunggah setelah jatuh tempo tetap telat d
     ]);
 
     halamanTagihanSaya($kontrak->penghuni->user)
-        ->assertSee('Bukti diunggah 3 Nov, menunggu dicek')
-        ->assertSee('Telat 26 hari')
-        ->assertSee('Bukti dikirim setelah jatuh tempo 10 Okt, jadi tetap tercatat telat sampai diterima pengelola.');
+        ->assertSee('Menunggu, 3 Nov')
+        ->assertSee('Telat 26 Hari')
+        ->assertDontSee('Bukti dikirim setelah jatuh tempo');
 });
 
 it('F-11: bukti menunggu yang tepat waktu tidak dihitung telat', function () {
@@ -108,7 +108,7 @@ it('F-11: bukti menunggu yang tepat waktu tidak dihitung telat', function () {
     ]);
 
     halamanTagihanSaya($kontrak->penghuni->user)
-        ->assertSee('Bukti diunggah 10 Okt, menunggu dicek')
+        ->assertSee('Menunggu, 10 Okt')
         ->assertDontSee('Telat')
         ->assertDontSee('Bukti dikirim setelah jatuh tempo');
 });
@@ -118,7 +118,7 @@ it('F-11 butir 4: tanpa tagihan tampil "Belum ada tagihan" dan bagian Semua tagi
 
     halamanTagihanSaya($kontrak->penghuni->user)
         ->assertSee('Belum ada tagihan')
-        ->assertDontSee('Semua tagihan');
+        ->assertDontSee('Riwayat Tagihan');
 });
 
 it('kartu utama memilih tagihan belum dibayar paling lama dan menyebut sisanya', function () {
@@ -134,8 +134,8 @@ it('kartu utama memilih tagihan belum dibayar paling lama dan menyebut sisanya',
 
     $komponen->assertSee('Tagihan September')
         ->assertSee('Rp1.300.000')
-        ->assertSee('2 tagihan lain juga belum dibayar.')
-        ->assertSee('Unggah bukti bayar')
+        ->assertSee('2 tagihan lain belum dibayar.')
+        ->assertSee('Unggah Bukti')
         ->assertSee(route('tagihan-saya.unggah', $lama->id), false);
 });
 
@@ -144,13 +144,13 @@ it('kartu utama: jatuh tempo masih jauh, hari ini, dan sudah lewat', function ()
     $tagihan = buatTagihanSaya($kontrak, '2026-11-01', '2026-11-10', StatusTagihan::BelumDibayar);
     $penghuni = $kontrak->penghuni->user;
 
-    halamanTagihanSaya($penghuni)->assertSee('5 hari lagi');
+    halamanTagihanSaya($penghuni)->assertSee('5 Hari Lagi');
 
     Carbon::setTestNow(Carbon::parse('2026-11-10 09:00:00', 'Asia/Jakarta'));
-    halamanTagihanSaya($penghuni)->assertSee('Jatuh tempo hari ini');
+    halamanTagihanSaya($penghuni)->assertSee('Jatuh Tempo Hari Ini');
 
     Carbon::setTestNow(Carbon::parse('2026-11-12 09:00:00', 'Asia/Jakarta'));
-    halamanTagihanSaya($penghuni)->assertSee('Lewat jatuh tempo 10 Nov, telat 2 hari');
+    halamanTagihanSaya($penghuni)->assertSee('Jatuh Tempo 10 Nov, Telat 2 Hari');
 
     expect($tagihan->fresh()->status_tagihan)->toBe(StatusTagihan::BelumDibayar);
 });
@@ -166,8 +166,8 @@ it('kartu utama: keadaan menunggu, lunas, dan kosong', function () {
 
     halamanTagihanSaya($user)
         ->assertSee('Bukti November sedang dicek pengelola.')
-        ->assertSee('Menunggu dicek')
-        ->assertDontSee('Unggah bukti bayar');
+        ->assertSee('Menunggu')
+        ->assertDontSee('Unggah Bukti');
 
     $tagihan->pembayaran()->delete();
     Pembayaran::factory()->diterima()->create(['tagihan_id' => $tagihan->id]);
@@ -196,7 +196,7 @@ it('penghuni tanpa baris penghuni melihat pesan belum dilengkapi, tanpa galat', 
 
     halamanTagihanSaya($user)
         ->assertOk()
-        ->assertSee('Tagihan saya')
+        ->assertSee('Tagihan')
         ->assertSee('Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.');
 });
 
@@ -257,8 +257,8 @@ it('F-11: penghuni membuka /tagihan-saya lewat HTTP dan melihat tagihannya', fun
     $this->actingAs($kontrak->penghuni->user)
         ->get('/tagihan-saya')
         ->assertOk()
-        ->assertSee('Halo, Maya')
-        ->assertSee('Unggah bukti bayar');
+        ->assertDontSee('Halo, Maya')
+        ->assertSee('Unggah Bukti');
 });
 
 it('tamu diarahkan ke halaman login', function () {

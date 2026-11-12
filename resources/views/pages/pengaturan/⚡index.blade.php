@@ -69,22 +69,19 @@ new #[Title('Pengaturan')] class extends Component {
 }; ?>
 
 <section class="flex w-full max-w-[760px] flex-col gap-4 lg:gap-6">
-    <x-judul-halaman
-        judul="Pengaturan"
-        deskripsi="Aturan operasional kos. Perubahan berlaku untuk tagihan yang terbit setelahnya."
-    />
+    <x-judul-halaman judul="Pengaturan" />
 
     @can('update', $this->pengaturan)
         @if ($this->pengaturan->tanggal_jatuh_tempo === null)
             <flux:callout variant="warning" icon="exclamation-triangle" data-test="callout-belum-diatur">
-                <flux:callout.text>Tanggal jatuh tempo belum diatur. Tagihan belum bisa diterbitkan sampai tanggal ini diisi.</flux:callout.text>
+                <flux:callout.text>Tanggal jatuh tempo belum diatur, tagihan belum bisa diterbitkan.</flux:callout.text>
             </flux:callout>
         @endif
 
         <form wire:submit="simpan" class="flex flex-col gap-[26px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
             <fieldset class="m-0 border-0 p-0">
-                <legend class="mb-1 p-0 text-[15px] font-semibold">Tanggal jatuh tempo tagihan</legend>
-                <p id="bantuan-hari" class="mt-0 mb-2.5 text-sm text-ink-muted">Pilih tanggal 1 sampai 28, berlaku setiap bulan.</p>
+                <legend class="mb-1 p-0 text-[15px] font-semibold">Tanggal Jatuh Tempo</legend>
+                <p id="bantuan-hari" class="mt-0 mb-2.5 text-sm text-ink-muted">Tanggal 1 sampai 28, setiap bulan.</p>
 
                 <div role="radiogroup" aria-describedby="bantuan-hari" class="grid grid-cols-7 gap-1.5 lg:grid-cols-[repeat(14,40px)]">
                     @foreach (range(1, 28) as $hari)
@@ -111,8 +108,8 @@ new #[Title('Pengaturan')] class extends Component {
             </fieldset>
 
             <div>
-                <label for="batas-peringatan" class="mb-1 block text-[15px] font-semibold">Batas peringatan kontrak berakhir</label>
-                <p id="bantuan-batas" class="mt-0 mb-2 text-sm text-ink-muted">Kontrak yang berakhir dalam jangka ini muncul di daftar akan berakhir.</p>
+                <label for="batas-peringatan" class="mb-1 block text-[15px] font-semibold">Batas Peringatan</label>
+                <p id="bantuan-batas" class="mt-0 mb-2 text-sm text-ink-muted">Jumlah hari sebelum kontrak berakhir.</p>
                 <div class="flex items-center gap-2.5">
                     <input
                         id="batas-peringatan"
@@ -134,7 +131,7 @@ new #[Title('Pengaturan')] class extends Component {
 
             <div class="flex flex-col gap-3 border-t border-divider pt-[18px] sm:flex-row sm:items-center sm:gap-4">
                 <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
-                    <span wire:loading.remove wire:target="simpan">Simpan pengaturan</span>
+                    <span wire:loading.remove wire:target="simpan">Simpan</span>
                     <span wire:loading wire:target="simpan">Menyimpan</span>
                 </flux:button>
 
@@ -146,7 +143,7 @@ new #[Title('Pengaturan')] class extends Component {
     @else
         <section class="grid grid-cols-1 gap-6 rounded-2xl border border-border bg-surface p-6 sm:grid-cols-2">
             <div>
-                <p class="mt-0 mb-1.5 text-sm text-ink-muted">Jatuh tempo tagihan</p>
+                <p class="mt-0 mb-1.5 text-sm text-ink-muted">Jatuh Tempo</p>
                 <p class="num m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded sm:text-[28px]">
                     {{ $this->pengaturan->tanggal_jatuh_tempo !== null ? 'Tanggal '.$this->pengaturan->tanggal_jatuh_tempo : 'Belum diatur' }}
                 </p>
@@ -155,15 +152,11 @@ new #[Title('Pengaturan')] class extends Component {
                 @endif
             </div>
             <div>
-                <p class="mt-0 mb-1.5 text-sm text-ink-muted">Peringatan kontrak berakhir</p>
+                <p class="mt-0 mb-1.5 text-sm text-ink-muted">Batas Peringatan</p>
                 <p class="num m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded sm:text-[28px]">
                     {{ $this->pengaturan->batas_peringatan_kontrak_hari !== null ? $this->pengaturan->batas_peringatan_kontrak_hari.' hari' : 'Belum diatur' }}
                 </p>
-                @if ($this->pengaturan->batas_peringatan_kontrak_hari !== null)
-                    <p class="mt-1 mb-0 text-sm text-ink-muted">sebelum tanggal berakhir</p>
-                @endif
             </div>
-            <p class="m-0 border-t border-divider pt-4 text-sm text-ink-muted sm:col-span-2">Diubah oleh pengelola.</p>
         </section>
     @endcan
 </section>

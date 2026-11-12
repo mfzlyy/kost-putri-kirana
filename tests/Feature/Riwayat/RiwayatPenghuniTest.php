@@ -26,13 +26,13 @@ it('F-14 butir 1: penghuni melihat periode, nominal, tanggal bayar, tanggal dite
     buatPembayaranDiterima($kontrak, '2026-09-01', '2026-09-08', '2026-09-09 10:00');
 
     halamanRiwayat($kontrak->penghuni->user)
-        ->assertSee('Riwayat transaksi')
-        ->assertSee('Pembayaran yang sudah diterima pengelola.')
+        ->assertSee('Riwayat')
+        ->assertDontSee('Pembayaran yang sudah diterima pengelola.')
         ->assertSee('September 2026')
         ->assertSee('Rp1.400.000')
         ->assertSee('8 Sep')
         ->assertSee('9 Sep')
-        ->assertSee('Dibayar 8 Sep, diterima 9 Sep')
+        ->assertSee('Dibayar 8 Sep, Diterima 9 Sep')
         ->assertSee('Lunas');
 });
 
@@ -117,7 +117,7 @@ it('F-14: ringkasan Sejak dan jumlah kali serta total benar', function () {
         ->assertSee('3 kali, Rp3.600.000');
 });
 
-it('F-14: Tampilkan k lagi muncul bila lebih dari 12, menambah baris, dan hilang bila semua tampil', function () {
+it('F-14: Lainnya muncul bila lebih dari 12, menambah baris, dan hilang bila semua tampil', function () {
     $kontrak = buatKontrakUji('05', 'Maya Sari');
     foreach (range(1, 15) as $n) {
         $periode = Carbon::parse('2026-10-01')->subMonthsNoOverflow($n);
@@ -127,14 +127,14 @@ it('F-14: Tampilkan k lagi muncul bila lebih dari 12, menambah baris, dan hilang
     $komponen = halamanRiwayat($kontrak->penghuni->user);
 
     expect($komponen->instance()->barisPenghuni)->toHaveCount(12);
-    $komponen->assertSee('Tampilkan 3 lagi')
+    $komponen->assertSee('Lainnya')
         ->call('tampilkanLagi');
 
     expect($komponen->instance()->barisPenghuni)->toHaveCount(15);
-    $komponen->assertDontSee('lagi');
+    $komponen->assertDontSee('Lainnya');
 });
 
-it('F-14: langkah Tampilkan lagi paling banyak 12', function () {
+it('F-14: Lainnya menambah paling banyak 12 baris', function () {
     $kontrak = buatKontrakUji('05', 'Maya Sari');
     foreach (range(1, 30) as $n) {
         $periode = Carbon::parse('2026-10-01')->subMonthsNoOverflow($n);
@@ -142,11 +142,11 @@ it('F-14: langkah Tampilkan lagi paling banyak 12', function () {
     }
 
     halamanRiwayat($kontrak->penghuni->user)
-        ->assertSee('Tampilkan 12 lagi')
+        ->assertSee('Lainnya')
         ->call('tampilkanLagi')
-        ->assertSee('Tampilkan 6 lagi')
+        ->assertSee('Lainnya')
         ->call('tampilkanLagi')
-        ->assertDontSee('lagi');
+        ->assertDontSee('Lainnya');
 });
 
 it('F-14: baris diurut periode terbaru di atas', function () {
@@ -171,7 +171,7 @@ it('F-14: tanpa pembayaran diterima tampil "Belum ada pembayaran yang diterima."
 it('penghuni tanpa baris penghuni melihat pesan belum dilengkapi', function () {
     halamanRiwayat(User::factory()->penghuni()->create())
         ->assertOk()
-        ->assertSee('Riwayat transaksi')
+        ->assertSee('Riwayat')
         ->assertSee('Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.');
 });
 

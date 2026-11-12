@@ -40,7 +40,7 @@ it('F-07: pengelola melihat kamar, nama, tanggal berformat, tarif rupiah, dan st
     $this->actingAs(User::factory()->pengelola()->create())
         ->get('/kontrak?status=semua')
         ->assertOk()
-        ->assertSeeInOrder(['Kamar', 'Penghuni', 'Mulai', 'Berakhir', 'Tarif per bulan', 'Status'])
+        ->assertSeeInOrder(['Kamar', 'Penghuni', 'Mulai', 'Berakhir', 'Tarif', 'Status'])
         ->assertSee('Anisa Putri')
         ->assertSee('Rina Maharani')
         ->assertSee('1 Jan 2026')
@@ -48,8 +48,8 @@ it('F-07: pengelola melihat kamar, nama, tanggal berformat, tarif rupiah, dan st
         ->assertSee('Rp1.350.000')
         ->assertSee('1 Jan 2025 sampai 31 Des 2025')
         ->assertSee('Aktif')
-        ->assertSee('Buat kontrak')
-        ->assertSee('1 kontrak aktif. Perpanjangan dicatat sebagai kontrak baru agar riwayat lama tetap ada.');
+        ->assertSee('Buat')
+        ->assertDontSee('Perpanjangan dicatat sebagai kontrak baru agar riwayat lama tetap ada.');
 });
 
 it('F-07: filter bawaan aktif; berakhir dan semua dipilih lewat query; nilai lain dianggap aktif', function () {
@@ -131,12 +131,12 @@ it('F-07, F-08: pemilik melihat daftar dan bagian akan berakhir tanpa tombol bua
         ->get('/kontrak')
         ->assertOk()
         ->assertSee('Anisa Putri')
-        ->assertSee('Berakhir dalam 30 hari')
-        ->assertSee('9 hari lagi')
-        ->assertDontSee('Buat kontrak')
+        ->assertSee('Segera Berakhir')
+        ->assertSee('9 Hari Lagi')
+        ->assertDontSee('data-test="buat-kontrak"', false)
         ->assertDontSeeHtml('>Perpanjang</a>')
         ->assertDontSeeHtml('>Akhiri</button>')
-        ->assertDontSee('Akhiri kontrak');
+        ->assertDontSee('data-test="akhiri-kontrak"', false);
 });
 
 it('F-07: pengelola melihat aksi perpanjang dan akhiri pada kontrak aktif saja', function () {

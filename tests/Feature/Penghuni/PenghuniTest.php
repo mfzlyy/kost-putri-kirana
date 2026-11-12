@@ -40,7 +40,7 @@ it('F-06: pengelola melihat nama, kamar, telepon berformat, NIK tersamar, email,
         ->get('/penghuni')
         ->assertOk()
         ->assertSeeInOrder(['Anisa Putri', '01', '0812 3456 7801', '32**********8901', 'p01@contoh.test', 'Aktif', 'Ubah'])
-        ->assertSee('1 aktif, 0 sudah keluar. Nomor identitas disamarkan di daftar.')
+        ->assertDontSee('Nomor identitas disamarkan di daftar.')
         ->assertDontSee(NIK_UJI_DAFTAR)
         ->assertDontSee('3216 0123 4567 8901')
         ->assertDontSee('Cari penghuni');
@@ -77,7 +77,7 @@ it('F-06: keadaan kosong membedakan belum ada data dan filter tanpa hasil', func
 
     daftarPenghuniSebagai($pengelola)
         ->assertSee('Belum ada data penghuni.')
-        ->assertSee('Tambah penghuni');
+        ->assertSee('Tambah');
 
     penghuniDiKamar('01', 'Anisa Putri');
 
@@ -126,7 +126,7 @@ it('F-06: pemilik melihat daftar tanpa tombol tambah dan tanpa tautan ubah', fun
         ->assertOk()
         ->assertSee('Anisa Putri')
         ->assertSee('32**********8901')
-        ->assertDontSee('Tambah penghuni')
+        ->assertDontSee('data-test="tambah-penghuni"', false)
         ->assertDontSee('Ubah')
         ->assertDontSee(NIK_UJI_DAFTAR);
 });

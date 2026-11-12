@@ -46,16 +46,16 @@ it('F-07 butir 5: kontrak berjalan diakhiri dengan tanggal keluar hari ini; kama
     halamanKontrakSebagai(User::factory()->pengelola()->create())
         ->call('konfirmasiAkhiri', $kontrak->id)
         ->assertSet('tanggal_keluar', '2026-11-11')
-        ->assertSee('Akhiri kontrak Kamar 07?')
-        ->assertSeeInOrder(['Penghuni', 'Nadia Ramadhani', 'Masa sewa', '1 Jan 2026 sampai 30 Jun 2027', 'Tarif', 'Rp1.400.000 per bulan'])
+        ->assertSee('Akhiri Kontrak Kamar 07?')
+        ->assertSeeInOrder(['Penghuni', 'Nadia Ramadhani', 'Masa Sewa', '1 Jan 2026 sampai 30 Jun 2027', 'Tarif', 'Rp1.400.000'])
         ->assertSeeInOrder([
             'Kamar 07 menjadi kosong.',
-            'Kontrak pindah ke riwayat. Tagihan yang sudah terbit tidak berubah.',
-            'Status penghuni tidak berubah. Tandai sudah keluar di halaman Penghuni bila perlu.',
+            'Kontrak pindah ke riwayat.',
+            'Tagihan dan status penghuni tidak berubah.',
         ])
         ->assertDontSeeHtml('data-test="catatan-dialog"')
-        ->assertSee('Tanggal keluar')
-        ->assertSee('Tanggal berakhir kontrak diganti dengan tanggal ini.')
+        ->assertSee('Tanggal Keluar')
+        ->assertSee('Menggantikan tanggal berakhir.')
         ->call('akhiri')
         ->assertHasNoErrors()
         ->assertDispatched('toast-show', adalahToast('Kontrak Kamar 07 diakhiri.'));
@@ -116,7 +116,7 @@ it('F-07: kontrak yang belum dimulai diakhiri tanpa field tanggal dan tanggalnya
 
     halamanKontrakSebagai(User::factory()->pengelola()->create())
         ->call('konfirmasiAkhiri', $kontrak->id)
-        ->assertSee('Kontrak ini belum dimulai, jadi tanggalnya tidak diubah.')
+        ->assertSee('Kontrak belum dimulai, tanggalnya tidak diubah.')
         ->assertSeeHtml('data-test="catatan-dialog"')
         ->assertDontSeeHtml('data-test="input-tanggal-keluar"')
         ->call('akhiri')
@@ -229,10 +229,10 @@ it('F-07: bagian akan berakhir dan daftar diperbarui setelah kontrak diakhiri', 
 
     halamanKontrakSebagai(User::factory()->pengelola()->create())
         ->assertSee('Salsa Nabila')
-        ->assertSee('9 hari lagi')
+        ->assertSee('9 Hari Lagi')
         ->call('konfirmasiAkhiri', $kontrak->id)
         ->call('akhiri')
-        ->assertDontSee('9 hari lagi')
+        ->assertDontSee('9 Hari Lagi')
         ->assertSee('Tidak ada kontrak yang akan berakhir.')
         ->assertSee('Tidak ada kontrak yang sesuai filter.');
 });

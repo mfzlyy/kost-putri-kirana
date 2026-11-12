@@ -15,7 +15,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' => true])] class extends Component {
+new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => true])] class extends Component {
     use WithFileUploads {
         _uploadErrored as protected uploadGagalBawaan;
     }
@@ -195,12 +195,7 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
 @php
     $tagihan = $this->tagihan;
     $bulan = $tagihan->periode->locale('id')->translatedFormat('F');
-    $jatuhTempo = $tagihan->jatuh_tempo->locale('id')->translatedFormat('j M');
-    $sudahLewat = $this->hariIni->toDateString() > $tagihan->jatuh_tempo->toDateString();
     $nominal = Format::rupiah($tagihan->nominal);
-    $catatan = $sudahLewat
-        ? "Jatuh tempo {$jatuhTempo} sudah lewat. Tagihan tetap tercatat telat sampai bukti diterima pengelola."
-        : "Jatuh tempo {$jatuhTempo}. Bukti yang terkirim sampai tanggal itu tidak dihitung telat, walau baru dicek setelahnya.";
 @endphp
 
 <section class="flex w-full max-w-[880px] flex-col gap-5 md:gap-6">
@@ -209,13 +204,13 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
         <a
             href="{{ route('tagihan-saya.index') }}"
             wire:navigate
-            aria-label="Kembali ke tagihan"
+            aria-label="Kembali"
             class="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink md:hidden"
         >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         </a>
-        <a href="{{ route('tagihan-saya.index') }}" wire:navigate class="font-semibold no-underline max-md:hidden">Tagihan saya</a>
-        <h1 class="m-0 text-[17px] font-[650] md:text-[34px] md:leading-[1.05] md:font-[750] md:font-stretch-expanded md:tracking-[-0.01em]">Unggah bukti {{ $bulan }}</h1>
+        <a href="{{ route('tagihan-saya.index') }}" wire:navigate class="font-semibold no-underline max-md:hidden">Tagihan</a>
+        <h1 class="m-0 text-[17px] font-[650] md:text-[34px] md:leading-[1.05] md:font-[750] md:font-stretch-expanded md:tracking-[-0.01em]">Unggah Bukti</h1>
     </header>
 
     <div class="flex flex-col gap-5 md:flex-row md:flex-wrap md:items-start md:gap-6">
@@ -223,18 +218,16 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
         <aside class="flex flex-col gap-3.5 max-md:order-first md:order-2 md:flex-[1_1_240px]">
             <div class="md:rounded-2xl md:border md:border-border md:bg-surface md:p-5">
                 <div class="flex items-baseline justify-between gap-3 md:block">
-                    <span class="text-ink-muted md:text-sm">Transfer tepat</span>
+                    <span class="text-ink-muted md:text-sm">Nominal</span>
                     <div class="num text-[30px] leading-none font-[750] font-stretch-expanded md:text-[32px] md:leading-[1.1]" data-test="nominal">{{ $nominal }}</div>
                 </div>
-                <p class="m-0 mt-2.5 text-sm text-ink-muted md:mt-1.5 md:text-[13px]">Satu bukti untuk satu tagihan penuh. Bukti dengan nominal berbeda akan ditolak.</p>
             </div>
 
-            <p class="m-0 rounded-xl bg-primary-container p-4 text-sm text-on-primary-container max-md:hidden" data-test="catatan">{{ $catatan }}</p>
         </aside>
 
         <form wire:submit="kirim" novalidate class="flex flex-col gap-[22px] md:order-1 md:flex-[2_1_420px] md:gap-5 md:rounded-2xl md:border md:border-border md:bg-surface md:p-6">
             <div>
-                <span class="mb-1.5 block text-sm font-semibold" id="label-bukti">Foto atau PDF bukti</span>
+                <span class="mb-1.5 block text-sm font-semibold" id="label-bukti">Bukti</span>
                 <label
                     for="bukti"
                     aria-labelledby="label-bukti"
@@ -252,7 +245,7 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
                         @endif
                         <span wire:loading wire:target="bukti" class="text-[13px] text-ink-muted" role="status">Mengunggah…</span>
                     </span>
-                    <span class="shrink-0 text-sm font-semibold text-primary">{{ $bukti ? 'Ganti' : 'Pilih berkas' }}</span>
+                    <span class="shrink-0 text-sm font-semibold text-primary">{{ $bukti ? 'Ganti' : 'Pilih' }}</span>
                     <input
                         id="bukti"
                         type="file"
@@ -262,14 +255,14 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
                         @error('bukti') aria-invalid="true" aria-describedby="galat-bukti" @enderror
                     >
                 </label>
-                <p class="m-0 mt-1.5 text-[13px] text-ink-muted">JPG, PNG, atau PDF, paling besar 5 MB.</p>
+                <p class="m-0 mt-1.5 text-[13px] text-ink-muted">JPG, PNG, PDF. Maks 5 MB.</p>
                 @error('bukti')
                     <p id="galat-bukti" role="alert" class="m-0 mt-1.5 text-[13px] text-danger" data-test="galat-bukti">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="md:max-w-[260px]">
-                <label for="tanggal_bayar" class="mb-1.5 block text-sm font-semibold">Tanggal transfer</label>
+                <label for="tanggal_bayar" class="mb-1.5 block text-sm font-semibold">Tanggal Transfer</label>
                 <input
                     id="tanggal_bayar"
                     type="date"
@@ -287,8 +280,6 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
                 @enderror
             </div>
 
-            <p class="m-0 rounded-xl bg-primary-container p-3.5 text-sm text-on-primary-container md:hidden">{{ $catatan }}</p>
-
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:border-t md:border-divider md:pt-[18px]">
                 <button
                     type="submit"
@@ -296,11 +287,10 @@ new #[Title('Unggah bukti bayar')] #[Layout('layouts::app', ['tanpaTabPenghuni' 
                     wire:target="bukti,kirim"
                     class="inline-flex h-[50px] w-full cursor-pointer items-center justify-center rounded-lg bg-primary px-[18px] text-[15px] font-semibold text-white hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60 md:h-[46px] md:w-auto"
                 >
-                    <span wire:loading.remove wire:target="bukti,kirim">Kirim bukti</span>
+                    <span wire:loading.remove wire:target="bukti,kirim">Kirim</span>
                     <span wire:loading wire:target="bukti">Mengunggah…</span>
                     <span wire:loading wire:target="kirim">Mengirim…</span>
                 </button>
-                <span class="text-center text-[13px] text-ink-muted md:text-left md:text-sm">Setelah terkirim, statusnya jadi Menunggu dicek.</span>
             </div>
         </form>
     </div>

@@ -17,7 +17,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Title('Riwayat transaksi')] class extends Component {
+new #[Title('Riwayat')] class extends Component {
     use WithPagination;
 
     /** Langkah tampil bertahap di mode penghuni. */
@@ -240,7 +240,8 @@ new #[Title('Riwayat transaksi')] class extends Component {
     {{-- ===================== MODE PENGHUNI ===================== --}}
     <section class="flex w-full max-w-[880px] flex-col gap-4 lg:gap-6">
         @if ($this->penghuni === null)
-            <x-judul-halaman judul="Riwayat transaksi" deskripsi="Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos." />
+            <x-judul-halaman judul="Riwayat" />
+            <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.</p>
         @else
             @php
                 $baris = $this->barisPenghuni;
@@ -249,12 +250,7 @@ new #[Title('Riwayat transaksi')] class extends Component {
             @endphp
 
             <header class="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-x-6">
-                <div class="min-w-0">
-                    <h1 class="m-0 text-[26px] leading-[1.1] font-[750] font-stretch-expanded tracking-[-0.01em] lg:text-[34px] lg:leading-[1.05]">
-                        <span class="md:hidden">Riwayat</span><span class="max-md:hidden">Riwayat transaksi</span>
-                    </h1>
-                    <p class="mt-1.5 mb-0 text-sm text-ink-muted lg:mt-2 lg:text-[15px]">Pembayaran yang sudah diterima pengelola.</p>
-                </div>
+                <h1 class="m-0 min-w-0 text-[26px] leading-[1.1] font-[750] font-stretch-expanded tracking-[-0.01em] lg:text-[34px] lg:leading-[1.05]">Riwayat</h1>
 
                 @if ($ringkasan->jumlah > 0)
                     <p class="m-0 flex items-baseline justify-between gap-3 px-0.5 text-sm text-ink-muted md:block md:p-0 md:text-base" data-test="ringkasan">
@@ -297,7 +293,7 @@ new #[Title('Riwayat transaksi')] class extends Component {
                         <li wire:key="daftar-{{ $b->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                             <span class="font-semibold">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</span>
                             <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
-                            <span class="text-sm text-ink-muted">Dibayar {{ $tanggal($b->tanggal_bayar) }}, diterima {{ $tanggal($b->diverifikasi_pada) }}</span>
+                            <span class="text-sm text-ink-muted">Dibayar {{ $tanggal($b->tanggal_bayar) }}, Diterima {{ $tanggal($b->diverifikasi_pada) }}</span>
                             <span class="justify-self-end self-center text-status-ok">
                                 <svg width="14" height="14" viewBox="0 0 16 16" role="img" aria-label="Lunas"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             </span>
@@ -313,7 +309,7 @@ new #[Title('Riwayat transaksi')] class extends Component {
                         wire:target="tampilkanLagi"
                         class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-border-strong bg-surface px-5 text-[15px] font-semibold text-ink hover:bg-surface-muted md:h-11 md:w-fit"
                         data-test="tampilkan-lagi"
-                    >Tampilkan {{ min(12, $sisa) }} lagi</button>
+                    >Lainnya</button>
                 @endif
             @endif
         @endif
@@ -328,7 +324,7 @@ new #[Title('Riwayat transaksi')] class extends Component {
     @endphp
 
     <section class="flex w-full flex-col gap-4 lg:gap-6">
-        <x-judul-halaman judul="Riwayat transaksi" deskripsi="Pembayaran yang sudah lunas, termasuk milik penghuni yang sudah keluar." />
+        <x-judul-halaman judul="Riwayat" />
 
         {{-- Filter: sebaris di desktop, bertumpuk di ponsel --}}
         <div class="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end lg:gap-4">
@@ -337,7 +333,7 @@ new #[Title('Riwayat transaksi')] class extends Component {
                     <flux:field>
                         <flux:label>Penghuni</flux:label>
                         <flux:select wire:model.live="filterPenghuni" data-test="filter-penghuni">
-                            <flux:select.option value="">Semua penghuni</flux:select.option>
+                            <flux:select.option value="">Semua</flux:select.option>
                             @foreach ($this->opsiPenghuni as $opsi)
                                 <flux:select.option value="{{ $opsi->id }}" wire:key="opsi-penghuni-{{ $opsi->id }}">{{ $opsi->user?->nama }}{{ $keluar($opsi) ? ' (sudah keluar)' : '' }}</flux:select.option>
                             @endforeach
@@ -348,7 +344,7 @@ new #[Title('Riwayat transaksi')] class extends Component {
                     <flux:field>
                         <flux:label>Periode</flux:label>
                         <flux:select wire:model.live="filterPeriode" data-test="filter-periode">
-                            <flux:select.option value="">Semua periode</flux:select.option>
+                            <flux:select.option value="">Semua</flux:select.option>
                             @foreach ($this->opsiPeriode as $nilai => $label)
                                 <flux:select.option value="{{ $nilai }}" wire:key="opsi-periode-{{ $nilai }}">{{ $label }}</flux:select.option>
                             @endforeach
@@ -399,13 +395,13 @@ new #[Title('Riwayat transaksi')] class extends Component {
                                     </td>
                                     <td class="px-5 py-3 whitespace-nowrap" data-test="status-odoo">
                                         @if ($sinkron === null)
-                                            <span class="text-sm text-ink-muted" title="Riwayat lama, tidak dikirim ke Odoo">Data migrasi</span>
+                                            <span class="text-sm text-ink-muted" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                             <x-status jenis="ok">Terkirim</x-status>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                             <x-status jenis="tunggu">Menunggu</x-status>
                                         @elseif ($this->bisaLihatSinkronisasi)
-                                            <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal, lihat</x-status></a>
+                                            <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal</x-status></a>
                                         @else
                                             <x-status jenis="gagal">Gagal</x-status>
                                         @endif
@@ -428,18 +424,19 @@ new #[Title('Riwayat transaksi')] class extends Component {
                                 <span class="font-semibold">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="font-normal text-ink-muted">(sudah keluar)</span>@endif</span>
                                 <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
                             </div>
-                            <span class="text-sm text-ink-muted">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, diterima {{ $waktu($b->diverifikasi_pada) }}</span>
-                            <div data-test="status-odoo">
+                            <span class="text-sm text-ink-muted">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, Diterima {{ $waktu($b->diverifikasi_pada) }}</span>
+                            <div class="flex items-center gap-2" data-test="status-odoo">
+                                <span class="text-sm text-ink-muted">Odoo</span>
                                 @if ($sinkron === null)
-                                    <span class="text-sm text-ink-muted" title="Riwayat lama, tidak dikirim ke Odoo">Data migrasi</span>
+                                    <span class="text-sm text-ink-muted" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
-                                    <x-status jenis="ok">Terkirim ke Odoo</x-status>
+                                    <x-status jenis="ok">Terkirim</x-status>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
-                                    <x-status jenis="tunggu">Menunggu dikirim ke Odoo</x-status>
+                                    <x-status jenis="tunggu">Menunggu</x-status>
                                 @elseif ($this->bisaLihatSinkronisasi)
-                                    <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Odoo gagal</x-status></a>
+                                    <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal</x-status></a>
                                 @else
-                                    <x-status jenis="gagal">Odoo gagal</x-status>
+                                    <x-status jenis="gagal">Gagal</x-status>
                                 @endif
                             </div>
                         </li>

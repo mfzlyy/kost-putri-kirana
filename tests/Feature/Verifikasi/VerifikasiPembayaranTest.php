@@ -41,18 +41,19 @@ it('F-13 butir 1: antrean hanya berisi pembayaran menunggu, unggahan terlama di 
 
     expect($komponen->instance()->antrean->pluck('id')->all())->toBe([$lama->id, $baru->id]);
 
-    $komponen->assertSee('2 bukti bayar menunggu')
-        ->assertSee('Yang paling lama diunggah ada di atas. Cocokkan nominal di bukti dengan tagihan sebelum menerima.')
+    $komponen->assertSee('Verifikasi')
+        ->assertDontSee('bukti bayar menunggu')
+        ->assertDontSee('Yang paling lama diunggah ada di atas.')
         ->assertSeeInOrder(['Kamar 02, Rina', 'Kamar 01, Anisa'])
         ->assertDontSee('Kamar 03')
         ->assertDontSee('Kamar 04');
 });
 
-it('F-13: tanpa bukti menunggu tampil "Tidak ada bukti yang menunggu" tanpa panel', function () {
+it('F-13: tanpa bukti menunggu tampil "Tidak ada bukti yang menunggu" di bawah judul Verifikasi, tanpa panel', function () {
     halamanVerifikasi()
         ->assertSee('Tidak ada bukti yang menunggu')
-        ->assertSee('Bukti baru dari penghuni akan muncul di sini.')
-        ->assertDontSee('Terima pembayaran')
+        ->assertSee('Verifikasi')
+        ->assertDontSee('Terima')
         ->assertDontSee('bukti bayar menunggu');
 });
 
@@ -75,7 +76,7 @@ it('?bukti memilih item; id tidak valid, sudah diputuskan, atau bukan angka diab
     $dipilih = halamanVerifikasi(query: ['bukti' => (string) $kedua->id]);
     expect($dipilih->instance()->dipilih->id)->toBe($kedua->id)
         ->and($dipilih->instance()->panel->id)->toBe($kedua->id);
-    $dipilih->assertSee('Kamar 02, tagihan November')->assertSee('Rina Maharani');
+    $dipilih->assertSee('Kamar 02, Tagihan November')->assertSee('Rina Maharani');
 
     foreach (['999999', 'abc', '', (string) $diterima->id, '-1', '1e3'] as $nilai) {
         $komponen = halamanVerifikasi(query: ['bukti' => $nilai]);
@@ -91,7 +92,7 @@ it('bawaan desktop memilih item teratas, dan aria-current hanya pada item yang d
 
     $html = halamanVerifikasi()->html();
 
-    expect($html)->toContain('Kamar 01, tagihan November')
+    expect($html)->toContain('Kamar 01, Tagihan November')
         ->and(substr_count($html, 'aria-current="true"'))->toBe(1)
         ->and($html)->toMatch('#aria-current="true"[^>]*>\s*<span class="font-\[650\]">Kamar 01#s');
     expect($pertama->id)->toBeInt();
@@ -104,8 +105,8 @@ it('pilih() di komponen memindahkan panel, dan kembali() mengosongkan pilihan (p
     halamanVerifikasi()
         ->call('pilih', $kedua->id)
         ->assertSet('bukti', (string) $kedua->id)
-        ->assertSee('Kamar 02, tagihan November')
-        ->assertSee('Kembali ke daftar bukti')
+        ->assertSee('Kamar 02, Tagihan November')
+        ->assertSee('aria-label="Kembali"', false)
         ->call('kembali')
         ->assertSet('bukti', '')
         ->call('pilih', 987654)
@@ -131,12 +132,12 @@ it('format waktu unggah memakai tanggal kalender Asia/Jakarta, bukan UTC', funct
     expect(Format::waktuUnggah(Carbon::parse('2026-11-04 18:30', 'UTC')))->toBe('hari ini 01.30');
 });
 
-it('item telat menampilkan "Telat n hari" di antrean dan di panel', function () {
+it('item telat menampilkan "Telat n Hari" di antrean dan di panel', function () {
     siapkanBuktiMenunggu('05', 'Maya Sari', '2026-11-03 10:00', periode: '2026-10-01', jatuhTempo: '2026-10-10', nominal: 1400000);
 
     $html = halamanVerifikasi()->html();
 
-    expect(substr_count($html, 'Telat 26 hari'))->toBe(2);
+    expect(substr_count($html, 'Telat 26 Hari'))->toBe(2);
 });
 
 it('bukti tepat waktu tidak ditandai telat', function () {
@@ -217,19 +218,19 @@ it('panel gambar: pratinjau dari route bukti, keterangan jenis dan ukuran, serta
     $p = siapkanBuktiMenunggu('02', 'Rina Maharani', '2026-11-01 19:42', 'jpg');
 
     $komponen = halamanVerifikasi()
-        ->assertSee('Kamar 02, tagihan November')
+        ->assertSee('Kamar 02, Tagihan November')
         ->assertSee('Rina Maharani')
-        ->assertSee('Menunggu dicek')
-        ->assertSee('Nominal tagihan')
+        ->assertSee('Menunggu')
+        ->assertSee('Nominal')
         ->assertSee('Rp1.250.000')
         ->assertSee('5 November 2026')
         ->assertSee('1 November, 19.42')
         ->assertSee('10 November')
-        ->assertSee('Setelah diterima, tagihan jadi lunas dan dicatat ke Odoo.')
-        ->assertSee('Terima pembayaran')
-        ->assertSee('Tolak bukti')
+        ->assertDontSee('Setelah diterima, tagihan jadi lunas dan dicatat ke Odoo.')
+        ->assertSee('Terima')
+        ->assertSee('Tolak')
         ->assertSee('alt="Bukti transfer Kamar 02 November"', false)
-        ->assertSee('Buka ukuran penuh')
+        ->assertSee('Buka')
         ->assertSee('target="_blank" rel="noopener"', false);
 
     expect($komponen->html())->toContain('<img')
@@ -240,7 +241,7 @@ it('panel gambar: pratinjau dari route bukti, keterangan jenis dan ukuran, serta
 it('panel PDF: kotak "Berkas PDF" tanpa embed', function () {
     siapkanBuktiMenunggu('02', 'Rina Maharani', berkas: 'pdf');
 
-    $html = halamanVerifikasi()->assertSee('Berkas PDF')->assertSee('Buka ukuran penuh')->html();
+    $html = halamanVerifikasi()->assertSee('Berkas PDF')->assertSee('Buka')->html();
 
     expect($html)->not->toContain('<img')->not->toContain('<embed')->not->toContain('<iframe')
         ->and($html)->toMatch('#PDF, \d+ KB#');
@@ -266,15 +267,15 @@ it('dialog terima dan tolak memuat ringkasan, akibat, dan field alasan sesuai sp
     siapkanBuktiMenunggu('02', 'Rina Maharani');
 
     halamanVerifikasi()
-        ->assertSee('Terima pembayaran Kamar 02 November?')
-        ->assertSee('Tagihan menjadi lunas.')
-        ->assertSee('Pembayaran masuk riwayat transaksi.')
-        ->assertSee('Transaksi diantrekan untuk dicatat ke Odoo.')
-        ->assertSee('Tolak bukti Kamar 02 November?')
-        ->assertSee('Alasan penolakan')
-        ->assertSee('Alasan ini tampil di Tagihan saya milik penghuni. Contoh: Nominal transfer kurang Rp100.000.')
+        ->assertSee('Terima Pembayaran Kamar 02?')
+        ->assertSee('Tagihan jadi lunas.')
+        ->assertSee('Masuk riwayat.')
+        ->assertSee('Diantrekan ke Odoo.')
+        ->assertSee('Tolak Bukti Kamar 02?')
+        ->assertSee('Alasan')
+        ->assertSee('Tampil ke penghuni. Contoh: Nominal kurang Rp100.000.')
         ->assertSee('Tagihan kembali belum dibayar.')
-        ->assertSee('Penghuni bisa mengunggah bukti baru.');
+        ->assertSee('Penghuni bisa unggah ulang.');
 });
 
 it('F-13: pemilik, penghuni, dan vendor mendapat 403 di /verifikasi-pembayaran', function (string $peran) {

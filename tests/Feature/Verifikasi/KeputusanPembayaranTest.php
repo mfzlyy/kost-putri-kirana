@@ -196,8 +196,8 @@ it('F-13: halaman Terima mengubah data, menampilkan toast, dan memilih item beri
         ->assertDispatched('toast-show')
         ->assertDispatched('antrean-verifikasi', jumlah: 1)
         ->assertSet('bukti', '')
-        ->assertSee('1 bukti bayar menunggu')
-        ->assertSee('Kamar 02, tagihan November');
+        ->assertDontSee('bukti bayar menunggu')
+        ->assertSee('Kamar 02, Tagihan November');
 
     expect($komponen->instance()->panel->id)->toBe($kedua->id)
         ->and($pertama->fresh()->status_verifikasi)->toBe(StatusVerifikasi::Diterima)
@@ -283,7 +283,7 @@ it('F-13: bukti yang sudah diputuskan pihak lain memunculkan toast peringatan da
     $komponen->call('terima', $basi->id)
         ->assertDispatched('toast-show', fn ($nama, $data) => str_contains(json_encode($data), 'warning') && str_contains(json_encode($data), 'Bukti ini sudah diputuskan. Daftar sudah diperbarui.'))
         ->assertSet('bukti', '')
-        ->assertSee('1 bukti bayar menunggu');
+        ->assertDontSee('bukti bayar menunggu');
 
     expect(SinkronisasiErp::query()->count())->toBe(1)
         ->and($komponen->instance()->panel->id)->toBe($lain->id);

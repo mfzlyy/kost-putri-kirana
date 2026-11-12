@@ -15,7 +15,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Title('Tagihan saya')] class extends Component {
+new #[Title('Tagihan')] class extends Component {
     use WithPagination;
 
     public function mount(): void
@@ -191,28 +191,14 @@ new #[Title('Tagihan saya')] class extends Component {
 
 <section class="flex w-full max-w-[880px] flex-col gap-4 lg:gap-6">
     @if ($penghuni === null)
-        <x-judul-halaman judul="Tagihan saya" deskripsi="Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos." />
+        <x-judul-halaman judul="Tagihan" />
+        <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.</p>
     @else
         @php
-            $kontrak = $penghuni->kontrakAktif;
-            $namaDepan = explode(' ', trim((string) $penghuni->user?->nama))[0];
             $utama = $this->kartuUtama;
         @endphp
 
-        {{-- Kepala: ponsel berupa header sederhana tanpa bilah gelap, desktop berupa judul halaman. --}}
-        <header class="flex items-center gap-3 max-md:-mb-1 md:block">
-            <x-app-logo-icon aria-hidden="true" class="h-[29px] w-6 shrink-0 md:hidden" />
-            <div class="min-w-0 leading-[1.2]">
-                <h1 class="m-0 text-[17px] font-[650] md:text-[34px] md:leading-[1.05] md:font-[750] md:font-stretch-expanded md:tracking-[-0.01em]">Halo, {{ $namaDepan }}</h1>
-                <p class="m-0 text-[13px] text-ink-muted md:mt-2 md:text-[15px]" data-test="subjudul">
-                    @if ($kontrak)
-                        Kamar {{ $kontrak->kamar?->nomor_kamar }}. Tarif {{ Format::rupiah($kontrak->tarif_bulanan) }} per bulan.
-                    @else
-                        Belum ada kontrak aktif.
-                    @endif
-                </p>
-            </div>
-        </header>
+        <x-judul-halaman judul="Tagihan" />
 
         {{-- Kartu utama --}}
         <section class="flex flex-col gap-2.5 rounded-2xl border border-border bg-surface px-[18px] py-5 md:p-6" aria-labelledby="judul-utama" data-test="kartu-utama">
@@ -228,16 +214,16 @@ new #[Title('Tagihan saya')] class extends Component {
                         <div class="num text-[38px] leading-none font-[750] font-stretch-expanded tracking-[-0.01em] md:text-[44px] md:leading-[1.05]">{{ Format::rupiah($b['nominal']) }}</div>
 
                         @if ($b['telatHari'] > 0)
-                            <x-status jenis="telat">Lewat jatuh tempo {{ $jatuhTempo }}, telat {{ $b['telatHari'] }} hari</x-status>
+                            <x-status jenis="telat">Jatuh Tempo {{ $jatuhTempo }}, Telat {{ $b['telatHari'] }} Hari</x-status>
                         @elseif ($sisaHari === 0)
-                            <p class="m-0 text-sm md:text-[15px]">Jatuh tempo hari ini</p>
+                            <p class="m-0 text-sm md:text-[15px]">Jatuh Tempo Hari Ini</p>
                         @else
-                            <p class="m-0 text-sm md:text-[15px]">Jatuh tempo <strong class="font-semibold">{{ $jatuhTempo }}</strong>, {{ $sisaHari }} hari lagi</p>
+                            <p class="m-0 text-sm md:text-[15px]">Jatuh Tempo <strong class="font-semibold">{{ $jatuhTempo }}</strong>, {{ $sisaHari }} Hari Lagi</p>
                         @endif
 
                         @if ($b['alasanDitolak'] !== null)
                             <div role="status" class="rounded-[10px] bg-danger-container px-3.5 py-3 text-sm text-on-danger-container" data-test="kotak-ditolak">
-                                Bukti sebelumnya ditolak: {{ $b['alasanDitolak'] }}. Unggah bukti baru.
+                                Ditolak{{ $b['ditolakPada'] ? ', '.$b['ditolakPada']->locale('id')->translatedFormat('j M') : '' }}: {{ $b['alasanDitolak'] }}
                             </div>
                         @endif
                     </div>
@@ -247,28 +233,27 @@ new #[Title('Tagihan saya')] class extends Component {
                             href="{{ route('tagihan-saya.unggah', $b['id']) }}"
                             wire:navigate
                             class="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-white no-underline hover:bg-primary-hover hover:text-white md:h-11"
-                        >Unggah bukti bayar</a>
+                        >Unggah Bukti</a>
                         @if ($utama['lainnya'] > 0)
-                            <p class="m-0 text-[13px] text-ink-muted" data-test="tagihan-lain">{{ $utama['lainnya'] }} tagihan lain juga belum dibayar.</p>
+                            <p class="m-0 text-[13px] text-ink-muted" data-test="tagihan-lain">{{ $utama['lainnya'] }} tagihan lain belum dibayar.</p>
                         @endif
                     </div>
                 </div>
             @elseif ($utama['keadaan'] === 'menunggu')
                 <h2 id="judul-utama" class="m-0 text-base font-[650]">Bukti {{ $utama['baris']['periode']->locale('id')->translatedFormat('F') }} sedang dicek pengelola.</h2>
-                <x-status jenis="tunggu">Menunggu dicek</x-status>
+                <x-status jenis="tunggu">Menunggu</x-status>
             @elseif ($utama['keadaan'] === 'lunas')
                 <h2 id="judul-utama" class="m-0 text-base font-[650]">Semua tagihan sudah lunas.</h2>
                 <x-status jenis="ok">Lunas</x-status>
             @else
                 <h2 id="judul-utama" class="m-0 text-base font-[650]">Belum ada tagihan.</h2>
-                <p class="m-0 text-sm text-ink-muted">Tagihan muncul di sini setelah pengelola menerbitkannya.</p>
             @endif
         </section>
 
         {{-- Semua tagihan --}}
         @if ($this->adaTagihan)
             <section aria-labelledby="judul-semua" class="flex flex-col gap-3">
-                <h2 id="judul-semua" class="m-0 text-[17px] font-[650] md:text-lg">Semua tagihan</h2>
+                <h2 id="judul-semua" class="m-0 text-[17px] font-[650] md:text-lg">Riwayat Tagihan</h2>
 
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
@@ -276,7 +261,7 @@ new #[Title('Tagihan saya')] class extends Component {
                         <thead>
                             <tr>
                                 <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Periode</th>
-                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Jatuh tempo</th>
+                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Jatuh Tempo</th>
                                 <th scope="col" class="border-b border-border px-5 py-3.5 text-right text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nominal</th>
                                 <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
                             </tr>

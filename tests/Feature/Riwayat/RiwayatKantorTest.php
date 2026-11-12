@@ -59,8 +59,8 @@ it('F-14: pengelola dan pemilik melihat semua pembayaran diterima dengan nama, k
 
     expect($komponen->instance()->halamanKantor->total())->toBe(5);
 
-    $komponen->assertSee('Riwayat transaksi')
-        ->assertSee('Pembayaran yang sudah lunas, termasuk milik penghuni yang sudah keluar.')
+    $komponen->assertSee('Riwayat')
+        ->assertDontSee('Pembayaran yang sudah lunas, termasuk milik penghuni yang sudah keluar.')
         ->assertSee('Anisa Putri')
         ->assertSee('Rina Maharani')
         ->assertSee('Dina Pratiwi')
@@ -182,12 +182,12 @@ it('F-14 butir 3: status Odoo terkirim, menunggu, gagal, dan data migrasi', func
     $komponen = halamanRiwayatKantor()
         ->assertSee('Terkirim')
         ->assertSee('Menunggu')
-        ->assertSee('Gagal, lihat')
-        ->assertSee('Data migrasi')
+        ->assertSee('Gagal')
+        ->assertSee('Data Migrasi')
         ->assertSee('title="Riwayat lama, tidak dikirim ke Odoo"', false)
-        ->assertSee('Terkirim ke Odoo')
-        ->assertSee('Menunggu dikirim ke Odoo')
-        ->assertSee('Odoo gagal');
+        ->assertSee('Odoo')
+        ->assertDontSee('Terkirim ke Odoo')
+        ->assertDontSee('Odoo gagal');
 
     expect($komponen->html())->toContain('href="'.route('sinkronisasi-erp.index').'"');
 });
@@ -195,7 +195,7 @@ it('F-14 butir 3: status Odoo terkirim, menunggu, gagal, dan data migrasi', func
 it('F-14 butir 3: pemilik melihat Gagal tanpa tautan ke Sinkronisasi ERP', function () {
     dataRiwayatKantor();
 
-    $html = halamanRiwayatKantor('pemilik')->assertSee('Gagal')->assertDontSee('Gagal, lihat')->html();
+    $html = halamanRiwayatKantor('pemilik')->assertSee('Gagal')->html();
 
     expect($html)->not->toContain(route('sinkronisasi-erp.index'));
 });
@@ -204,7 +204,7 @@ it('F-14: tanpa data migrasi pembayaran dengan sinkronisasi tidak diberi label D
     $kontrak = buatKontrakUji('01', 'Anisa Putri');
     buatPembayaranDiterima($kontrak, '2026-10-01', '2026-10-08', '2026-10-09 10:00', sinkron: 'terkirim');
 
-    halamanRiwayatKantor()->assertDontSee('Data migrasi');
+    halamanRiwayatKantor()->assertDontSee('Data Migrasi');
 });
 
 it('F-14: paginasi 20 per halaman, ringkasan dari seluruh hasil filter, dan halaman kembali ke 1 saat filter berubah', function () {
@@ -236,8 +236,7 @@ it('F-14: kosong tanpa pembayaran diterima, dan kosong karena filter', function 
     halamanRiwayatKantor()
         ->assertSee('Belum ada pembayaran yang diterima.')
         ->assertSee('0 pembayaran')
-        ->assertSee('Semua penghuni')
-        ->assertSee('Semua periode');
+        ->assertSee('Semua');
 
     $data = dataRiwayatKantor();
 

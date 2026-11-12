@@ -165,7 +165,7 @@ it('F-06: pilihan akun hanya memuat akun penghuni aktif yang belum punya data', 
 it('F-06: callout muncul dan tombol simpan nonaktif bila tidak ada akun yang memenuhi syarat', function () {
     formPenghuniSebagai(User::factory()->pengelola()->create())
         ->assertSee('Semua akun penghuni sudah punya data.')
-        ->assertSee('Akun pengguna')
+        ->assertSee('Akun')
         ->assertSeeHtml(route('akun.index'))
         ->assertSeeHtml('data-test="simpan-penghuni"')
         ->assertSeeHtml('disabled');
@@ -220,14 +220,14 @@ it('F-06: tandai keluar berhasil tanpa kontrak aktif dan tidak mengubah status a
 
     formPenghuniSebagai($pengelola, $penghuni)
         ->call('nonaktifkanPenghuni')
-        ->assertSee('Penghuni sudah keluar');
+        ->assertSee('Sudah Keluar');
 
     expect($penghuni->fresh()->status_penghuni)->toBe(StatusPenghuni::Nonaktif)
         ->and($penghuni->user->fresh()->status_akun)->toBe(StatusAkun::Aktif);
 
     formPenghuniSebagai($pengelola, $penghuni->fresh())
         ->call('aktifkanKembali')
-        ->assertSee('Penghuni keluar');
+        ->assertSee('Penghuni Keluar');
 
     expect($penghuni->fresh()->status_penghuni)->toBe(StatusPenghuni::Aktif)
         ->and($penghuni->user->fresh()->status_akun)->toBe(StatusAkun::Aktif);

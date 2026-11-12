@@ -16,7 +16,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Title('Akun pengguna')] class extends Component {
+new #[Title('Akun')] class extends Component {
     use WithPagination;
 
     #[Url(as: 'peran')]
@@ -252,26 +252,23 @@ new #[Title('Akun pengguna')] class extends Component {
 }; ?>
 
 <section class="flex w-full flex-col gap-4 lg:gap-6">
-    <x-judul-halaman
-        judul="Akun pengguna"
-        deskripsi="Akun penghuni dan vendor. Akun yang dinonaktifkan tidak bisa masuk, datanya tetap tersimpan."
-    >
+    <x-judul-halaman judul="Akun">
         <flux:modal.trigger name="tambah-akun">
             <flux:button variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-akun-button">
-                Tambah akun
+                Tambah
             </flux:button>
         </flux:modal.trigger>
     </x-judul-halaman>
 
     <div class="flex flex-col gap-3 lg:-m-1 lg:flex-row lg:flex-wrap lg:gap-x-4 lg:gap-y-3 lg:overflow-hidden lg:p-1">
         <div role="group" aria-label="Saring peran" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
-            <x-chip-filter :aktif="$filterPeran === ''" wire:click="$set('filterPeran', '')">Semua peran</x-chip-filter>
+            <x-chip-filter :aktif="$filterPeran === ''" :jumlah="$this->hitungan['penghuni'] + $this->hitungan['vendor']" wire:click="$set('filterPeran', '')">Semua</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'penghuni'" :jumlah="$this->hitungan['penghuni']" wire:click="$set('filterPeran', 'penghuni')">Penghuni</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'vendor'" :jumlah="$this->hitungan['vendor']" wire:click="$set('filterPeran', 'vendor')">Vendor</x-chip-filter>
         </div>
 
         <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:relative lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:before:absolute lg:before:-start-2 lg:before:top-1.5 lg:before:h-6 lg:before:w-px lg:before:bg-border lg:before:content-['']">
-            <x-chip-filter :aktif="$filterStatus === ''" wire:click="$set('filterStatus', '')">Semua status</x-chip-filter>
+            <x-chip-filter :aktif="$filterStatus === ''" :jumlah="$this->hitungan['aktif'] + $this->hitungan['nonaktif']" wire:click="$set('filterStatus', '')">Semua</x-chip-filter>
             <x-chip-filter :aktif="$filterStatus === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
             <x-chip-filter :aktif="$filterStatus === 'nonaktif'" :jumlah="$this->hitungan['nonaktif']" wire:click="$set('filterStatus', 'nonaktif')">Nonaktif</x-chip-filter>
         </div>
@@ -374,7 +371,7 @@ new #[Title('Akun pengguna')] class extends Component {
     @php($akunNonaktif = $this->akunNonaktif)
     <x-dialog-konfirmasi
         name="nonaktifkan-akun"
-        :judul="'Nonaktifkan akun '.$akunNonaktif?->nama.'?'"
+        :judul="'Nonaktifkan Akun '.$akunNonaktif?->nama.'?'"
         label-aksi="Nonaktifkan"
         wire:click="nonaktifkan({{ (int) $idNonaktif }})"
         data-test="konfirmasi-nonaktifkan-akun"
@@ -387,8 +384,8 @@ new #[Title('Akun pengguna')] class extends Component {
         </x-slot:ringkasan>
 
         <x-slot:akibat>
-            <li>Pengguna ini tidak bisa masuk sampai diaktifkan kembali.</li>
-            <li>Sesi yang sedang berjalan langsung berakhir.</li>
+            <li>Tidak bisa masuk sampai diaktifkan.</li>
+            <li>Sesi berjalan langsung berakhir.</li>
         </x-slot:akibat>
     </x-dialog-konfirmasi>
 
@@ -402,8 +399,7 @@ new #[Title('Akun pengguna')] class extends Component {
             {{-- Header desktop --}}
             <div class="flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4 max-sm:hidden">
                 <div>
-                    <h2 id="judul-tambah-akun" class="m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded">Tambah akun</h2>
-                    <p class="mt-2 mb-0 text-sm text-ink-muted">Akun baru langsung aktif dan dapat dipakai masuk.</p>
+                    <h2 id="judul-tambah-akun" class="m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded">Tambah Akun</h2>
                 </div>
                 <flux:modal.close>
                     <button type="button" aria-label="Tutup" class="-me-2 -mt-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink">
@@ -419,7 +415,7 @@ new #[Title('Akun pengguna')] class extends Component {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                     </button>
                 </flux:modal.close>
-                <span class="text-[17px] font-[650]">Tambah akun</span>
+                <span class="text-[17px] font-[650]">Tambah Akun</span>
             </div>
 
             {{-- Isi: hanya bagian ini yang bergulir --}}
@@ -466,10 +462,10 @@ new #[Title('Akun pengguna')] class extends Component {
 
                 @if ($peran === 'vendor')
                     <div class="flex flex-col gap-4 rounded-xl bg-background p-4" data-test="panel-vendor">
-                        <p class="m-0 font-[650]">Data vendor</p>
+                        <p class="m-0 font-[650]">Data Vendor</p>
 
                         <flux:field>
-                            <flux:label>Nama vendor</flux:label>
+                            <flux:label>Nama Vendor</flux:label>
                             <flux:input wire:model.blur="nama_vendor" required maxlength="120" />
                             <flux:description>Awalnya diisi dari nama akun.</flux:description>
                             <flux:error name="nama_vendor" />
@@ -477,13 +473,13 @@ new #[Title('Akun pengguna')] class extends Component {
 
                         <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                             <flux:field>
-                                <flux:label>Jenis layanan</flux:label>
+                                <flux:label>Jenis Layanan</flux:label>
                                 <flux:input wire:model="jenis_layanan" required maxlength="80" />
                                 <flux:error name="jenis_layanan" />
                             </flux:field>
 
                             <flux:field>
-                                <flux:label>Telepon (opsional)</flux:label>
+                                <flux:label>Telepon</flux:label>
                                 <flux:input wire:model="no_telepon" maxlength="20" inputmode="tel" />
                                 <flux:error name="no_telepon" />
                             </flux:field>
@@ -494,18 +490,18 @@ new #[Title('Akun pengguna')] class extends Component {
                 <div class="flex flex-col gap-1.5">
                     <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                         <flux:field>
-                            <flux:label>Password awal</flux:label>
+                            <flux:label>Password Awal</flux:label>
                             <flux:input wire:model="password" type="password" required autocomplete="new-password" viewable />
                             <flux:error name="password" />
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>Konfirmasi password</flux:label>
+                            <flux:label>Konfirmasi Password</flux:label>
                             <flux:input wire:model="password_confirmation" type="password" required autocomplete="new-password" viewable />
                             <flux:error name="password_confirmation" />
                         </flux:field>
                     </div>
-                    <p class="m-0 text-[13px] text-ink-muted">Minimal 8 karakter dengan huruf dan angka. Berikan langsung ke pengguna.</p>
+                    <p class="m-0 text-[13px] text-ink-muted">Minimal 8 karakter, huruf dan angka.</p>
                 </div>
             </div>
 
@@ -516,7 +512,7 @@ new #[Title('Akun pengguna')] class extends Component {
                 </flux:modal.close>
 
                 <flux:button type="submit" variant="primary" class="h-12! max-sm:w-full sm:h-11!" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
-                    Buat akun
+                    Buat
                 </flux:button>
             </div>
         </form>

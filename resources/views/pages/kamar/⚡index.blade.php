@@ -129,13 +129,10 @@ new #[Title('Kamar')] class extends Component {
 }; ?>
 
 <section class="flex w-full flex-col gap-4 lg:gap-6">
-    <x-judul-halaman
-        judul="Kamar"
-        :deskripsi="$this->hitungan['semua'].' kamar, '.$this->hitungan['terisi'].' terisi. Status mengikuti kontrak aktif dan tidak bisa diubah manual.'"
-    >
+    <x-judul-halaman judul="Kamar">
         @if ($this->bisaKelola)
             <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-kamar">
-                Tambah kamar
+                Tambah
             </flux:button>
         @endif
     </x-judul-halaman>
@@ -157,7 +154,7 @@ new #[Title('Kamar')] class extends Component {
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kamar.' : 'Tidak ada kamar yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="h-11!">Tambah kamar</flux:button>
+                <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="h-11!">Tambah</flux:button>
             @endif
         </div>
     @else
@@ -167,9 +164,9 @@ new #[Title('Kamar')] class extends Component {
                 <thead>
                     <tr>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Kamar</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Penghuni aktif</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Penghuni</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Keterangan</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted">Tarif per bulan</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted">Tarif</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
                         @if ($this->bisaKelola)
                             <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
@@ -239,26 +236,24 @@ new #[Title('Kamar')] class extends Component {
     @endif
     </div>
 
-    <p class="m-0 text-sm text-ink-muted">Kamar yang masih punya kontrak tidak bisa dihapus. Mengubah tarif tidak mengubah tarif kontrak yang sedang berjalan.</p>
-
     @if ($this->bisaKelola)
         @php($kamarHapus = $idHapus ? $this->daftarKamar->firstWhere('id', $idHapus) : null)
         <x-dialog-konfirmasi
             name="hapus-kamar"
             :judul="'Hapus Kamar '.$nomorHapus.'?'"
-            label-aksi="Hapus kamar"
+            label-aksi="Hapus"
             wire:click="hapus({{ (int) $idHapus }})"
             data-test="konfirmasi-hapus-kamar"
         >
             <x-slot:ringkasan>
                 <dt>Tarif</dt>
-                <dd>{{ $kamarHapus ? \App\Support\Format::rupiah($kamarHapus->tarif_bulanan).' per bulan' : '' }}</dd>
+                <dd>{{ $kamarHapus ? \App\Support\Format::rupiah($kamarHapus->tarif_bulanan) : '' }}</dd>
                 <dt>Keterangan</dt>
                 <dd>{{ filled($kamarHapus?->keterangan) ? $kamarHapus->keterangan : '-' }}</dd>
             </x-slot:ringkasan>
 
             <x-slot:akibat>
-                <li>Kamar ini akan dihapus permanen.</li>
+                <li>Kamar dihapus permanen.</li>
             </x-slot:akibat>
         </x-dialog-konfirmasi>
     @endif

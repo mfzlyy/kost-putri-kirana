@@ -7,7 +7,7 @@ it('sidebar semua peran memakai blok pengguna yang sama dengan tautan dan tombol
 
     $html = $this->actingAs($user)->get(route($user->peran->halamanUtama()))->assertOk()->getContent();
 
-    preg_match('/<a\s[^>]*class="([^"]*)"[^>]*>\s*Ganti password\s*<\/a>/', $html, $tautan);
+    preg_match('/<a\s[^>]*class="([^"]*)"[^>]*>\s*Ganti Password\s*<\/a>/', $html, $tautan);
     preg_match('/<button\s[^>]*class="([^"]*)"[^>]*>\s*Keluar\s*<\/button>/', $html, $tombol);
 
     expect($tautan)->not->toBeEmpty()
@@ -16,7 +16,7 @@ it('sidebar semua peran memakai blok pengguna yang sama dengan tautan dan tombol
         ->and($tautan[1])->toMatch('/\bunderline\b/')
         ->and($tautan[1])->not->toMatch('/font-semibold|font-bold/')
         ->and($html)->toContain('Nama Uji '.$peran)
-        ->and(substr_count($html, 'Ganti password'))->toBe(1)
+        ->and(substr_count($html, 'Ganti Password'))->toBe(1)
         ->and(substr_count($html, 'data-test="logout-button"'))->toBe(1);
 })->with(['pemilik', 'pengelola', 'penghuni', 'vendor']);
 

@@ -352,6 +352,39 @@ mengikuti status ATB-07: diajukan 1, ditugaskan 2, dikerjakan 3, selesai 4. Sela
 - **Penanda Odoo**: status Terkirim atau Gagal memakai ikon status yang sama; "Gagal" menaut ke halaman
   Sinkronisasi ERP.
 
+## Penulisan
+
+Keputusan tim 13 November 2026. Mockup tetap acuan tata letak dan warna, bukan teks. Teks di mockup lama yang
+bertentangan dengan aturan ini tidak dipakai.
+
+1. **Judul halaman = label menu.** Satu atau dua kata, Title Case.
+2. **Tanpa deskripsi** di bawah judul dan tanpa catatan penjelas di bawah daftar. Yang tetap: data, ringkasan
+   angka, keadaan kosong, galat, toast, callout yang memblokir aksi, alasan tombol nonaktif, dan bantuan isian yang
+   dibutuhkan (format NIK, telepon, "JPG, PNG, PDF. Maks 5 MB.").
+3. **Tombol satu kata**; dua kata hanya bila perlu (Terbitkan {Bulan}, Tandai Keluar, Ganti Password, Unggah Bukti).
+   Title Case.
+4. **Label isian, judul kolom, chip, status, judul bagian, dan judul dialog: Title Case**, singkat. Judul dialog
+   tetap berbentuk tanya ("Hapus Kamar 05?").
+5. **Kalimat tetap huruf kapital di awal saja**: pesan galat, toast, keadaan kosong, isi dialog, bantuan isian.
+   Teks yang dikunci PRD tidak diubah ("Belum ada tagihan", "Tidak ada kontrak yang akan berakhir", "Anda tidak
+   memiliki akses ke halaman ini", "Email atau password salah.", pesan validasi berkas F-12).
+6. **Chip "Semua" paling kiri dan berangka.** Chip bawaan tidak berubah (Penghuni dan Kontrak: Aktif).
+
+Label menu dan judul halaman (satu sumber: `App\Support\MenuNavigasi`):
+
+| Peran | Label menu = judul h1 |
+|---|---|
+| Pemilik | Dasbor, Kamar, Penghuni, Kontrak, Tagihan, Riwayat, Keluhan, Pengaturan |
+| Pengelola | Verifikasi, Tagihan, Kamar, Penghuni, Kontrak, Riwayat, Keluhan, Sinkronisasi, Akun, Pengaturan |
+| Penghuni | Tagihan, Riwayat, Keluhan, Profil (sidebar desktop dan tab bawah sama) |
+| Vendor | Pekerjaan |
+
+Judul subhalaman: Tambah Kamar, Ubah Kamar, Tambah Penghuni, Ubah Penghuni, Buat Kontrak, Perpanjang Kontrak,
+Unggah Bukti, Ganti Password. Halaman login: Masuk. Blok pengguna sidebar: Ganti Password, Keluar.
+
+Angka antrean di menu (Verifikasi): pil 22px, 13px, angka tabular. Item tidak aktif berlatar putih 14% dan teks
+putih; item aktif berlatar Primary `#0E5E57`, teks putih, 600. Label menu satu baris (elipsis dan `title` bila
+tetap tidak muat).
 ## Peran dan halaman
 
 - **Khusus pemilik**: Dashboard.

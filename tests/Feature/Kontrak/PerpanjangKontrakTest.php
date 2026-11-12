@@ -84,12 +84,12 @@ it('F-07: formulir perpanjang menampilkan ringkasan, catatan, dan tarif kamar se
     $lama = kontrakAkanBerakhir();
 
     formPerpanjangSebagai(User::factory()->pengelola()->create(), $lama)
-        ->assertSee('Perpanjang kontrak Kamar 03')
+        ->assertSee('Perpanjang Kontrak')
         ->assertSeeInOrder(['Penghuni', 'Salsa Nabila', 'Kamar', '03', 'Mulai', '21 November 2026'])
-        ->assertSee('Kontrak lama (21 Mei 2026 sampai 20 November 2026, Rp1.250.000 per bulan) ditutup dan tetap tersimpan di riwayat. Kontrak baru dimulai 21 November 2026.')
+        ->assertSee('Kontrak lama (21 Mei 2026 sampai 20 November 2026) ditutup dan tersimpan di riwayat.')
         ->assertSet('tarif_bulanan', '1.400.000')
-        ->assertSee('Diisi dari tarif Kamar 03 saat ini. Tarif kontrak lama Rp1.250.000.')
-        ->assertSee('Simpan perpanjangan');
+        ->assertSee('Tarif lama Rp1.250.000.')
+        ->assertSee('Simpan');
 });
 
 it('F-07: tanggal berakhir baru harus setelah tanggal mulai baru', function (string $tanggal) {

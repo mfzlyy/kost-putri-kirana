@@ -14,7 +14,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Title('Verifikasi pembayaran')] class extends Component {
+new #[Title('Verifikasi')] class extends Component {
     /** ID pembayaran yang dibuka (?bukti=). Nilai yang tidak ada di antrean diabaikan. */
     #[Url(as: 'bukti')]
     public string $bukti = '';
@@ -250,14 +250,10 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
 
 <section class="flex w-full flex-col gap-4 lg:gap-7">
     {{-- Ponsel yang sedang membuka satu bukti tidak memakai kepala halaman; judulnya ada di panel periksa. --}}
-    @if ($jumlah > 0)
-        <x-judul-halaman
-            :class="$adaPilihan ? 'max-lg:hidden' : ''"
-            :judul="$jumlah.' bukti bayar menunggu'"
-            deskripsi="Yang paling lama diunggah ada di atas. Cocokkan nominal di bukti dengan tagihan sebelum menerima."
-        />
-    @else
-        <x-judul-halaman judul="Tidak ada bukti yang menunggu" deskripsi="Bukti baru dari penghuni akan muncul di sini." />
+    <x-judul-halaman :class="$adaPilihan ? 'max-lg:hidden' : ''" judul="Verifikasi" />
+
+    @if ($jumlah === 0)
+        <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">Tidak ada bukti yang menunggu.</p>
     @endif
 
     @if ($panel)
@@ -288,7 +284,7 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
                         <span class="text-[13px] text-ink-muted">{{ $tagihanItem->periode->locale('id')->translatedFormat('F') }}, diunggah {{ Format::waktuUnggah($item->diunggah_pada) }}</span>
                         <span class="justify-self-end">
                             @if ($telat)
-                                <x-status jenis="telat">Telat {{ (int) $tagihanItem->jatuh_tempo->diffInDays($this->hariIni) }} hari</x-status>
+                                <x-status jenis="telat">Telat {{ (int) $tagihanItem->jatuh_tempo->diffInDays($this->hariIni) }} Hari</x-status>
                             @endif
                         </span>
                     </a>
@@ -316,17 +312,17 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
                         <a
                             href="{{ route('verifikasi-pembayaran.index') }}"
                             wire:click.prevent="kembali"
-                            aria-label="Kembali ke daftar bukti"
+                            aria-label="Kembali"
                             class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-ink lg:hidden"
                         >
                             <flux:icon.arrow-left class="size-5" />
                         </a>
                         <div class="min-w-0">
-                            <h2 id="judul-panel" class="m-0 text-lg font-[650] lg:text-xl">Kamar {{ $nomorKamar }}, tagihan {{ $bulan }}</h2>
+                            <h2 id="judul-panel" class="m-0 text-lg font-[650] lg:text-xl">Kamar {{ $nomorKamar }}, Tagihan {{ $bulan }}</h2>
                             <p class="m-0 mt-1 text-ink-muted">{{ $kontrak->penghuni?->user?->nama }}</p>
                         </div>
                     </div>
-                    <x-status jenis="tunggu">Menunggu dicek</x-status>
+                    <x-status jenis="tunggu">Menunggu</x-status>
                 </div>
 
                 <div class="flex flex-col gap-5 lg:flex-row lg:flex-wrap lg:items-stretch">
@@ -346,52 +342,51 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
                                 >
                             @endif
                             <figcaption class="text-sm">{{ strtoupper($berkas['ekstensi']) }}, {{ Format::ukuranBerkas($berkas['ukuran']) }}</figcaption>
-                            <a href="{{ $urlBukti }}" target="_blank" rel="noopener" class="text-sm font-semibold">Buka ukuran penuh</a>
+                            <a href="{{ $urlBukti }}" target="_blank" rel="noopener" class="text-sm font-semibold">Buka</a>
                         @endif
                     </figure>
 
                     <div class="flex min-w-0 flex-col gap-[18px] lg:flex-[1_1_240px]">
                         <div>
-                            <p class="m-0 text-ink-muted">Nominal tagihan</p>
+                            <p class="m-0 text-ink-muted">Nominal</p>
                             <p class="num m-0 mt-0.5 text-[30px] leading-[1.1] font-bold font-stretch-expanded lg:text-[34px]" data-test="nominal-tagihan">{{ Format::rupiah($tagihan->nominal) }}</p>
                         </div>
                         <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
-                            <dt class="text-ink-muted">Tanggal bayar</dt>
+                            <dt class="text-ink-muted">Tanggal Bayar</dt>
                             <dd class="m-0">{{ $panel->tanggal_bayar->locale('id')->translatedFormat('j F Y') }}</dd>
 
                             <dt class="text-ink-muted">Diunggah</dt>
                             <dd class="m-0">{{ $diunggah->translatedFormat('j F') }}, {{ $diunggah->format('H.i') }}</dd>
 
-                            <dt class="text-ink-muted">Jatuh tempo</dt>
+                            <dt class="text-ink-muted">Jatuh Tempo</dt>
                             <dd class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span>{{ $tagihan->jatuh_tempo->locale('id')->translatedFormat('j F') }}</span>
                                 @if ($telatPanel)
-                                    <x-status jenis="telat">Telat {{ (int) $tagihan->jatuh_tempo->diffInDays($this->hariIni) }} hari</x-status>
+                                    <x-status jenis="telat">Telat {{ (int) $tagihan->jatuh_tempo->diffInDays($this->hariIni) }} Hari</x-status>
                                 @endif
                             </dd>
                         </dl>
-                        <p class="m-0 text-sm text-ink-muted">Setelah diterima, tagihan jadi lunas dan dicatat ke Odoo.</p>
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-3 border-t border-divider pt-5 lg:flex-row lg:flex-wrap">
                     <flux:modal.trigger name="terima-pembayaran">
-                        <button type="button" class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-primary px-5 text-[15px] font-semibold text-white hover:bg-primary-hover lg:h-[46px] lg:w-auto" data-test="buka-terima">Terima pembayaran</button>
+                        <button type="button" class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-primary px-5 text-[15px] font-semibold text-white hover:bg-primary-hover lg:h-[46px] lg:w-auto" data-test="buka-terima">Terima</button>
                     </flux:modal.trigger>
                     <button
                         type="button"
                         wire:click="bukaTolak({{ $panel->id }})"
                         class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-[#E3B4AD] bg-surface px-5 text-[15px] font-semibold text-danger lg:h-[46px] lg:w-auto"
                         data-test="buka-tolak"
-                    >Tolak bukti</button>
+                    >Tolak</button>
                 </div>
             </section>
         </div>
 
         <x-dialog-konfirmasi
             name="terima-pembayaran"
-            :judul="'Terima pembayaran Kamar '.$nomorKamar.' '.$bulan.'?'"
-            label-aksi="Terima pembayaran"
+            :judul="'Terima Pembayaran Kamar '.$nomorKamar.'?'"
+            label-aksi="Terima"
             variant="biasa"
             wire:click="terima({{ $panel->id }})"
             data-test="konfirmasi-terima"
@@ -401,21 +396,21 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
                 <dd>{{ $kontrak->penghuni?->user?->nama }}</dd>
                 <dt>Nominal</dt>
                 <dd class="num">{{ Format::rupiah($tagihan->nominal) }}</dd>
-                <dt>Tanggal bayar</dt>
+                <dt>Tanggal Bayar</dt>
                 <dd>{{ $panel->tanggal_bayar->locale('id')->translatedFormat('j F Y') }}</dd>
             </x-slot:ringkasan>
 
             <x-slot:akibat>
-                <li>Tagihan menjadi lunas.</li>
-                <li>Pembayaran masuk riwayat transaksi.</li>
-                <li>Transaksi diantrekan untuk dicatat ke Odoo.</li>
+                <li>Tagihan jadi lunas.</li>
+                <li>Masuk riwayat.</li>
+                <li>Diantrekan ke Odoo.</li>
             </x-slot:akibat>
         </x-dialog-konfirmasi>
 
         <x-dialog-konfirmasi
             name="tolak-bukti"
-            :judul="'Tolak bukti Kamar '.$nomorKamar.' '.$bulan.'?'"
-            label-aksi="Tolak bukti"
+            :judul="'Tolak Bukti Kamar '.$nomorKamar.'?'"
+            label-aksi="Tolak"
             variant="bahaya"
             wire:click="tolak({{ $panel->id }})"
             data-test="konfirmasi-tolak"
@@ -429,12 +424,12 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
 
             <x-slot:akibat>
                 <li>Tagihan kembali belum dibayar.</li>
-                <li>Penghuni bisa mengunggah bukti baru.</li>
+                <li>Penghuni bisa unggah ulang.</li>
             </x-slot:akibat>
 
             <x-slot:isi>
                 <div>
-                    <label for="alasan" class="mb-1.5 block text-sm font-semibold">Alasan penolakan</label>
+                    <label for="alasan" class="mb-1.5 block text-sm font-semibold">Alasan</label>
                     <textarea
                         id="alasan"
                         wire:model="alasan"
@@ -446,7 +441,7 @@ new #[Title('Verifikasi pembayaran')] class extends Component {
                             'border-red-400' => $errors->has('alasan'),
                         ])
                     ></textarea>
-                    <p class="m-0 mt-1.5 text-[13px] text-ink-muted">Alasan ini tampil di Tagihan saya milik penghuni. Contoh: Nominal transfer kurang Rp100.000.</p>
+                    <p class="m-0 mt-1.5 text-[13px] text-ink-muted">Tampil ke penghuni. Contoh: Nominal kurang Rp100.000.</p>
                     @error('alasan')
                         <p id="galat-alasan" role="alert" class="m-0 mt-1.5 text-[13px] text-danger" data-test="galat-alasan">{{ $message }}</p>
                     @enderror

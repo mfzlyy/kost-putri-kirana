@@ -41,7 +41,7 @@ it('dialog Akhiri kontrak memakai komponen seragam dengan catatan atau field ses
         ->call('konfirmasiAkhiri', $berjalan->id);
 
     periksaBentukDialog($komponen, 'akhiri-kontrak');
-    $komponen->assertSee('Tanggal keluar')->assertSee('Akhiri kontrak');
+    $komponen->assertSee('Tanggal Keluar')->assertSee('Akhiri');
 });
 
 it('dialog Hapus kamar di daftar dan di form memakai komponen seragam', function () {
@@ -52,17 +52,17 @@ it('dialog Hapus kamar di daftar dan di form memakai komponen seragam', function
 
     periksaBentukDialog($daftar, 'hapus-kamar');
     $daftar->assertSee('Hapus Kamar 08?')
-        ->assertSeeInOrder(['Tarif', 'Rp1.250.000 per bulan', 'Keterangan', 'Lantai 2'])
-        ->assertSee('Kamar ini akan dihapus permanen.')
-        ->assertSee('Hapus kamar');
+        ->assertSeeInOrder(['Tarif', 'Rp1.250.000', 'Keterangan', 'Lantai 2'])
+        ->assertSee('Kamar dihapus permanen.')
+        ->assertSee('Hapus');
 
     $form = Livewire::actingAs($pengelola)->test('pages::kamar.form', ['kamar' => $kamar]);
 
     periksaBentukDialog($form, 'hapus-kamar');
-    $form->assertSee('Hapus Kamar 08?')->assertSee('Rp1.250.000 per bulan');
+    $form->assertSee('Hapus Kamar 08?')->assertSee('Rp1.250.000');
 });
 
-it('dialog Tandai sudah keluar memakai komponen seragam', function () {
+it('dialog Tandai Keluar memakai komponen seragam', function () {
     $penghuni = Penghuni::factory()->create([
         'user_id' => User::factory()->penghuni()->create(['nama' => 'Maya Sari', 'email' => 'maya@contoh.test']),
         'no_telepon' => '081234567801',
@@ -71,9 +71,9 @@ it('dialog Tandai sudah keluar memakai komponen seragam', function () {
     $komponen = Livewire::actingAs(User::factory()->pengelola()->create())->test('pages::penghuni.form', ['penghuni' => $penghuni]);
 
     periksaBentukDialog($komponen, 'tandai-keluar');
-    $komponen->assertSee('Tandai Maya Sari sudah keluar?')
-        ->assertSeeInOrder(['Email akun', 'maya@contoh.test', 'Telepon', '0812 3456 7801'])
-        ->assertSeeInOrder(['Status menjadi nonaktif.', 'Riwayat kontrak, tagihan, dan pembayaran tetap tersimpan.', 'Akun login diatur terpisah di Akun pengguna.']);
+    $komponen->assertSee('Tandai Maya Sari Keluar?')
+        ->assertSeeInOrder(['Email', 'maya@contoh.test', 'Telepon', '0812 3456 7801'])
+        ->assertSeeInOrder(['Status menjadi nonaktif.', 'Riwayat tetap tersimpan.', 'Akun login tidak berubah.']);
 });
 
 it('F-02: Nonaktifkan akun memakai dialog seragam, bukan confirm bawaan browser', function () {
@@ -87,10 +87,10 @@ it('F-02: Nonaktifkan akun memakai dialog seragam, bukan confirm bawaan browser'
     $komponen->call('konfirmasiNonaktifkan', $akun->id)->assertSet('idNonaktif', $akun->id);
 
     periksaBentukDialog($komponen, 'nonaktifkan-akun');
-    $komponen->assertSee('Nonaktifkan akun Rina Maharani?')
+    $komponen->assertSee('Nonaktifkan Akun Rina Maharani?')
         ->assertSeeInOrder(['Email', 'rina@contoh.test', 'Peran', 'Penghuni'])
-        ->assertSee('Pengguna ini tidak bisa masuk sampai diaktifkan kembali.')
-        ->assertSee('Sesi yang sedang berjalan langsung berakhir.')
+        ->assertSee('Tidak bisa masuk sampai diaktifkan.')
+        ->assertSee('Sesi berjalan langsung berakhir.')
         ->assertSee('Nonaktifkan')
         ->call('nonaktifkan', $akun->id)
         ->assertSet('idNonaktif', null);

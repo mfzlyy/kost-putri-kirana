@@ -30,7 +30,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
 
     // Pemilik
     Route::middleware('peran:'.$peranDashboard)->group(function () use ($disiapkan) {
-        $disiapkan('dashboard', 'dashboard', 'Dashboard', 'F-21');
+        $disiapkan('dashboard', 'dashboard', 'Dasbor', 'F-21');
     });
 
     // Pengelola
@@ -43,7 +43,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('kontrak/buat', 'pages::kontrak.form')->name('kontrak.buat');
         Route::livewire('kontrak/{kontrak}/perpanjang', 'pages::kontrak.form')->name('kontrak.perpanjang');
         Route::livewire('verifikasi-pembayaran', 'pages::verifikasi-pembayaran.index')->name('verifikasi-pembayaran.index');
-        $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi ERP', 'F-25');
+        $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi', 'F-25');
     });
 
     // Pengelola dan pemilik
@@ -53,7 +53,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('penghuni', 'pages::penghuni.index')->name('penghuni.index');
         Route::livewire('kontrak', 'pages::kontrak.index')->name('kontrak.index');
         Route::livewire('tagihan', 'pages::tagihan.index')->name('tagihan.index');
-        $disiapkan('tiket-keluhan', 'tiket-keluhan.index', 'Tiket keluhan', 'F-17, F-18');
+        $disiapkan('tiket-keluhan', 'tiket-keluhan.index', 'Keluhan', 'F-17, F-18');
     });
 
     // Pengelola, pemilik, dan penghuni (milik sendiri)
@@ -66,12 +66,12 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('tagihan-saya', 'pages::tagihan-saya.index')->name('tagihan-saya.index');
         Route::livewire('tagihan-saya/{tagihan}/unggah', 'pages::tagihan-saya.unggah')->name('tagihan-saya.unggah');
         Route::livewire('profil-saya', 'pages::profil-saya.index')->name('profil-saya.index');
-        $disiapkan('keluhan-saya', 'keluhan-saya.index', 'Keluhan saya', 'F-16, F-18');
+        $disiapkan('keluhan-saya', 'keluhan-saya.index', 'Keluhan', 'F-16, F-18');
     });
 
     // Vendor
     Route::middleware('peran:vendor')->group(function () use ($disiapkan) {
-        $disiapkan('permintaan-kerja', 'permintaan-kerja.index', 'Permintaan kerja', 'F-19, F-20');
+        $disiapkan('permintaan-kerja', 'permintaan-kerja.index', 'Pekerjaan', 'F-19, F-20');
     });
 });
 

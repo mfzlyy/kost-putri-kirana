@@ -6,7 +6,7 @@
     <span class="text-[13px]">{{ $pengguna->peran->label() }}</span>
 
     <div class="mt-2 flex flex-col pendek:mt-1 pendek:flex-row pendek:gap-4">
-        <a href="{{ route('security.edit') }}" wire:navigate class="tautan-sidebar underline">Ganti password</a>
+        <a href="{{ route('security.edit') }}" wire:navigate class="tautan-sidebar underline">Ganti Password</a>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf

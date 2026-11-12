@@ -14,14 +14,14 @@ it('F-03: menu setiap peran sesuai daftar PRD', function () {
     $label = fn (PeranPengguna $peran) => array_column(MenuNavigasi::untuk($peran), 'label');
 
     expect($label(PeranPengguna::Pemilik))->toBe([
-        'Dashboard', 'Kamar', 'Penghuni', 'Kontrak', 'Tagihan', 'Riwayat transaksi', 'Tiket keluhan', 'Pengaturan',
+        'Dasbor', 'Kamar', 'Penghuni', 'Kontrak', 'Tagihan', 'Riwayat', 'Keluhan', 'Pengaturan',
     ])
         ->and($label(PeranPengguna::Pengelola))->toBe([
-            'Verifikasi pembayaran', 'Tagihan', 'Kamar', 'Penghuni', 'Kontrak', 'Riwayat transaksi',
-            'Tiket keluhan', 'Sinkronisasi ERP', 'Akun pengguna', 'Pengaturan',
+            'Verifikasi', 'Tagihan', 'Kamar', 'Penghuni', 'Kontrak', 'Riwayat',
+            'Keluhan', 'Sinkronisasi', 'Akun', 'Pengaturan',
         ])
-        ->and($label(PeranPengguna::Penghuni))->toBe(['Tagihan saya', 'Riwayat transaksi', 'Keluhan saya', 'Profil saya'])
-        ->and($label(PeranPengguna::Vendor))->toBe(['Permintaan kerja']);
+        ->and($label(PeranPengguna::Penghuni))->toBe(['Tagihan', 'Riwayat', 'Keluhan', 'Profil'])
+        ->and($label(PeranPengguna::Vendor))->toBe(['Pekerjaan']);
 });
 
 it('F-03: setiap item menu mengarah ke route yang bisa dibuka perannya', function (string $peran) {
@@ -69,13 +69,13 @@ it('F-03: setiap peran hanya melihat menu miliknya di halaman utamanya', functio
 
 it('F-03: contoh menu terlarang tidak muncul (penghuni tanpa Akun pengguna, vendor tanpa Tagihan)', function () {
     $this->actingAs(User::factory()->penghuni()->create())
-        ->get('/tagihan-saya')->assertOk()->assertDontSee('Akun pengguna');
+        ->get('/tagihan-saya')->assertOk()->assertDontSee('>Akun<', false);
 
     $this->actingAs(User::factory()->vendor()->create())
         ->get('/permintaan-kerja')->assertOk()->assertDontSee('Tagihan');
 
     $this->actingAs(User::factory()->pemilik()->create())
-        ->get('/dashboard')->assertOk()->assertDontSee('Akun pengguna')->assertDontSee('Verifikasi pembayaran');
+        ->get('/dashboard')->assertOk()->assertDontSee('>Akun<', false)->assertDontSee('>Verifikasi<', false);
 });
 
 it('F-03: menu pengguna menampilkan nama, peran, Ganti password, dan Keluar', function () {
@@ -84,7 +84,7 @@ it('F-03: menu pengguna menampilkan nama, peran, Ganti password, dan Keluar', fu
     $this->actingAs($user)->get('/verifikasi-pembayaran')
         ->assertSee('Dewi Pengelola Uji')
         ->assertSee('Pengelola')
-        ->assertSee('Ganti password')
+        ->assertSee('Ganti Password')
         ->assertSee('Keluar')
         ->assertDontSee('Repository')
         ->assertDontSee('Documentation');

@@ -39,7 +39,7 @@ function barisUntuk($komponen, Tagihan $tagihan): array
     return $komponen->instance()->semuaBaris->firstWhere('id', $tagihan->id);
 }
 
-it('F-15 butir 1: belum dibayar pada 11 November tampil Telat dengan "10 Nov, lewat 1 hari"', function () {
+it('F-15 butir 1: belum dibayar pada 11 November tampil Telat dengan "10 Nov, Lewat 1 Hari"', function () {
     sekarangWib('2026-11-11 00:05');
     $tagihan = tagihanNovember('01', StatusTagihan::BelumDibayar);
 
@@ -48,7 +48,7 @@ it('F-15 butir 1: belum dibayar pada 11 November tampil Telat dengan "10 Nov, le
     expect(barisUntuk($komponen, $tagihan))->toMatchArray(['telat' => true, 'hariLewat' => 1])
         ->and($komponen->instance()->hitungan['telat'])->toBe(1);
 
-    $komponen->assertSee('10 Nov, lewat 1 hari');
+    $komponen->assertSee('10 Nov, Lewat 1 Hari');
 });
 
 it('F-15 butir 1: pada hari jatuh tempo (10 November) belum bukan tunggakan', function () {
@@ -60,7 +60,7 @@ it('F-15 butir 1: pada hari jatuh tempo (10 November) belum bukan tunggakan', fu
     expect(barisUntuk($komponen, $tagihan)['telat'])->toBeFalse()
         ->and($komponen->instance()->hitungan['telat'])->toBe(0);
 
-    $komponen->assertDontSee(', lewat');
+    $komponen->assertDontSee(', Lewat');
 });
 
 it('F-15 butir 2: bukti menunggu yang diunggah 10 November tidak ditandai telat', function () {
@@ -106,7 +106,7 @@ it('F-15 butir 4: bukti tepat waktu yang ditolak dicek 15 November membuat tagih
 
     expect(barisUntuk($komponen, $tagihan))->toMatchArray(['telat' => true, 'hariLewat' => 5]);
 
-    $komponen->assertSee('10 Nov, lewat 5 hari')->assertSee('bukti ditolak 15 Nov');
+    $komponen->assertSee('10 Nov, Lewat 5 Hari')->assertSee('Ditolak, 15 Nov');
 });
 
 it('F-15 butir 6: tagihan lunas tidak ditandai telat', function () {
@@ -123,7 +123,7 @@ it('F-15 butir 6: tagihan lunas tidak ditandai telat', function () {
         ->and($komponen->instance()->ringkasan['tunggakan'])->toBe(0);
 });
 
-it('F-15: tunggakan Oktober tampil di grup "Telat dari bulan sebelumnya" saat melihat November', function () {
+it('F-15: tunggakan Oktober tampil di grup "Telat Sebelumnya" saat melihat November', function () {
     sekarangWib('2026-11-12 09:00');
     $oktober = tagihanUji(buatKontrakUji('01', 'Penghuni 01'), '2026-10-01', '2026-10-10', StatusTagihan::BelumDibayar);
     $november = tagihanNovember('02', StatusTagihan::BelumDibayar);
@@ -133,7 +133,7 @@ it('F-15: tunggakan Oktober tampil di grup "Telat dari bulan sebelumnya" saat me
     expect($komponen->instance()->grupLama->pluck('id')->all())->toBe([$oktober->id])
         ->and($komponen->instance()->grupPeriode->pluck('id')->all())->toBe([$november->id]);
 
-    $komponen->assertSeeInOrder(['Telat dari bulan sebelumnya', 'Penghuni 01', 'Oktober', '10 Okt, lewat 33 hari', 'November', 'Penghuni 02']);
+    $komponen->assertSeeInOrder(['Telat Sebelumnya', 'Penghuni 01', 'Oktober', '10 Okt, Lewat 33 Hari', 'November', 'Penghuni 02']);
 });
 
 it('F-15 butir 5 dan 7: jumlah dan total nominal tunggakan sama dengan penjumlahan manual, dari semua periode', function () {

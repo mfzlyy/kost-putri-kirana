@@ -334,36 +334,38 @@ it('F-12: sukses menampilkan toast lewat session dan Tagihan saya menampilkannya
         ->and(session('toast_varian'))->toBe('success');
 
     Livewire::test('pages::tagihan-saya.index')
-        ->assertSee('Bukti diunggah 5 Nov, menunggu dicek')
-        ->assertDontSee('Unggah bukti</a>', false);
+        ->assertSee('Menunggu, 5 Nov')
+        ->assertDontSee('Unggah Bukti</a>', false);
 });
 
-it('halaman unggah menampilkan nominal tepat, tanpa field nominal, dan catatan jatuh tempo', function () {
+it('halaman unggah menampilkan nominal, tanpa field nominal dan tanpa catatan', function () {
     $tagihan = siapkanUnggah();
 
     $komponen = halamanUnggah($tagihan)
-        ->assertSee('Unggah bukti November')
-        ->assertSee('Kembali ke tagihan')
-        ->assertSee('Foto atau PDF bukti')
-        ->assertSee('Pilih berkas')
-        ->assertSee('JPG, PNG, atau PDF, paling besar 5 MB.')
-        ->assertSee('Transfer tepat')
+        ->assertSee('Unggah Bukti')
+        ->assertSee('Kembali')
+        ->assertSee('Bukti')
+        ->assertSee('Pilih')
+        ->assertSee('JPG, PNG, PDF. Maks 5 MB.')
+        ->assertSee('Nominal')
         ->assertSee('Rp1.400.000')
-        ->assertSee('Satu bukti untuk satu tagihan penuh. Bukti dengan nominal berbeda akan ditolak.')
-        ->assertSee('Jatuh tempo 10 Nov. Bukti yang terkirim sampai tanggal itu tidak dihitung telat, walau baru dicek setelahnya.')
-        ->assertSee('Setelah terkirim, statusnya jadi Menunggu dicek.')
+        ->assertSee('Tanggal Transfer')
+        ->assertSee('Kirim')
+        ->assertDontSee('Satu bukti untuk satu tagihan penuh.')
+        ->assertDontSee('Jatuh tempo 10 Nov. Bukti yang terkirim')
+        ->assertDontSee('Setelah terkirim, statusnya jadi Menunggu dicek.')
         ->assertSee('accept=".jpg,.jpeg,.png,.pdf"', false);
 
     expect(property_exists($komponen->instance(), 'nominal'))->toBeFalse()
         ->and($komponen->html())->not->toContain('name="nominal"');
 });
 
-it('halaman unggah setelah jatuh tempo menampilkan catatan telat', function () {
+it('halaman unggah setelah jatuh tempo tetap tanpa catatan telat', function () {
     Carbon::setTestNow(Carbon::parse('2026-11-12 09:00:00', 'Asia/Jakarta'));
     $tagihan = siapkanUnggah();
 
     halamanUnggah($tagihan)
-        ->assertSee('Jatuh tempo 10 Nov sudah lewat. Tagihan tetap tercatat telat sampai bukti diterima pengelola.');
+        ->assertDontSee('Tagihan tetap tercatat telat sampai bukti diterima pengelola.');
 });
 
 it('halaman unggah menampilkan nama dan ukuran berkas setelah dipilih', function () {

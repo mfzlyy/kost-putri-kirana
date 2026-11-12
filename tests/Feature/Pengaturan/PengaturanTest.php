@@ -16,8 +16,8 @@ it('F-04: pengelola melihat form pengaturan', function () {
     $this->actingAs(User::factory()->pengelola()->create())
         ->get('/pengaturan')
         ->assertOk()
-        ->assertSee('Simpan pengaturan')
-        ->assertSee('Tanggal jatuh tempo tagihan');
+        ->assertSee('Simpan')
+        ->assertSee('Tanggal Jatuh Tempo');
 });
 
 it('F-04: pemilik melihat nilai tanpa form', function () {
@@ -28,8 +28,8 @@ it('F-04: pemilik melihat nilai tanpa form', function () {
         ->assertOk()
         ->assertSee('Tanggal 10')
         ->assertSee('30 hari')
-        ->assertSee('Diubah oleh pengelola.')
-        ->assertDontSee('Simpan pengaturan');
+        ->assertDontSee('Diubah oleh pengelola.')
+        ->assertDontSee('data-test="simpan-pengaturan"', false);
 });
 
 it('F-04: pemilik melihat Belum diatur bila nilai kosong', function () {
@@ -99,7 +99,7 @@ it('F-04: peringatan muncul bila tanggal jatuh tempo belum diatur dan hilang set
     PengaturanOperasional::factory()->create();
 
     halamanPengaturanSebagai(User::factory()->pengelola()->create())
-        ->assertSee('Tanggal jatuh tempo belum diatur. Tagihan belum bisa diterbitkan sampai tanggal ini diisi.')
+        ->assertSee('Tanggal jatuh tempo belum diatur, tagihan belum bisa diterbitkan.')
         ->set('tanggal_jatuh_tempo', 10)
         ->set('batas_peringatan_kontrak_hari', 30)
         ->call('simpan')

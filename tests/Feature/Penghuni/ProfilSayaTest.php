@@ -34,13 +34,13 @@ it('F-06: penghuni melihat data diri, kamar, masa sewa, dan tarif', function () 
         ->get('/profil-saya')
         ->assertOk()
         ->assertSee('Maya Sari')
-        ->assertSee('Penghuni Kamar 05')
+        ->assertSee('Masa Sewa')
         ->assertSee('kamar05@contoh.test')
         ->assertSee('0878 5566 0021')
         ->assertSee('32**********8901')
         ->assertSee('1 Feb 2026 sampai 31 Jan 2027')
         ->assertSee('Rp1.400.000')
-        ->assertSee('Ada data yang salah? Hubungi pengelola kos untuk mengubahnya.')
+        ->assertDontSee('Ada data yang salah?')
         ->assertDontSee(NIK_UJI_PROFIL)
         ->assertDontSee('Simpan');
 });
@@ -95,7 +95,7 @@ it('F-06: penghuni tanpa baris data penghuni melihat pesan belum dilengkapi tanp
     $this->actingAs(User::factory()->penghuni()->create())
         ->get('/profil-saya')
         ->assertOk()
-        ->assertSee('Profil saya')
+        ->assertSee('Profil')
         ->assertSee('Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.');
 });
 

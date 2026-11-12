@@ -39,7 +39,7 @@ it('menampilkan halaman login berbahasa Indonesia tanpa ingat saya, lupa passwor
     $this->get(route('login'))
         ->assertOk()
         ->assertSee('Masuk')
-        ->assertSee('Pakai email dan password dari pengelola.')
+        ->assertDontSee('Pakai email dan password dari pengelola.')
         ->assertSee('Lupa password? Hubungi pengelola kos.')
         ->assertDontSee('Ingat saya')
         ->assertDontSee('href="'.url('/forgot-password'))

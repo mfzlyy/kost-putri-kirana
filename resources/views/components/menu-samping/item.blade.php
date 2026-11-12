@@ -7,6 +7,13 @@
     'antrean' => null,
 ])
 
+@php
+    // Angka antrean: pil 22px, 13px, angka tabular. Item aktif berlatar Primary, item biasa berlatar putih transparan.
+    $kelasAngka = 'num inline-flex h-[22px] flex-none items-center rounded-full px-2 text-[13px] leading-none text-white';
+    $kelasAngkaAktif = 'bg-primary font-semibold';
+    $kelasAngkaBiasa = 'bg-primary-container/[.14]';
+@endphp
+
 <a
     href="{{ $href }}"
     wire:navigate
@@ -17,18 +24,18 @@
         'font-medium text-on-sidebar hover:bg-white/[.08] hover:text-white' => ! $aktif,
     ]) }}
 >
-    <span>{{ $slot }}</span>
+    {{-- Label satu baris; bila tetap tidak muat dipotong dengan elipsis dan title berisi teks lengkap. --}}
+    <span class="min-w-0 truncate whitespace-nowrap" title="{{ trim(strip_tags((string) $slot)) }}">{{ $slot }}</span>
     @if ($antrean)
         <span
             x-data="{ n: {{ (int) $jumlah }} }"
             x-on:antrean-{{ $antrean }}.window="n = $event.detail.jumlah"
             x-show="n > 0"
-            x-text="n"
             @if (! $jumlah) style="display: none" @endif
-            class="num rounded-full bg-primary-container/15 px-2 py-px text-[13px] text-white"
+            @class([$kelasAngka, $aktif ? $kelasAngkaAktif : $kelasAngkaBiasa])
             data-test="angka-antrean"
-        >{{ $jumlah }}</span>
+        ><span x-text="n" aria-hidden="true">{{ $jumlah }}</span><span class="sr-only" x-text="n + ' bukti menunggu'">{{ $jumlah }} bukti menunggu</span></span>
     @elseif ($jumlah)
-        <span class="num rounded-full bg-primary-container/15 px-2 py-px text-[13px] text-white">{{ $jumlah }}</span>
+        <span @class([$kelasAngka, $aktif ? $kelasAngkaAktif : $kelasAngkaBiasa]) data-test="angka-menu">{{ $jumlah }}</span>
     @endif
 </a>

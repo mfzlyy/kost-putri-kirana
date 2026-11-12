@@ -115,7 +115,7 @@ it('F-07: bila semua penghuni aktif sudah berkontrak tampil callout dan tombol s
 
     formKontrakSebagai(User::factory()->pengelola()->create())
         ->assertSee('Semua penghuni aktif sudah punya kontrak.')
-        ->assertSee('Tambah data penghuni')
+        ->assertSee('Tambah penghuni')
         ->assertSeeHtml(route('penghuni.tambah'))
         ->assertSeeHtml('data-test="simpan-kontrak"')
         ->assertSeeHtml('disabled');
@@ -129,7 +129,7 @@ it('F-07 butir 1: tarif terisi dari kamar saat kamar dipilih dan tarif manual ti
         ->assertSee('Pilih kamar untuk mengisi tarif.')
         ->set('kamar_id', (string) $kamarA->id)
         ->assertSet('tarif_bulanan', '1.400.000')
-        ->assertSee('Diisi dari tarif Kamar 07. Bisa disesuaikan.')
+        ->assertSee('Diisi dari tarif Kamar 07.')
         // Ganti kamar selama tarif belum diubah: tarif mengikuti kamar baru.
         ->set('kamar_id', (string) $kamarB->id)
         ->assertSet('tarif_bulanan', '1.250.000')

@@ -20,7 +20,6 @@
 
         <div>
             <h1 class="m-0 text-[22px] leading-[1.1] font-bold font-stretch-expanded lg:text-3xl">Masuk</h1>
-            <p class="mt-2 mb-0 text-ink-muted">Pakai email dan password dari pengelola.</p>
         </div>
 
         @if ($galatAutentikasi->isNotEmpty())

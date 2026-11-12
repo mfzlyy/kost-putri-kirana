@@ -35,6 +35,7 @@ Sebelum menyatakan pekerjaan selesai, `php artisan test` harus lulus dan `vendor
 ## Konvensi kode
 
 - Teks antarmuka, pesan validasi, dan pesan galat ditulis dalam Bahasa Indonesia. Nama tabel dan kolom mengikuti ERD apa adanya (Bahasa Indonesia, snake_case).
+- Teks antarmuka mengikuti docs/design/DESIGN.md bagian Penulisan: judul = label menu, tanpa deskripsi, tombol 1 kata, Title Case untuk judul/label/kolom/chip/status/tombol, kalimat biasa untuk pesan.
 - Nama model sama dengan nama kelas di class diagram: `User`, `Penghuni`, `Vendor`, `PengaturanOperasional`, `Kamar`, `Kontrak`, `Tagihan`, `Pembayaran`, `Fasilitas`, `TiketKeluhan`, `RiwayatStatusTiket`, `SinkronisasiErp`.
 - Setiap model wajib menetapkan `protected $table` secara eksplisit, karena Eloquent menebak nama tabel dengan bentuk jamak bahasa Inggris (`kamars`).
 - Tabel ERD tidak punya `created_at`/`updated_at`, jadi pasang `public $timestamps = false` pada model domain. Tabel bawaan framework (`sessions`, `jobs`, `cache`, `password_reset_tokens`) boleh tetap ada di luar ERD.

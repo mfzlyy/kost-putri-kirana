@@ -252,13 +252,10 @@ new #[Title('Kontrak')] class extends Component {
 @endphp
 
 <section class="flex w-full flex-col gap-4 lg:gap-6">
-    <x-judul-halaman
-        judul="Kontrak"
-        :deskripsi="$this->hitungan['aktif'].' kontrak aktif. Perpanjangan dicatat sebagai kontrak baru agar riwayat lama tetap ada.'"
-    >
+    <x-judul-halaman judul="Kontrak">
         @if ($bisaKelola)
             <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="h-12! w-full sm:h-11! sm:w-auto" data-test="buat-kontrak">
-                Buat kontrak
+                Buat
             </flux:button>
         @endif
     </x-judul-halaman>
@@ -267,7 +264,7 @@ new #[Title('Kontrak')] class extends Component {
     <section aria-labelledby="judul-akan-berakhir" class="overflow-hidden rounded-2xl border border-border bg-surface" data-test="akan-berakhir">
         @if ($batas === null)
             <div class="flex flex-col gap-3 px-4 py-4 sm:px-5">
-                <h2 id="judul-akan-berakhir" class="m-0 text-xl font-[650]">Kontrak akan berakhir</h2>
+                <h2 id="judul-akan-berakhir" class="m-0 text-xl font-[650]">Segera Berakhir</h2>
                 <flux:callout variant="warning" icon="exclamation-triangle" data-test="batas-belum-diatur">
                     <flux:callout.text>
                         Batas peringatan belum diatur.
@@ -281,8 +278,7 @@ new #[Title('Kontrak')] class extends Component {
             </div>
         @else
             <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-4 sm:px-5 sm:py-[18px]">
-                <h2 id="judul-akan-berakhir" class="m-0 text-xl font-[650]">Berakhir dalam {{ $batas }} hari</h2>
-                <span class="text-sm text-ink-muted">Batas diatur di Pengaturan</span>
+                <h2 id="judul-akan-berakhir" class="m-0 text-xl font-[650]">Segera Berakhir</h2>
             </div>
 
             @if ($this->akanBerakhir->isEmpty())
@@ -298,11 +294,11 @@ new #[Title('Kontrak')] class extends Component {
                                 <span class="block text-sm text-ink-muted">Berakhir {{ $tanggalPanjang($kontrak->tanggal_berakhir) }}</span>
                             </span>
                             @if ($sisa > 0)
-                                <x-status jenis="tunggu">{{ $sisa }} hari lagi</x-status>
+                                <x-status jenis="tunggu">{{ $sisa }} Hari Lagi</x-status>
                             @elseif ($sisa === 0)
-                                <x-status jenis="tunggu">Berakhir hari ini</x-status>
+                                <x-status jenis="tunggu">Berakhir Hari Ini</x-status>
                             @else
-                                <x-status jenis="telat">Lewat {{ abs($sisa) }} hari</x-status>
+                                <x-status jenis="telat">Lewat {{ abs($sisa) }} Hari</x-status>
                             @endif
                             @if ($bisaKelola)
                                 <span class="col-span-3 flex items-center gap-3 md:col-span-1 md:gap-2">
@@ -318,9 +314,9 @@ new #[Title('Kontrak')] class extends Component {
     </section>
 
     <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+        <x-chip-filter :aktif="$this->filterAktif === 'semua'" :jumlah="$this->hitungan['semua']" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'berakhir'" :jumlah="$this->hitungan['berakhir']" wire:click="$set('filterStatus', 'berakhir')">Berakhir</x-chip-filter>
-        <x-chip-filter :aktif="$this->filterAktif === 'semua'" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
     </div>
 
     <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4 lg:gap-6">
@@ -328,7 +324,7 @@ new #[Title('Kontrak')] class extends Component {
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kontrak.' : 'Tidak ada kontrak yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $bisaKelola)
-                <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="h-11!">Buat kontrak</flux:button>
+                <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="h-11!">Buat</flux:button>
             @endif
         </div>
     @else
@@ -341,7 +337,7 @@ new #[Title('Kontrak')] class extends Component {
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Penghuni</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Mulai</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Berakhir</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted">Tarif per bulan</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted">Tarif</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
                         @if ($bisaKelola)
                             <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
@@ -414,36 +410,36 @@ new #[Title('Kontrak')] class extends Component {
         @php($nomorModal = $kontrakModal?->kamar?->nomor_kamar)
         <x-dialog-konfirmasi
             name="akhiri-kontrak"
-            :judul="'Akhiri kontrak Kamar '.$nomorModal.'?'"
-            label-aksi="Akhiri kontrak"
+            :judul="'Akhiri Kontrak Kamar '.$nomorModal.'?'"
+            label-aksi="Akhiri"
             wire:click="akhiri"
             data-test="konfirmasi-akhiri-kontrak"
         >
             <x-slot:ringkasan>
                 <dt>Penghuni</dt>
                 <dd>{{ $kontrakModal?->penghuni?->user?->nama }}</dd>
-                <dt>Masa sewa</dt>
+                <dt>Masa Sewa</dt>
                 <dd>{{ $kontrakModal ? $tanggalId($kontrakModal->tanggal_mulai).' sampai '.$tanggalId($kontrakModal->tanggal_berakhir) : '' }}</dd>
                 <dt>Tarif</dt>
-                <dd>{{ $kontrakModal ? Format::rupiah($kontrakModal->tarif_bulanan).' per bulan' : '' }}</dd>
+                <dd>{{ $kontrakModal ? Format::rupiah($kontrakModal->tarif_bulanan) : '' }}</dd>
             </x-slot:ringkasan>
 
             <x-slot:akibat>
                 <li>Kamar {{ $nomorModal }} menjadi kosong.</li>
-                <li>Kontrak pindah ke riwayat. Tagihan yang sudah terbit tidak berubah.</li>
-                <li>Status penghuni tidak berubah. Tandai sudah keluar di halaman Penghuni bila perlu.</li>
+                <li>Kontrak pindah ke riwayat.</li>
+                <li>Tagihan dan status penghuni tidak berubah.</li>
             </x-slot:akibat>
 
             @if ($kontrakModal && ! $kontrakModal->sudahBerjalan())
-                <x-slot:catatan>Kontrak ini belum dimulai, jadi tanggalnya tidak diubah.</x-slot:catatan>
+                <x-slot:catatan>Kontrak belum dimulai, tanggalnya tidak diubah.</x-slot:catatan>
             @endif
 
             @if ($kontrakModal?->sudahBerjalan())
                 <x-slot:isi>
                     <flux:field>
-                        <flux:label>Tanggal keluar</flux:label>
+                        <flux:label>Tanggal Keluar</flux:label>
                         <flux:input type="date" wire:model="tanggal_keluar" data-test="input-tanggal-keluar" />
-                        <flux:description>Tanggal berakhir kontrak diganti dengan tanggal ini.</flux:description>
+                        <flux:description>Menggantikan tanggal berakhir.</flux:description>
                         <flux:error name="tanggal_keluar" />
                     </flux:field>
                 </x-slot:isi>

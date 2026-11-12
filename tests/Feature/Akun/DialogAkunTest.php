@@ -14,7 +14,7 @@ it('F-02: pilihan peran di dialog berupa radio, bukan dropdown, dengan Penghuni 
         ->assertSeeHtml('type="radio"')
         ->assertSeeHtml('name="peran"')
         ->assertDontSee('Pilih peran')
-        ->assertDontSee('Nama vendor');
+        ->assertDontSee('Nama Vendor');
 
     expect(substr_count($komponen->html(), 'name="peran"'))->toBe(2);
 });
@@ -22,10 +22,10 @@ it('F-02: pilihan peran di dialog berupa radio, bukan dropdown, dengan Penghuni 
 it('F-02: memilih Vendor menampilkan Nama vendor, Jenis layanan, dan Telepon', function () {
     dialogAkunSebagai(User::factory()->pengelola()->create())
         ->set('peran', 'vendor')
-        ->assertSee('Data vendor')
-        ->assertSee('Nama vendor')
-        ->assertSee('Jenis layanan')
-        ->assertSee('Telepon (opsional)')
+        ->assertSee('Data Vendor')
+        ->assertSee('Nama Vendor')
+        ->assertSee('Jenis Layanan')
+        ->assertSee('Telepon')
         ->assertSee('Awalnya diisi dari nama akun.');
 });
 
@@ -58,8 +58,8 @@ it('F-02: setelah galat email ganda, nilai nama dan email yang diketik tetap ada
 
 it('F-02: dialog punya judul, tombol tutup, dan tombol Buat akun', function () {
     dialogAkunSebagai(User::factory()->pengelola()->create())
-        ->assertSee('Tambah akun')
+        ->assertSee('Tambah Akun')
         ->assertSeeHtml('aria-label="Tutup"')
-        ->assertSee('Buat akun')
-        ->assertSee('Minimal 8 karakter dengan huruf dan angka. Berikan langsung ke pengguna.');
+        ->assertSee('Buat')
+        ->assertSee('Minimal 8 karakter, huruf dan angka.');
 });

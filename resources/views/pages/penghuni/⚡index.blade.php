@@ -82,21 +82,18 @@ new #[Title('Penghuni')] class extends Component {
 }; ?>
 
 <section class="flex w-full flex-col gap-4 lg:gap-6">
-    <x-judul-halaman
-        judul="Penghuni"
-        :deskripsi="$this->hitungan['aktif'].' aktif, '.$this->hitungan['keluar'].' sudah keluar. Nomor identitas disamarkan di daftar.'"
-    >
+    <x-judul-halaman judul="Penghuni">
         @if ($this->bisaKelola)
             <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-penghuni">
-                Tambah penghuni
+                Tambah
             </flux:button>
         @endif
     </x-judul-halaman>
 
     <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+        <x-chip-filter :aktif="$this->filterAktif === 'semua'" :jumlah="$this->hitungan['semua']" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
-        <x-chip-filter :aktif="$this->filterAktif === 'keluar'" :jumlah="$this->hitungan['keluar']" wire:click="$set('filterStatus', 'keluar')">Sudah keluar</x-chip-filter>
-        <x-chip-filter :aktif="$this->filterAktif === 'semua'" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
+        <x-chip-filter :aktif="$this->filterAktif === 'keluar'" :jumlah="$this->hitungan['keluar']" wire:click="$set('filterStatus', 'keluar')">Keluar</x-chip-filter>
     </div>
 
     <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4 lg:gap-6">
@@ -104,7 +101,7 @@ new #[Title('Penghuni')] class extends Component {
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada data penghuni.' : 'Tidak ada penghuni yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="h-11!">Tambah penghuni</flux:button>
+                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="h-11!">Tambah</flux:button>
             @endif
         </div>
     @else
@@ -113,11 +110,11 @@ new #[Title('Penghuni')] class extends Component {
             <table class="w-full min-w-[860px] border-collapse">
                 <thead>
                     <tr>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nama lengkap</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nama Lengkap</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Kamar</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Telepon</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nomor identitas</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Email akun</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nomor Identitas</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Email</th>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
                         @if ($this->bisaKelola)
                             <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
@@ -186,5 +183,4 @@ new #[Title('Penghuni')] class extends Component {
     @endif
     </div>
 
-    <p class="m-0 text-sm text-ink-muted">Penghuni yang keluar tetap tersimpan sebagai nonaktif bersama riwayat kontrak dan pembayarannya.</p>
 </section>

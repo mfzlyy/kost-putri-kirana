@@ -140,21 +140,21 @@ new #[Title('Kamar')] class extends Component {
 <section class="flex w-full flex-col gap-4 lg:gap-6">
     <div class="flex flex-col gap-2.5">
         <a href="{{ route('kamar.index') }}" wire:navigate class="w-fit">Kamar</a>
-        <x-judul-halaman :judul="$this->kamar ? 'Ubah Kamar '.$this->kamar->nomor_kamar : 'Tambah kamar'" />
+        <x-judul-halaman :judul="$this->kamar ? 'Ubah Kamar '.$this->kamar->nomor_kamar : 'Tambah Kamar'" />
     </div>
 
     <div @class(['flex flex-wrap items-start gap-6', 'max-w-[760px]' => ! $this->kamar])>
         <form wire:submit="simpan" class="flex flex-[2_1_460px] flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
             <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                 <flux:field>
-                    <flux:label>Nomor kamar</flux:label>
+                    <flux:label>Nomor Kamar</flux:label>
                     <flux:input wire:model="nomor_kamar" maxlength="10" autocomplete="off" required data-test="input-nomor-kamar" />
                     <flux:description>Harus unik.</flux:description>
                     <flux:error name="nomor_kamar" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>Tarif per bulan</flux:label>
+                    <flux:label>Tarif</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
                         <flux:input
@@ -182,13 +182,13 @@ new #[Title('Kamar')] class extends Component {
             @if ($this->kamar?->kontrakAktif)
                 @php($kontrak = $this->kamar->kontrakAktif)
                 <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-sm text-on-primary-container" data-test="catatan-kontrak">
-                    Tarif baru berlaku untuk kontrak berikutnya. Kontrak {{ $kontrak->penghuni?->user?->nama }} tetap {{ Format::rupiah($kontrak->tarif_bulanan) }} sampai {{ $kontrak->tanggal_berakhir->locale('id')->translatedFormat('j F Y') }}.
+                    Kontrak {{ $kontrak->penghuni?->user?->nama }} tetap {{ Format::rupiah($kontrak->tarif_bulanan) }} sampai {{ $kontrak->tanggal_berakhir->locale('id')->translatedFormat('j F Y') }}.
                 </p>
             @endif
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
                 <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
-                    {{ $this->kamar ? 'Simpan perubahan' : 'Simpan kamar' }}
+                    Simpan
                 </flux:button>
                 <x-tautan-batal :href="route('kamar.index')" />
             </div>
@@ -196,15 +196,14 @@ new #[Title('Kamar')] class extends Component {
 
         @if ($this->kamar)
             <aside class="flex flex-[1_1_260px] flex-col gap-2.5 rounded-2xl border border-dashed border-border-strong p-5">
-                <h2 class="m-0 text-base font-[650]">Hapus kamar</h2>
+                <h2 class="m-0 text-base font-[650]">Hapus</h2>
 
                 @if ($this->izinHapus->denied())
                     <p class="m-0 text-sm text-ink-muted" data-test="alasan-tidak-bisa-hapus">{{ $this->izinHapus->message() }}</p>
-                    <button type="button" disabled class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-sm font-semibold text-[#8A918F]">Hapus kamar</button>
+                    <button type="button" disabled title="{{ str_contains($this->izinHapus->message(), 'fasilitas') ? 'Masih punya fasilitas' : 'Masih punya kontrak' }}" class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-sm font-semibold text-[#8A918F]">Hapus</button>
                 @else
-                    <p class="m-0 text-sm text-ink-muted">Kamar ini belum punya kontrak maupun fasilitas, jadi bisa dihapus.</p>
                     <flux:modal.trigger name="hapus-kamar">
-                        <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-[#E3B4AD] bg-surface px-3.5 text-sm font-semibold text-danger" data-test="buka-hapus-kamar">Hapus kamar</button>
+                        <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-[#E3B4AD] bg-surface px-3.5 text-sm font-semibold text-danger" data-test="buka-hapus-kamar">Hapus</button>
                     </flux:modal.trigger>
                 @endif
             </aside>
@@ -212,19 +211,19 @@ new #[Title('Kamar')] class extends Component {
             <x-dialog-konfirmasi
                 name="hapus-kamar"
                 :judul="'Hapus Kamar '.$this->kamar->nomor_kamar.'?'"
-                label-aksi="Hapus kamar"
+                label-aksi="Hapus"
                 wire:click="hapus"
                 data-test="konfirmasi-hapus-kamar"
             >
                 <x-slot:ringkasan>
                     <dt>Tarif</dt>
-                    <dd>{{ Format::rupiah($this->kamar->tarif_bulanan) }} per bulan</dd>
+                    <dd>{{ Format::rupiah($this->kamar->tarif_bulanan) }}</dd>
                     <dt>Keterangan</dt>
                     <dd>{{ filled($this->kamar->keterangan) ? $this->kamar->keterangan : '-' }}</dd>
                 </x-slot:ringkasan>
 
                 <x-slot:akibat>
-                    <li>Kamar ini akan dihapus permanen.</li>
+                    <li>Kamar dihapus permanen.</li>
                 </x-slot:akibat>
             </x-dialog-konfirmasi>
         @endif
