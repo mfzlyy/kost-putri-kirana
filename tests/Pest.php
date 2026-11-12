@@ -5,6 +5,9 @@ use App\Models\Kontrak;
 use App\Models\Penghuni;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /*
@@ -71,4 +74,31 @@ function buatKontrakUji(string $nomor, string $nama, array $kontrak = []): Kontr
         'kamar_id' => $kamar->id,
         'tarif_bulanan' => $kamar->tarif_bulanan,
     ], $kontrak));
+}
+
+/**
+ * Dasar yang dipenuhi AkunAwalSeeder dan PengaturanOperasionalSeeder sebelum migrasi: baris pengaturan dan satu pengelola aktif.
+ */
+function siapkanDasarMigrasi(): User
+{
+    DB::table('pengaturan_operasional')->updateOrInsert(['id' => 1], []);
+
+    return User::factory()->pengelola()->create();
+}
+
+function jalurFixtureMigrasi(string $nama): string
+{
+    return base_path('tests/Fixtures/migrasi/'.$nama);
+}
+
+/**
+ * Anonimkan fixture mentah (fiktif) ke disk local palsu; hasilnya jalur folder tujuan.
+ */
+function anonimkanFixtureMigrasi(string $tujuan = 'migrasi/anonim', int $seed = 7): string
+{
+    $jalur = Storage::disk('local')->path($tujuan);
+
+    Artisan::call('migrasi:anonimkan', ['sumber' => jalurFixtureMigrasi('mentah'), 'tujuan' => $jalur, '--seed' => $seed]);
+
+    return $jalur;
 }

@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Carbon\CarbonImmutable;
+
 /**
  * Format tampilan angka dan nominal sesuai docs/design/DESIGN.md.
  */
@@ -23,11 +25,21 @@ class Format
     }
 
     /**
-     * Membaca isian tarif ("1.400.000", "Rp 1.400.000", "1400000") menjadi bilangan bulat.
-     * Teks tanpa angka menghasilkan null.
+     * Membaca isian tarif ("1.400.000", "Rp 1.400.000", "1400000", "1.400.000,00") menjadi bilangan bulat.
+     * Desimal ",00" atau ".00" di ujung dibuang; desimal lain (",50") dan teks tanpa angka menghasilkan null.
      */
     public static function parseRupiah(string $teks): ?int
     {
+        $teks = preg_replace('/[^\d.,]/', '', $teks) ?? '';
+
+        if (preg_match('/[.,](\d{1,2})$/', $teks, $desimal) === 1) {
+            if ($desimal[1] !== '00') {
+                return null;
+            }
+
+            $teks = substr($teks, 0, -3);
+        }
+
         $angka = preg_replace('/\D/', '', $teks) ?? '';
 
         if ($angka === '') {
@@ -35,6 +47,29 @@ class Format
         }
 
         return (int) $angka;
+    }
+
+    /**
+     * Membaca tanggal berformat YYYY-MM-DD atau DD/MM/YYYY (ekspor Google Sheets berlocale Indonesia).
+     * Tanggal yang tidak ada di kalender (31/02/2026) atau format lain menghasilkan null.
+     */
+    public static function parseTanggal(string $teks): ?CarbonImmutable
+    {
+        $teks = trim($teks);
+
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $teks, $cocok) === 1) {
+            [, $tahun, $bulan, $hari] = $cocok;
+        } elseif (preg_match('#^(\d{1,2})/(\d{1,2})/(\d{4})$#', $teks, $cocok) === 1) {
+            [, $hari, $bulan, $tahun] = $cocok;
+        } else {
+            return null;
+        }
+
+        if (! checkdate((int) $bulan, (int) $hari, (int) $tahun)) {
+            return null;
+        }
+
+        return CarbonImmutable::create((int) $tahun, (int) $bulan, (int) $hari, 0, 0, 0, config('app.timezone'));
     }
 
     /**

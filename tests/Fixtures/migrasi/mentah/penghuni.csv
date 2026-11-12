@@ -1,0 +1,8 @@
+﻿kode_penghuni;nama;no_identitas;no_telepon;status
+P01;"Ayu Fiktif Satu";3201010101900001;"+62 812-3456-7801";aktif
+P02;"Bunga Fiktif Dua";3201010101900002;"0813 4567 8802";aktif
+P03;"Citra Fiktif Tiga";3201010101900003;6281245678903;aktif
+P04;"Dewi Fiktif Empat";3201010101900004;"(0815) 5678-9004";aktif
+P05;"Eka Fiktif Lima";3201010101900005;081667890005;aktif
+P06;"Fitri Fiktif Enam";3201010101900006;+6281778901006;aktif
+P07;"Gita Fiktif Tujuh";3201010101900007;"0818 9012 3007";nonaktif

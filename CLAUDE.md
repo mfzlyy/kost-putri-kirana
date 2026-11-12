@@ -60,6 +60,7 @@ Sebelum menyatakan pekerjaan selesai, `php artisan test` harus lulus dan `vendor
 - Tiket (ATB-07): status hanya maju berurutan diajukan → ditugaskan → dikerjakan → selesai. Setiap perubahan mencatat `riwayat_status_tiket`. Status selesai wajib disertai `biaya_perbaikan`. Nomor tiket berformat `KLH-0001`.
 - Vendor (ATB-08) hanya melihat tiket yang ditugaskan kepadanya beserta info kamar dan fasilitas, tanpa identitas, kontrak, atau tagihan penghuni.
 - `penghuni.no_identitas_enc` memakai cast `encrypted`. Nomor identitas hanya tampil bagi pemilik, pengelola, dan penghuni yang bersangkutan (F-06, NFR-02), dan di daftar ditampilkan tersamar. Data seeder dan data migrasi harus fiktif atau dianonimkan (F-09).
+- Data migrasi asli (storage/app/private/migrasi/sumber) adalah data pribadi. Jangan membuka, membaca, mencetak, atau menyalin isinya. Uji migrasi memakai tests/Fixtures/migrasi.
 
 ## Integrasi Odoo (F-22 s.d. F-25)
 
