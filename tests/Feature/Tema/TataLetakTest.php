@@ -34,7 +34,7 @@ it('x-ringkasan-angka merender satu sel per item, item bahaya di akhir dengan pe
         ->and($html)->toContain('--kolom: 3;')
         ->and($html)->toContain('2 tagihan, semua periode')
         ->and($html)->toContain('aria-label="Ringkasan"')
-        ->and($html)->toContain('teks-angka')
+        ->and($html)->toContain('ringkasan-nilai')
         ->and($html)->toContain('teks-kolom')
         ->and($html)->toContain('text-status-late');
 
@@ -139,4 +139,65 @@ it('CSS mendefinisikan token tipografi dan ukuran kontrol sekali di app.css', fu
     }
 
     expect($css)->toContain('height: 44px')->toContain('min-height: 96px')->toContain('clamp(20px, 2vw, 24px)');
+});
+
+it('teks-isian 15px hanya di laptop dengan pointer halus; 16px bawaan untuk input, select, dan textarea', function () {
+    $css = file_get_contents(resource_path('css/app.css'));
+
+    preg_match('/@utility teks-isian \{(.*?)\n\}/s', $css, $token);
+
+    expect($token[1])->toContain('font-size: 16px')
+        ->and($token[1])->toContain('@media (min-width: 1024px) and (pointer: fine)')
+        ->and($token[1])->toMatch('/@media \(min-width: 1024px\) and \(pointer: fine\) \{\s*font-size: 15px;/');
+
+    // Aturan global untuk input, select, dan textarea juga 15px hanya di dalam media yang sama.
+    preg_match('/@media \(min-width: 1024px\) and \(pointer: fine\) \{\s*input:not.*?select,\s*textarea \{\s*font-size: 15px;/s', $css, $global);
+
+    expect($global)->not->toBeEmpty();
+});
+
+it('select setinggi 44px sama dengan input, tanpa padding vertikal bawaan Flux', function () {
+    $css = file_get_contents(resource_path('css/app.css'));
+
+    expect($css)->toMatch('/select\[data-flux-select-native\] \{\s*height: 44px !important;\s*min-height: 44px !important;\s*max-height: 44px !important;\s*padding-block: 0 !important;/');
+});
+
+it('x-ringkasan-angka adalah container dengan tata letak berbasis lebar kartu', function () {
+    $html = Blade::render('<x-ringkasan-angka :items="$items" />', ['items' => [
+        ['label' => 'A', 'nilai' => '1'], ['label' => 'B', 'nilai' => '2'], ['label' => 'C', 'nilai' => '3'],
+        ['label' => 'D', 'nilai' => '4'], ['label' => 'E', 'nilai' => '5', 'nada' => 'bahaya'],
+    ]]);
+    $css = file_get_contents(resource_path('css/app.css'));
+
+    // Kartu = container; isinya memakai kelas tata letak yang diatur lewat container query.
+    expect($html)->toContain('class="ringkasan ')
+        ->and($html)->toContain('class="ringkasan-isi"')
+        ->and($html)->toContain('--kolom: 5; --kolom-md: 3;')
+        ->and($html)->toContain('x-bind:data-turun="turun"')
+        ->and($html)->toContain('ringkasan-nilai')
+        ->and($html)->not->toContain('lg:grid-cols')
+        ->and($html)->not->toContain('md:grid-cols');
+
+    expect($css)->toMatch('/\.ringkasan \{\s*container-type: inline-size;/')
+        ->and($css)->toContain('@container (min-width: 600px)')
+        ->and($css)->toContain('@container (min-width: 1000px)')
+        ->and($css)->toContain('repeat(var(--kolom), minmax(max-content, 1fr))')
+        ->and($css)->toContain('repeat(var(--kolom-md), minmax(max-content, 1fr))')
+        ->and($css)->toContain('clamp(18px, 2.1cqi, 24px)');
+});
+
+it('sel bahaya menghitung garis dan padding kiri di dalam kolomnya dan tanpa gulir horizontal', function () {
+    $css = file_get_contents(resource_path('css/app.css'));
+
+    preg_match('/\.ringkasan-isi:not\(\[data-turun=\'2\'\]\) > \.ringkasan-sel\[data-nada=\'bahaya\'\] \{(.*?)\}/s', $css, $bahaya);
+
+    expect($bahaya[1])->toContain('padding-inline-start: 24px')->toContain('border-inline-start: 1px solid')
+        ->and($bahaya[1])->not->toContain('margin')
+        ->and($css)->toContain("[data-turun='2']")
+        ->and($css)->not->toMatch('/\.ringkasan[^{]*\{[^}]*overflow-x:\s*(?:auto|scroll)/');
+
+    $html = Blade::render('<x-ringkasan-angka :items="$items" />', ['items' => [['label' => 'A', 'nilai' => '1']]]);
+
+    // Skrip pengaman: bila kolom tetap tidak muat, kartu turun ke tiga kolom lalu daftar.
+    expect($html)->toContain('scrollWidth')->toContain('turun = 1')->toContain('turun = 2')->toContain('ResizeObserver');
 });

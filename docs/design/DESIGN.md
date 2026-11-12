@@ -258,7 +258,7 @@ angka besar, dan nomor kamar.
 | `teks-kolom` | 13/1.3 | 550 | Ink-muted | kepala tabel, label ringkasan |
 | `teks-bantuan` | 13/1.4 | 400 | Ink-muted | bantuan isian, meta, keterangan kecil |
 | `teks-galat` | 13/1.4 | 400 | status-late | pesan galat (ukuran sama dengan bantuan) |
-| `teks-isian` | 16/1.4 | 400 | | input, select, textarea, date (semua ukuran layar) |
+| `teks-isian` | 16/1.4; 15/1.4 pada layar ≥ 1024 px dengan pointer halus | 400 | | input, select (`flux:select` gratis = select native), textarea, date, pemilih berkas |
 | `teks-tombol` / `teks-tombol-kecil` | 15 / 14 | 600 | | tombol standar / tombol kecil dan tautan aksi di tabel |
 | `teks-chip` | 14 | 550 | angka tabular | chip filter, segmen periode |
 | `teks-menu` / `teks-menu-aktif` | 15 | 500 / 650 | | item sidebar (tab bawah penghuni 12/600) |
@@ -270,7 +270,9 @@ Ukuran kontrol, sama di semua halaman semua peran:
 
 - Tombol standar tinggi 44 px, padding 0 18 px, radius 8 px (`tombol` untuk tautan dan `button` biasa; `flux:button`
   diatur di CSS). Tombol kecil 36 px, padding 0 14 px (`tombol-kecil`).
-- Isian (input, select, date) tinggi 44 px, padding 12 px, radius 8 px; textarea minimal 96 px. Semua 16 px.
+- Isian (input, select, date) tinggi 44 px, padding 12 px, radius 8 px; textarea minimal 96 px. Huruf 16 px; 15 px di
+  laptop dan desktop dengan pointer halus (`@media (min-width: 1024px) and (pointer: fine)`), sama dengan isi tabel.
+  Daftar pilihan select yang terbuka adalah tampilan native browser.
 - Chip 36 px, padding 0 12 px, radius penuh, jarak antarchip 8 px. Segmen periode 40 px.
 - Baris tabel minimal 60 px, sel 15 px dengan padding 20 px horizontal; kepala tabel 13 px, padding 14 px 20 px, tanpa
   latar dan tanpa huruf kapital semua.
@@ -297,11 +299,13 @@ Skala jarak berbasis 4 px: 4, 8, 12, 16, 24, 32, 48.
   Di ponsel (< sm) judul dan tombol satu kata tetap sebaris bila muat; kontrol lebar turun ke baris sendiri selebar
   layar. Subhalaman menaruh tautan kembali 8 px di atas judul.
 - **Ringkasan angka** (`x-ringkasan-angka`, dipakai Tagihan, Riwayat, dan nanti Dasbor): kartu putih radius 16 px,
-  padding 20 px 24 px, kisi dengan kolom sama lebar (`repeat(n, minmax(0, 1fr))`, jarak 24 px) sehingga label dan nilai
-  sejajar walau hanya satu sel berketerangan. Setiap sel: label (`teks-kolom`), nilai (`teks-angka`, tanpa putus
-  baris), keterangan (`teks-bantuan`) bila ada. Item bahaya (Tunggakan) berwarna status-late dan dipisah garis kiri
-  1 px dengan padding kiri 24 px. Di md sampai lg kisi tiga kolom (baris kedua rata kiri); di ponsel berupa daftar baris
-  dengan label di kiri dan nilai di kanan, item bahaya di baris terakhir.
+  padding 20 px 24 px, kisi dengan kolom `repeat(n, minmax(max-content, 1fr))` (jarak 24 px, tidak pernah lebih sempit dari isinya) sehingga label dan nilai
+  sejajar walau hanya satu sel berketerangan. Setiap sel: label (`teks-kolom`), nilai (`clamp(18px, 2.1cqi, 24px)`,
+  berat 700, lebar 125%, tabular, tanpa putus baris), keterangan (`teks-bantuan`) bila ada. Item bahaya (Tunggakan) berwarna status-late dan dipisah garis kiri
+  1 px dengan padding kiri 24 px, dihitung di dalam lebar kolomnya. Tata letak mengikuti lebar kartu (container query,
+  bukan lebar layar): 5 kolom bila kartu ≥ 1000 px, 3 kolom bila ≥ 600 px (baris kedua rata kiri), selain itu daftar
+  dengan label di kiri dan nilai di kanan, item bahaya di baris terakhir. Bila kolom tetap tidak muat, skrip kecil di
+  komponen menurunkan kartu ke 3 kolom lalu ke daftar, jadi tidak ada angka yang keluar kotak atau gulir horizontal.
 
 ## Elevation & Depth
 

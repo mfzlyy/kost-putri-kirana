@@ -210,6 +210,11 @@
     font-size: 16px;
     line-height: 1.4;
     font-weight: 400;
+
+    /* Laptop dan desktop dengan mouse: 15px, sama dengan isi tabel. Ponsel tetap 16px (Safari iOS). */
+    @media (min-width: 1024px) and (pointer: fine) {
+        font-size: 15px;
+    }
 }
 
 @utility teks-tombol {
@@ -350,12 +355,101 @@ select {
     line-height: 1.4;
 }
 
+/* Select (flux:select gratis = select native): tinggi tepat 44px, tanpa padding vertikal bawaan Flux. Panah (latar) tetap di kanan; padding kanan 2.5rem dari Flux menjaga teks tidak menimpanya. */
+select,
+select[data-flux-select-native] {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    padding-block: 0 !important;
+    box-sizing: border-box;
+}
+
 textarea {
     min-height: 96px;
     font-size: 16px;
     line-height: 1.4;
 }
 
+/* Isian 15px di laptop dan desktop dengan pointer halus (sama dengan teks lain); ponsel tetap 16px. */
+@media (min-width: 1024px) and (pointer: fine) {
+    input:not([type='checkbox'], [type='radio'], [type='file'], [type='hidden'], [type='submit'], [type='button']),
+    select,
+    textarea {
+        font-size: 15px;
+    }
+}
+
+/*
+ * Ringkasan angka (x-ringkasan-angka). Kartunya adalah container: tata letak mengikuti lebar kartu, bukan lebar layar.
+ *   >= 1000px : satu kolom per item          600-999px : tiga kolom          < 600px : daftar label kiri, nilai kanan
+ * Kolom memakai minmax(max-content, 1fr) sehingga tidak pernah lebih sempit dari isinya. Bila kolom tetap tidak muat,
+ * skrip kecil di komponen menaikkan data-turun (1 = tiga kolom, 2 = daftar), jadi angka tidak pernah keluar kotak.
+ */
+.ringkasan {
+    container-type: inline-size;
+}
+
+.ringkasan-isi {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Daftar: label dan keterangan di kiri, nilai di kanan. */
+.ringkasan-sel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding-block: 12px;
+    border-top: 1px solid var(--color-row-divider);
+}
+
+.ringkasan-sel:first-child {
+    border-top: 0;
+}
+
+.ringkasan-sel-keterangan {
+    grid-column: 1 / -1;
+}
+
+.ringkasan-nilai {
+    font-size: clamp(18px, 2.1cqi, 24px);
+    line-height: 1.1;
+    font-weight: 700;
+    font-stretch: 125%;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+@container (min-width: 600px) {
+    .ringkasan-isi:not([data-turun='2']) {
+        grid-template-columns: repeat(var(--kolom-md), minmax(max-content, 1fr));
+        gap: 16px 24px;
+    }
+
+    .ringkasan-isi:not([data-turun='2']) > .ringkasan-sel {
+        display: block;
+        padding-block: 0;
+        border-top: 0;
+    }
+
+    .ringkasan-isi:not([data-turun='2']) .ringkasan-nilai {
+        margin-top: 4px;
+    }
+
+    .ringkasan-isi:not([data-turun='2']) > .ringkasan-sel[data-nada='bahaya'] {
+        padding-inline-start: 24px;
+        border-inline-start: 1px solid var(--color-border);
+    }
+}
+
+@container (min-width: 1000px) {
+    .ringkasan-isi:not([data-turun='1'], [data-turun='2']) {
+        grid-template-columns: repeat(var(--kolom), minmax(max-content, 1fr));
+    }
+}
 /* Tombol Flux standar 44px; padding 0 18px, radius 8px, huruf 15px berat 600. */
 [data-flux-button] {
     height: 44px;
