@@ -1,6 +1,6 @@
 @php
     $pengguna = auth()->user();
-    $menu = \App\Support\MenuNavigasi::untuk($pengguna->peran);
+    $menu = \App\Support\MenuNavigasi::denganAngka(\App\Support\MenuNavigasi::untuk($pengguna->peran), $pengguna->peran);
     // Penghuni di ponsel memakai tab bawah, bukan bilah gelap atas dan menu geser (F-11). Halaman tertentu
     // (unggah bukti) menyembunyikan tab lewat parameter layout $tanpaTabPenghuni.
     $adalahPenghuni = $pengguna->peran === \App\Enums\PeranPengguna::Penghuni;
@@ -38,6 +38,7 @@
                         :href="route($item['route'])"
                         :aktif="request()->routeIs($item['route'], \Illuminate\Support\Str::beforeLast($item['route'], '.').'.*')"
                         :jumlah="$item['jumlah'] ?? null"
+                        :antrean="$item['antrean'] ?? null"
                     >
                         {{ $item['label'] }}
                     </x-menu-samping.item>

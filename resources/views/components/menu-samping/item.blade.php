@@ -3,6 +3,8 @@
     'href',
     'aktif' => false,
     'jumlah' => null,
+    // Kunci antrean: angka ikut berubah lewat event window "antrean-{kunci}" (detail.jumlah) tanpa memuat ulang menu.
+    'antrean' => null,
 ])
 
 <a
@@ -16,7 +18,17 @@
     ]) }}
 >
     <span>{{ $slot }}</span>
-    @if ($jumlah)
+    @if ($antrean)
+        <span
+            x-data="{ n: {{ (int) $jumlah }} }"
+            x-on:antrean-{{ $antrean }}.window="n = $event.detail.jumlah"
+            x-show="n > 0"
+            x-text="n"
+            @if (! $jumlah) style="display: none" @endif
+            class="num rounded-full bg-primary-container/15 px-2 py-px text-[13px] text-white"
+            data-test="angka-antrean"
+        >{{ $jumlah }}</span>
+    @elseif ($jumlah)
         <span class="num rounded-full bg-primary-container/15 px-2 py-px text-[13px] text-white">{{ $jumlah }}</span>
     @endif
 </a>

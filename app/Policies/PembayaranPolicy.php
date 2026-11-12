@@ -37,4 +37,12 @@ class PembayaranPolicy
             || ($idPenghuni !== null && $pembayaran->tagihan->kontrak->penghuni_id === $idPenghuni)
         );
     }
+
+    /**
+     * Menerima atau menolak bukti (F-13): hanya pengelola. Boleh dipanggil dengan nama kelas untuk cek tingkat halaman.
+     */
+    public function verifikasi(User $user, ?Pembayaran $pembayaran = null): Response
+    {
+        return $this->izinkanBila($user->peran === PeranPengguna::Pengelola);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\PeranPengguna;
+use App\Models\Pembayaran;
 
 /**
  * Satu-satunya sumber menu sidebar per peran (F-03 butir 1).
@@ -48,6 +49,29 @@ class MenuNavigasi
                 self::item('Permintaan kerja', 'permintaan-kerja.index', 'wrench-screwdriver'),
             ],
         };
+    }
+
+    /**
+     * Menambah angka antrean pada item menu: jumlah bukti bayar yang menunggu di "Verifikasi pembayaran",
+     * hanya untuk pengelola dan dengan satu query per permintaan.
+     *
+     * @param  list<array{label: string, route: string, ikon: string}>  $menu
+     * @return list<array{label: string, route: string, ikon: string, jumlah?: int, antrean?: string}>
+     */
+    public static function denganAngka(array $menu, PeranPengguna $peran): array
+    {
+        if ($peran !== PeranPengguna::Pengelola) {
+            return $menu;
+        }
+
+        $menunggu = Pembayaran::query()->menunggu()->count();
+
+        return array_map(
+            fn (array $item) => $item['route'] === 'verifikasi-pembayaran.index'
+                ? $item + ['jumlah' => $menunggu, 'antrean' => 'verifikasi']
+                : $item,
+            $menu,
+        );
     }
 
     /**

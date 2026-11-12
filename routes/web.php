@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BuktiBayarController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +25,9 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     Route::get('beranda', fn () => redirect()->route(auth()->user()->peran->halamanUtama()))
         ->name('beranda');
 
+    // Berkas bukti bayar dari disk privat. Tanpa batas peran di route: akses ditentukan PembayaranPolicy::view.
+    Route::get('bukti-bayar/{pembayaran}', [BuktiBayarController::class, 'tampil'])->name('bukti-bayar.tampil');
+
     // Pemilik
     Route::middleware('peran:'.$peranDashboard)->group(function () use ($disiapkan) {
         $disiapkan('dashboard', 'dashboard', 'Dashboard', 'F-21');
@@ -38,7 +42,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('penghuni/{penghuni}/ubah', 'pages::penghuni.form')->name('penghuni.ubah');
         Route::livewire('kontrak/buat', 'pages::kontrak.form')->name('kontrak.buat');
         Route::livewire('kontrak/{kontrak}/perpanjang', 'pages::kontrak.form')->name('kontrak.perpanjang');
-        $disiapkan('verifikasi-pembayaran', 'verifikasi-pembayaran.index', 'Verifikasi pembayaran', 'F-13');
+        Route::livewire('verifikasi-pembayaran', 'pages::verifikasi-pembayaran.index')->name('verifikasi-pembayaran.index');
         $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi ERP', 'F-25');
     });
 

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 
 /**
  * Format tampilan angka dan nominal sesuai docs/design/DESIGN.md.
@@ -22,6 +23,26 @@ class Format
         $negatif = $bulat < 0;
 
         return ($negatif ? '-' : '').'Rp'.number_format(abs($bulat), 0, ',', '.');
+    }
+
+    /**
+     * Waktu unggah untuk daftar verifikasi, per tanggal kalender di zona waktu aplikasi: "hari ini 07.30",
+     * "kemarin 19.42", nama hari untuk 2 sampai 6 hari lalu ("Minggu 19.42"), selain itu "3 Nov, 07.30".
+     */
+    public static function waktuUnggah(CarbonInterface $waktu, ?CarbonInterface $sekarang = null): string
+    {
+        $zona = config('app.timezone');
+        $waktu = CarbonImmutable::instance($waktu)->setTimezone($zona)->locale('id');
+        $hariIni = CarbonImmutable::instance($sekarang ?? now())->setTimezone($zona)->startOfDay();
+        $selisih = (int) $waktu->copy()->startOfDay()->diffInDays($hariIni, false);
+        $jam = $waktu->format('H.i');
+
+        return match (true) {
+            $selisih <= 0 => 'hari ini '.$jam,
+            $selisih === 1 => 'kemarin '.$jam,
+            $selisih <= 6 => $waktu->translatedFormat('l').' '.$jam,
+            default => $waktu->translatedFormat('j M').', '.$jam,
+        };
     }
 
     /**

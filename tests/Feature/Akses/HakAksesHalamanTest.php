@@ -6,6 +6,7 @@ use App\Models\PengaturanOperasional;
 use App\Models\Penghuni;
 use App\Models\Tagihan;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(fn () => PengaturanOperasional::factory()->create());
 
@@ -175,5 +176,24 @@ it('F-12: /tagihan-saya/{tagihan}/unggah hanya untuk penghuni pemilik tagihan; p
     'penghuni lain' => ['penghuni_lain', false],
     'pengelola' => ['pengelola', false],
     'pemilik' => ['pemilik', false],
+    'vendor' => ['vendor', false],
+]);
+
+it('F-13: /bukti-bayar/{pembayaran} dibuka pemilik, pengelola, dan penghuni pemilik; penghuni lain dan vendor 403', function (string $peran, bool $boleh) {
+    Storage::fake('local');
+    $pembayaran = siapkanBuktiMenunggu('05', 'Maya Sari');
+
+    $user = $peran === 'penghuni_lain'
+        ? buatKontrakUji('06', 'Rina Maharani')->penghuni->user
+        : ($peran === 'penghuni' ? $pembayaran->tagihan->kontrak->penghuni->user : User::factory()->{$peran}()->create());
+
+    $respons = $this->actingAs($user)->get(route('bukti-bayar.tampil', $pembayaran));
+
+    $boleh ? $respons->assertOk() : $respons->assertForbidden();
+})->with([
+    'pemilik' => ['pemilik', true],
+    'pengelola' => ['pengelola', true],
+    'penghuni pemilik' => ['penghuni', true],
+    'penghuni lain' => ['penghuni_lain', false],
     'vendor' => ['vendor', false],
 ]);

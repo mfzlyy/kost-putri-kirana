@@ -1,13 +1,17 @@
 <?php
 
+use App\Enums\StatusTagihan;
 use App\Models\Kamar;
 use App\Models\Kontrak;
+use App\Models\Pembayaran;
 use App\Models\Penghuni;
+use App\Models\Tagihan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /*
@@ -101,4 +105,54 @@ function anonimkanFixtureMigrasi(string $tujuan = 'migrasi/anonim', int $seed = 
     Artisan::call('migrasi:anonimkan', ['sumber' => jalurFixtureMigrasi('mentah'), 'tujuan' => $jalur, '--seed' => $seed]);
 
     return $jalur;
+}
+
+/**
+ * Isi berkas bukti contoh yang dikenali finfo sebagai JPG, PNG, PDF, atau teks biasa ('txt').
+ */
+function isiBerkasContoh(string $jenis): string
+{
+    return match ($jenis) {
+        'jpg' => base64_decode('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='),
+        'png' => base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='),
+        'pdf' => "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n",
+        'txt' => "ini hanya teks biasa, bukan gambar\n",
+    };
+}
+
+/**
+ * Pembayaran berstatus menunggu untuk tagihan menunggu verifikasi milik penghuni baru di kamar $nomor.
+ * Bila $berkas diisi ('jpg', 'png', 'pdf', 'txt'), berkasnya ditulis ke disk local; selain itu path berkas
+ * hasil migrasi (tanpa bukti).
+ */
+function siapkanBuktiMenunggu(
+    string $nomor,
+    string $nama,
+    string $diunggah = '2026-11-04 08:00',
+    ?string $berkas = 'jpg',
+    string $periode = '2026-11-01',
+    string $jatuhTempo = '2026-11-10',
+    int $nominal = 1250000,
+): Pembayaran {
+    $kontrak = buatKontrakUji($nomor, $nama);
+    $tagihan = Tagihan::factory()->create([
+        'kontrak_id' => $kontrak->id,
+        'periode' => $periode,
+        'jatuh_tempo' => $jatuhTempo,
+        'nominal' => $nominal,
+        'status_tagihan' => StatusTagihan::MenungguVerifikasi,
+    ]);
+
+    $path = Pembayaran::PATH_TANPA_BUKTI;
+
+    if ($berkas !== null) {
+        $path = 'bukti-bayar/'.substr($periode, 0, 4).'/'.substr($periode, 5, 2).'/'.Str::uuid().'.'.$berkas;
+        Storage::disk('local')->put($path, isiBerkasContoh($berkas));
+    }
+
+    return Pembayaran::factory()->menunggu()->create([
+        'tagihan_id' => $tagihan->id,
+        'bukti_bayar_path' => $path,
+        'diunggah_pada' => Carbon\Carbon::parse($diunggah, 'Asia/Jakarta'),
+    ]);
 }
