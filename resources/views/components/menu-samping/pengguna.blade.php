@@ -3,7 +3,7 @@
 
 <div class="mt-3 flex shrink-0 flex-col gap-0.5 border-t border-primary-container/15 px-3 pt-4 pendek:pt-3">
     <span class="line-clamp-2 font-semibold text-white">{{ $pengguna->nama }}</span>
-    <span class="text-[13px]">{{ $pengguna->peran->label() }}</span>
+    <span class="teks-bantuan">{{ $pengguna->peran->label() }}</span>
 
     <div class="mt-2 flex flex-col pendek:mt-1 pendek:flex-row pendek:gap-4">
         <a href="{{ route('security.edit') }}" wire:navigate class="tautan-sidebar underline">Ganti Password</a>

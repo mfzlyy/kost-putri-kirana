@@ -141,7 +141,7 @@ it('angka antrean Verifikasi memakai gaya aktif di halamannya dan gaya biasa di 
 
     expect($angka($aktif))->toContain('bg-primary')->toContain('font-semibold')->not->toContain('bg-primary-container/[.14]')
         ->and($angka($lain))->toContain('bg-primary-container/[.14]')->not->toContain('font-semibold')
-        ->and($angka($aktif))->toContain('h-[22px]')->toContain('rounded-full')->toContain('text-[13px]')->toContain('flex-none');
+        ->and($angka($aktif))->toContain('h-[22px]')->toContain('rounded-full')->toContain('teks-pil')->toContain('flex-none');
     expect($aktif)->toContain('1 bukti menunggu');
 });
 

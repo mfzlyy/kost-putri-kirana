@@ -248,13 +248,13 @@ new #[Title('Kontrak')] class extends Component {
     $kontrakModal = $this->kontrakAkhiri;
     $tanggalId = fn ($tanggal) => $tanggal->locale('id')->translatedFormat('j M Y');
     $tanggalPanjang = fn ($tanggal) => $tanggal->locale('id')->translatedFormat('j F Y');
-    $kelasLinkAksi = 'inline-flex min-h-10 cursor-pointer items-center px-1 text-sm font-semibold no-underline';
+    $kelasLinkAksi = 'inline-flex min-h-10 cursor-pointer items-center px-1 no-underline teks-tombol-kecil';
 @endphp
 
-<section class="flex w-full flex-col gap-4 lg:gap-6">
+<section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Kontrak">
         @if ($bisaKelola)
-            <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="h-12! w-full sm:h-11! sm:w-auto" data-test="buat-kontrak">
+            <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate data-test="buat-kontrak">
                 Buat
             </flux:button>
         @endif
@@ -264,7 +264,7 @@ new #[Title('Kontrak')] class extends Component {
     <section aria-labelledby="judul-akan-berakhir" class="overflow-hidden rounded-2xl border border-border bg-surface" data-test="akan-berakhir">
         @if ($batas === null)
             <div class="flex flex-col gap-3 px-4 py-4 sm:px-5">
-                <h2 id="judul-akan-berakhir" class="m-0 text-xl font-[650]">Segera Berakhir</h2>
+                <h2 id="judul-akan-berakhir" class="m-0 teks-bagian">Segera Berakhir</h2>
                 <flux:callout variant="warning" icon="exclamation-triangle" data-test="batas-belum-diatur">
                     <flux:callout.text>
                         Batas peringatan belum diatur.
@@ -278,7 +278,7 @@ new #[Title('Kontrak')] class extends Component {
             </div>
         @else
             <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-4 sm:px-5 sm:py-[18px]">
-                <h2 id="judul-akan-berakhir" class="m-0 text-xl font-[650]">Segera Berakhir</h2>
+                <h2 id="judul-akan-berakhir" class="m-0 teks-bagian">Segera Berakhir</h2>
             </div>
 
             @if ($this->akanBerakhir->isEmpty())
@@ -288,10 +288,10 @@ new #[Title('Kontrak')] class extends Component {
                     @foreach ($this->akanBerakhir as $kontrak)
                         @php($sisa = $kontrak->sisaHari())
                         <li wire:key="akan-berakhir-{{ $kontrak->id }}" class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2.5 gap-y-1 border-t border-row-divider px-4 py-3.5 sm:px-5 md:grid-cols-[72px_minmax(0,1fr)_auto_auto] md:items-center md:gap-x-4 md:py-4" data-test="baris-akan-berakhir">
-                            <span class="num text-[22px] leading-none font-[750] font-stretch-expanded">{{ $kontrak->kamar?->nomor_kamar }}</span>
+                            <span class="num teks-nomor-kamar">{{ $kontrak->kamar?->nomor_kamar }}</span>
                             <span class="min-w-0">
                                 <strong class="font-semibold">{{ $kontrak->penghuni?->user?->nama }}</strong>
-                                <span class="block text-sm text-ink-muted">Berakhir {{ $tanggalPanjang($kontrak->tanggal_berakhir) }}</span>
+                                <span class="block teks-bantuan">Berakhir {{ $tanggalPanjang($kontrak->tanggal_berakhir) }}</span>
                             </span>
                             @if ($sisa > 0)
                                 <x-status jenis="tunggu">{{ $sisa }} Hari Lagi</x-status>
@@ -302,7 +302,7 @@ new #[Title('Kontrak')] class extends Component {
                             @endif
                             @if ($bisaKelola)
                                 <span class="col-span-3 flex items-center gap-3 md:col-span-1 md:gap-2">
-                                    <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="{{ $kelasLinkAksi }} md:h-[38px] md:rounded-lg md:border md:border-border-strong md:bg-surface md:px-3.5" data-test="perpanjang-kontrak">Perpanjang</a>
+                                    <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="{{ $kelasLinkAksi }} md:tombol-kecil md:border md:border-border-strong md:bg-surface" data-test="perpanjang-kontrak">Perpanjang</a>
                                     <button type="button" class="{{ $kelasLinkAksi }} text-danger" wire:click="konfirmasiAkhiri({{ $kontrak->id }})" data-test="akhiri-kontrak">Akhiri</button>
                                 </span>
                             @endif
@@ -313,18 +313,18 @@ new #[Title('Kontrak')] class extends Component {
         @endif
     </section>
 
-    <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <div role="group" aria-label="Saring status" class="baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
         <x-chip-filter :aktif="$this->filterAktif === 'semua'" :jumlah="$this->hitungan['semua']" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'berakhir'" :jumlah="$this->hitungan['berakhir']" wire:click="$set('filterStatus', 'berakhir')">Berakhir</x-chip-filter>
     </div>
 
-    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4 lg:gap-6">
+    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
     @if ($this->daftarKontrak->isEmpty())
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kontrak.' : 'Tidak ada kontrak yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $bisaKelola)
-                <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="h-11!">Buat</flux:button>
+                <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate>Buat</flux:button>
             @endif
         </div>
     @else
@@ -333,14 +333,14 @@ new #[Title('Kontrak')] class extends Component {
             <table class="w-full min-w-[820px] border-collapse">
                 <thead>
                     <tr>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Kamar</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Penghuni</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Mulai</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Berakhir</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted">Tarif</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Kamar</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Penghuni</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Mulai</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Berakhir</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end whitespace-nowrap teks-kolom">Tarif</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Status</th>
                         @if ($bisaKelola)
-                            <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
+                            <th scope="col" class="border-b border-border px-5 py-3.5 text-end whitespace-nowrap teks-kolom"><span class="sr-only">Aksi</span></th>
                         @endif
                     </tr>
                 </thead>
@@ -348,7 +348,7 @@ new #[Title('Kontrak')] class extends Component {
                     @foreach ($this->daftarKontrak as $kontrak)
                         @php($aktif = $kontrak->status_kontrak === StatusKontrak::Aktif)
                         <tr wire:key="kontrak-tabel-{{ $kontrak->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
-                            <td class="num px-5 text-[22px] font-[750] font-stretch-expanded">{{ $kontrak->kamar?->nomor_kamar }}</td>
+                            <td class="num px-5 teks-nomor-kamar">{{ $kontrak->kamar?->nomor_kamar }}</td>
                             <td class="px-5 font-semibold whitespace-nowrap">{{ $kontrak->penghuni?->user?->nama }}</td>
                             <td class="px-5 whitespace-nowrap">{{ $tanggalId($kontrak->tanggal_mulai) }}</td>
                             <td class="px-5 whitespace-nowrap">{{ $tanggalId($kontrak->tanggal_berakhir) }}</td>
@@ -381,12 +381,12 @@ new #[Title('Kontrak')] class extends Component {
                 <li wire:key="kontrak-kartu-{{ $kontrak->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                     <div class="flex items-baseline justify-between gap-3">
                         <span class="flex min-w-0 items-baseline gap-2.5">
-                            <span class="num text-xl leading-none font-[750] font-stretch-expanded">{{ $kontrak->kamar?->nomor_kamar }}</span>
+                            <span class="num teks-nomor-kamar">{{ $kontrak->kamar?->nomor_kamar }}</span>
                             <span class="truncate font-semibold">{{ $kontrak->penghuni?->user?->nama }}</span>
                         </span>
-                        <span class="num shrink-0 text-sm font-semibold">{{ Format::rupiah($kontrak->tarif_bulanan) }}</span>
+                        <span class="num shrink-0 teks-tombol-kecil">{{ Format::rupiah($kontrak->tarif_bulanan) }}</span>
                     </div>
-                    <div class="flex items-center justify-between gap-3 text-sm">
+                    <div class="flex items-center justify-between gap-3 teks-badan">
                         <span class="text-ink-muted">{{ $tanggalId($kontrak->tanggal_mulai) }} sampai {{ $tanggalId($kontrak->tanggal_berakhir) }}</span>
                         @unless ($aktif)
                             <x-status jenis="belum">Berakhir</x-status>

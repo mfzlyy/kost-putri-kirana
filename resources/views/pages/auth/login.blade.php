@@ -19,7 +19,7 @@
         @csrf
 
         <div>
-            <h1 class="m-0 text-[22px] leading-[1.1] font-bold font-stretch-expanded lg:text-3xl">Masuk</h1>
+            <h1 class="teks-judul m-0">Masuk</h1>
         </div>
 
         @if ($galatAutentikasi->isNotEmpty())
@@ -59,10 +59,10 @@
             <flux:error name="password" />
         </flux:field>
 
-        <flux:button variant="primary" type="submit" class="h-12! w-full" data-test="login-button">
+        <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
             Masuk
         </flux:button>
 
-        <p class="m-0 text-sm text-ink-muted">Lupa password? Hubungi pengelola kos.</p>
+        <p class="m-0 teks-bantuan">Lupa password? Hubungi pengelola kos.</p>
     </form>
 </x-layouts::auth>

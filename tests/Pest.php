@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportTesting\Testable;
 use Tests\TestCase;
 
 /*
@@ -199,3 +200,14 @@ function buatPembayaranDiterima(
 
     return $pembayaran;
 }
+
+/**
+ * ->assertRingkasan('jumlah', '5'): nilai sel x-ringkasan-angka berkunci "jumlah" sama dengan '5'.
+ */
+Testable::macro('assertRingkasan', function (string $kunci, string $nilai) {
+    preg_match('#data-test="ringkasan-'.preg_quote($kunci, '#').'"[^>]*>(.*?)</div>#s', $this->html(), $cocok);
+
+    expect(trim($cocok[1] ?? ''))->toBe($nilai);
+
+    return $this;
+});

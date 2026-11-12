@@ -18,7 +18,7 @@
     }
 @endphp
 
-<span {{ $attributes->class(['inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold', $daftar[$jenis]]) }}>
+<span {{ $attributes->class(['teks-status inline-flex items-center gap-1.5 whitespace-nowrap', $daftar[$jenis]]) }}>
     <svg viewBox="0 0 16 16" class="size-3.5 shrink-0" aria-hidden="true">
         @switch($jenis)
             @case('ok')

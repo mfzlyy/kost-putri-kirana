@@ -10,7 +10,7 @@
             wire:navigate
             @if ($aktif) aria-current="page" @endif
             @class([
-                'flex min-h-11 flex-col items-center justify-center gap-[3px] text-xs font-[550] no-underline',
+                'flex min-h-11 flex-col items-center justify-center gap-[3px] text-[12px] font-semibold leading-none no-underline',
                 'text-primary' => $aktif,
                 'text-ink-muted' => ! $aktif,
             ])

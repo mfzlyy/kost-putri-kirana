@@ -71,7 +71,7 @@ new #[Title('Profil')] class extends Component {
     $nomorKamar = $kontrak?->kamar?->nomor_kamar;
 @endphp
 
-<section class="flex w-full max-w-[880px] flex-col gap-4 lg:gap-6">
+<section class="flex w-full max-w-[880px] flex-col gap-6">
     @if ($penghuni === null)
         <x-judul-halaman judul="Profil" />
         <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.</p>
@@ -80,7 +80,7 @@ new #[Title('Profil')] class extends Component {
 
         <div class="flex flex-wrap items-start gap-4">
             <section class="flex-[1_1_320px] rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-data-diri">
-                <h2 id="judul-data-diri" class="m-0 mb-3.5 text-base font-[650]">Data Diri</h2>
+                <h2 id="judul-data-diri" class="m-0 mb-3.5 teks-bagian">Data Diri</h2>
                 <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
                     <dt class="text-ink-muted">Nama</dt>
                     <dd class="m-0 break-words" data-test="nama">{{ $penghuni->user?->nama }}</dd>
@@ -95,16 +95,16 @@ new #[Title('Profil')] class extends Component {
                     <dd class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                         <span class="num tracking-[0.02em]" aria-live="polite" data-test="nik">{{ $this->identitasTerbuka ? $this->identitasUtuh : $penghuni->no_identitas_tersamar }}</span>
                         @if ($this->identitasTerbuka)
-                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="sembunyikan-identitas">Sembunyikan</button>
+                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="sembunyikan-identitas">Sembunyikan</button>
                         @else
-                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="tampilkan-identitas">Tampilkan</button>
+                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="tampilkan-identitas">Tampilkan</button>
                         @endif
                     </dd>
                 </dl>
             </section>
 
             <section class="flex-[1_1_280px] rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-kontrak">
-                <h2 id="judul-kontrak" class="m-0 mb-3.5 text-base font-[650]">Kontrak</h2>
+                <h2 id="judul-kontrak" class="m-0 mb-3.5 teks-bagian">Kontrak</h2>
                 @if ($kontrak)
                     <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
                         <dt class="text-ink-muted">Kamar</dt>
@@ -126,13 +126,13 @@ new #[Title('Profil')] class extends Component {
 
     {{-- Ponsel penghuni tidak punya menu pengguna sidebar, jadi Ganti password dan Keluar ada di sini. --}}
     <section class="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface md:hidden" aria-label="Akun" data-test="kotak-akun">
-        <a href="{{ route('security.edit') }}" wire:navigate class="flex min-h-12 items-center justify-between gap-2 border-b border-row-divider px-4 font-semibold text-ink no-underline hover:text-ink">
+        <a href="{{ route('security.edit') }}" wire:navigate class="flex min-h-11 items-center justify-between gap-2 border-b border-row-divider px-4 font-semibold text-ink no-underline hover:text-ink">
             Ganti Password
             <flux:icon.chevron-right class="size-[18px] text-ink-muted" />
         </a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="flex min-h-12 w-full cursor-pointer items-center px-4 text-left font-semibold text-danger" data-test="keluar-ponsel">Keluar</button>
+            <button type="submit" class="flex min-h-11 w-full cursor-pointer items-center px-4 text-left font-semibold text-danger" data-test="keluar-ponsel">Keluar</button>
         </form>
     </section>
 </section>

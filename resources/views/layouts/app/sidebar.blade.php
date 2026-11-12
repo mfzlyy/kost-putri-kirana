@@ -62,7 +62,7 @@
 
             <x-app-logo :sidebar="true" ukuran="kecil" />
 
-            <span class="ms-auto text-[13px] text-on-sidebar-muted">{{ $pengguna->peran->label() }}</span>
+            <span class="ms-auto text-on-sidebar-muted! teks-bantuan">{{ $pengguna->peran->label() }}</span>
         </header>
 
         {{ $slot }}

@@ -324,8 +324,8 @@ new #[Title('Kontrak')] class extends Component {
     $judul = $perpanjang ? 'Perpanjang Kontrak' : 'Buat Kontrak';
 @endphp
 
-<section class="flex w-full flex-col gap-4 lg:gap-6">
-    <div class="flex flex-col gap-2.5">
+<section class="flex w-full flex-col gap-6">
+    <div class="flex flex-col gap-2">
         <a href="{{ route('kontrak.index') }}" wire:navigate class="hidden w-fit lg:inline">Kontrak</a>
         <div class="flex items-start gap-1">
             <a href="{{ route('kontrak.index') }}" wire:navigate aria-label="Kembali ke kontrak" class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg lg:hidden">
@@ -337,7 +337,7 @@ new #[Title('Kontrak')] class extends Component {
 
     <form wire:submit="simpan" novalidate class="flex max-w-[860px] flex-col gap-[22px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
         @if ($jumlahGalat > 0)
-            <p role="alert" class="m-0 rounded-[10px] bg-danger-container px-3.5 py-3 text-sm text-on-danger-container" data-test="ringkasan-galat">
+            <p role="alert" class="m-0 rounded-[10px] bg-danger-container px-3.5 py-3 text-on-danger-container teks-badan" data-test="ringkasan-galat">
                 {{ $kataJumlah[$jumlahGalat] ?? $jumlahGalat }} isian perlu diperbaiki sebelum disimpan.
             </p>
         @endif
@@ -346,20 +346,20 @@ new #[Title('Kontrak')] class extends Component {
             {{-- Ringkasan hanya-baca --}}
             <dl class="m-0 grid grid-cols-1 gap-3 sm:grid-cols-3" data-test="ringkasan-kontrak">
                 <div>
-                    <dt class="text-sm text-ink-muted">Penghuni</dt>
+                    <dt class="teks-bantuan">Penghuni</dt>
                     <dd class="m-0 font-semibold">{{ $kontrakLama->penghuni?->user?->nama }}</dd>
                 </div>
                 <div>
-                    <dt class="text-sm text-ink-muted">Kamar</dt>
+                    <dt class="teks-bantuan">Kamar</dt>
                     <dd class="num m-0 font-semibold">{{ $kontrakLama->kamar?->nomor_kamar }}</dd>
                 </div>
                 <div>
-                    <dt class="text-sm text-ink-muted">Mulai</dt>
+                    <dt class="teks-bantuan">Mulai</dt>
                     <dd class="m-0 font-semibold">{{ $tanggalPanjang($kontrakLama->tanggal_berakhir->addDay()) }}</dd>
                 </div>
             </dl>
 
-            <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-sm text-on-primary-container" data-test="catatan-perpanjang">
+            <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-on-primary-container teks-badan" data-test="catatan-perpanjang">
                 Kontrak lama ({{ $tanggalPanjang($kontrakLama->tanggal_mulai) }} sampai {{ $tanggalPanjang($kontrakLama->tanggal_berakhir) }}) ditutup dan tersimpan di riwayat.
             </p>
 
@@ -408,7 +408,7 @@ new #[Title('Kontrak')] class extends Component {
 
             {{-- Kisi gantungan kunci: radio group yang bisa dipakai keyboard. Kamar terisi pudar dan tidak bisa dipilih. --}}
             <fieldset class="m-0 min-w-0 border-0 p-0">
-                <legend id="legenda-kamar" class="mb-2 p-0 text-sm font-semibold">Kamar</legend>
+                <legend id="legenda-kamar" class="mb-2 p-0 teks-label">Kamar</legend>
 
                 <div role="radiogroup" aria-labelledby="legenda-kamar" class="grid grid-cols-4 gap-2 md:grid-cols-8" data-test="kisi-kamar">
                     @foreach ($this->daftarKamar as $kamar)
@@ -441,7 +441,7 @@ new #[Title('Kontrak')] class extends Component {
                                 ])
                             >
                                 <strong class="num font-stretch-expanded">{{ $kamar->nomor_kamar }}</strong>
-                                <span class="text-xs">{{ $keterangan }}</span>
+                                <span class="teks-bantuan">{{ $keterangan }}</span>
                             </label>
                         </div>
                     @endforeach
@@ -486,7 +486,7 @@ new #[Title('Kontrak')] class extends Component {
         @endif
 
         <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-            <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
+            <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
                 Simpan
             </flux:button>
             <x-tautan-batal :href="route('kontrak.index')" />

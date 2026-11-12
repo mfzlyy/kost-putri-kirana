@@ -238,7 +238,7 @@ new #[Title('Riwayat')] class extends Component {
 
 @if ($this->modePenghuni)
     {{-- ===================== MODE PENGHUNI ===================== --}}
-    <section class="flex w-full max-w-[880px] flex-col gap-4 lg:gap-6">
+    <section class="flex w-full max-w-[880px] flex-col gap-6">
         @if ($this->penghuni === null)
             <x-judul-halaman judul="Riwayat" />
             <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.</p>
@@ -249,16 +249,17 @@ new #[Title('Riwayat')] class extends Component {
                 $sisa = max(0, (int) $ringkasan->jumlah - $baris->count());
             @endphp
 
-            <header class="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-x-6">
-                <h1 class="m-0 min-w-0 text-[26px] leading-[1.1] font-[750] font-stretch-expanded tracking-[-0.01em] lg:text-[34px] lg:leading-[1.05]">Riwayat</h1>
+            <x-judul-halaman judul="Riwayat" />
 
-                @if ($ringkasan->jumlah > 0)
-                    <p class="m-0 flex items-baseline justify-between gap-3 px-0.5 text-sm text-ink-muted md:block md:p-0 md:text-base" data-test="ringkasan">
-                        <span>Sejak {{ \Carbon\CarbonImmutable::parse($ringkasan->sejak)->locale('id')->translatedFormat('F Y') }}</span><span class="max-md:hidden">, </span>
-                        <strong class="num font-semibold text-ink">{{ $ringkasan->jumlah }} kali, {{ Format::rupiah($ringkasan->total) }}</strong>
-                    </p>
-                @endif
-            </header>
+            @if ($ringkasan->jumlah > 0)
+                <x-ringkasan-angka
+                    :items="[
+                        ['kunci' => 'sejak', 'label' => 'Sejak', 'nilai' => \Carbon\CarbonImmutable::parse($ringkasan->sejak)->locale('id')->translatedFormat('F Y')],
+                        ['kunci' => 'jumlah', 'label' => 'Jumlah', 'nilai' => $ringkasan->jumlah.' kali'],
+                        ['kunci' => 'total', 'label' => 'Total', 'nilai' => Format::rupiah($ringkasan->total)],
+                    ]"
+                />
+            @endif
 
             @if ($baris->isEmpty())
                 <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="kosong">Belum ada pembayaran yang diterima.</p>
@@ -269,7 +270,7 @@ new #[Title('Riwayat')] class extends Component {
                         <thead>
                             <tr>
                                 @foreach (['Periode' => 'left', 'Dibayar' => 'left', 'Diterima' => 'left', 'Nominal' => 'right', 'Status' => 'left'] as $judul => $rata)
-                                    <th scope="col" @class(['border-b border-border px-5 py-3.5 text-[13px] font-[550] whitespace-nowrap text-ink-muted', 'text-left' => $rata === 'left', 'text-right' => $rata === 'right'])>{{ $judul }}</th>
+                                    <th scope="col" @class(['border-b border-border px-5 py-3.5 whitespace-nowrap teks-kolom', 'text-left' => $rata === 'left', 'text-right' => $rata === 'right'])>{{ $judul }}</th>
                                 @endforeach
                             </tr>
                         </thead>
@@ -293,7 +294,7 @@ new #[Title('Riwayat')] class extends Component {
                         <li wire:key="daftar-{{ $b->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                             <span class="font-semibold">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</span>
                             <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
-                            <span class="text-sm text-ink-muted">Dibayar {{ $tanggal($b->tanggal_bayar) }}, Diterima {{ $tanggal($b->diverifikasi_pada) }}</span>
+                            <span class="teks-bantuan">Dibayar {{ $tanggal($b->tanggal_bayar) }}, Diterima {{ $tanggal($b->diverifikasi_pada) }}</span>
                             <span class="justify-self-end self-center text-status-ok">
                                 <svg width="14" height="14" viewBox="0 0 16 16" role="img" aria-label="Lunas"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             </span>
@@ -307,7 +308,7 @@ new #[Title('Riwayat')] class extends Component {
                         wire:click="tampilkanLagi"
                         wire:loading.attr="disabled"
                         wire:target="tampilkanLagi"
-                        class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-border-strong bg-surface px-5 text-[15px] font-semibold text-ink hover:bg-surface-muted md:h-11 md:w-fit"
+                        class="tombol w-full border border-border-strong bg-surface text-ink hover:bg-surface-muted md:w-fit"
                         data-test="tampilkan-lagi"
                     >Lainnya</button>
                 @endif
@@ -323,11 +324,18 @@ new #[Title('Riwayat')] class extends Component {
         $keluar = fn ($penghuni) => $penghuni?->status_penghuni === StatusPenghuni::Nonaktif;
     @endphp
 
-    <section class="flex w-full flex-col gap-4 lg:gap-6">
+    <section class="flex w-full flex-col gap-6">
         <x-judul-halaman judul="Riwayat" />
 
+        <x-ringkasan-angka
+            :items="[
+                ['kunci' => 'jumlah', 'label' => 'Pembayaran', 'nilai' => (string) $ringkasan->jumlah],
+                ['kunci' => 'total', 'label' => 'Total', 'nilai' => Format::rupiah($ringkasan->total)],
+            ]"
+        />
+
         {{-- Filter: sebaris di desktop, bertumpuk di ponsel --}}
-        <div class="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end lg:gap-4">
+        <div class="baris-filter flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end lg:gap-4">
             <div class="grid grid-cols-2 gap-2 lg:contents">
                 <div class="lg:w-[280px]">
                     <flux:field>
@@ -353,10 +361,6 @@ new #[Title('Riwayat')] class extends Component {
                 </div>
             </div>
 
-            <p class="m-0 flex items-baseline justify-between gap-3 text-sm lg:ms-auto lg:justify-end lg:gap-5 lg:pb-2.5 lg:text-base" data-test="ringkasan">
-                <span class="num text-ink-muted">{{ $ringkasan->jumlah }} pembayaran</span>
-                <span class="text-ink-muted">Total <strong class="num text-[17px] font-semibold text-ink">{{ Format::rupiah($ringkasan->total) }}</strong></span>
-            </p>
         </div>
 
         <div wire:loading.class="opacity-60" wire:target="filterPenghuni,filterPeriode,gotoPage,nextPage,previousPage" class="transisi-opasitas flex flex-col gap-4">
@@ -371,7 +375,7 @@ new #[Title('Riwayat')] class extends Component {
                         <thead>
                             <tr>
                                 @foreach (['Periode' => 'left', 'Penghuni' => 'left', 'Kamar' => 'left', 'Nominal' => 'right', 'Dibayar' => 'left', 'Diterima' => 'left', 'Odoo' => 'left'] as $judul => $rata)
-                                    <th scope="col" @class(['border-b border-border px-5 py-3.5 text-[13px] font-[550] whitespace-nowrap text-ink-muted', 'text-left' => $rata === 'left', 'text-right' => $rata === 'right'])>{{ $judul }}</th>
+                                    <th scope="col" @class(['border-b border-border px-5 py-3.5 whitespace-nowrap teks-kolom', 'text-left' => $rata === 'left', 'text-right' => $rata === 'right'])>{{ $judul }}</th>
                                 @endforeach
                             </tr>
                         </thead>
@@ -390,12 +394,12 @@ new #[Title('Riwayat')] class extends Component {
                                     <td class="px-5 py-3 whitespace-nowrap text-ink-muted">
                                         {{ $waktu($b->diverifikasi_pada) }}
                                         @if ($b->diverifikasiOleh)
-                                            <span class="block text-[13px]">oleh {{ $b->diverifikasiOleh->nama }}</span>
+                                            <span class="block teks-bantuan">oleh {{ $b->diverifikasiOleh->nama }}</span>
                                         @endif
                                     </td>
                                     <td class="px-5 py-3 whitespace-nowrap" data-test="status-odoo">
                                         @if ($sinkron === null)
-                                            <span class="text-sm text-ink-muted" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
+                                            <span class="teks-bantuan" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                             <x-status jenis="ok">Terkirim</x-status>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
@@ -424,11 +428,11 @@ new #[Title('Riwayat')] class extends Component {
                                 <span class="font-semibold">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="font-normal text-ink-muted">(sudah keluar)</span>@endif</span>
                                 <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
                             </div>
-                            <span class="text-sm text-ink-muted">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, Diterima {{ $waktu($b->diverifikasi_pada) }}</span>
+                            <span class="teks-bantuan">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, Diterima {{ $waktu($b->diverifikasi_pada) }}</span>
                             <div class="flex items-center gap-2" data-test="status-odoo">
-                                <span class="text-sm text-ink-muted">Odoo</span>
+                                <span class="teks-bantuan">Odoo</span>
                                 @if ($sinkron === null)
-                                    <span class="text-sm text-ink-muted" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
+                                    <span class="teks-bantuan" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                     <x-status jenis="ok">Terkirim</x-status>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)

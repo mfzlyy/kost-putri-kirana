@@ -240,13 +240,40 @@ Jarak logo ke wordmark 10 px. Jangan memutar, memberi bayangan, atau mengganti w
 ## Typography
 
 Satu keluarga huruf: **Archivo** (Google Fonts, variabel dengan sumbu lebar `wdth` 62–125 dan berat `wght` 100–900).
+Skala di bawah didefinisikan sekali sebagai `@utility` di `resources/css/app.css`. View memakai token (`teks-judul`,
+dan seterusnya), tidak menulis ukuran huruf lepas seperti `text-[17px]`. Huruf dilebarkan (125%) hanya untuk judul,
+angka besar, dan nomor kamar.
 
-- Judul halaman memakai lebar 125% dan berat 750: 34 px di desktop, 26 px di ponsel. Ini satu-satunya tempat huruf
-  dilebarkan, selain nomor kamar dan angka besar.
-- Angka besar (nominal tagihan, metrik) 38–44 px, berat 750, lebar 125%, angka tabular.
-- Nomor kamar 20–22 px, berat 750, lebar 125%, angka tabular.
-- Teks umum 15 px, isian form 16 px agar tidak diperbesar otomatis di ponsel.
-- Label dan tombol 14–15 px berat 600. Kepala tabel 13 px warna Ink-muted, tanpa latar dan tanpa huruf kapital semua.
+| Token | Ukuran / tinggi baris | Berat | Lain | Dipakai untuk |
+|---|---|---|---|---|
+| `teks-judul` | 34/1.05 (≥ md), 26/1.1 | 750 | lebar 125%, letter-spacing -0.01em | h1 halaman |
+| `teks-judul-dialog` | 24/1.15 (≥ sm), 20/1.2 | 750 | lebar 125% | judul dialog |
+| `teks-bagian` | 18/1.3 | 650 | | h2 bagian, judul kartu |
+| `teks-angka-utama` | 40/1.05 (≥ md), 34/1.05 | 750 | lebar 125%, tabular | nominal kartu Tagihan penghuni, panel Verifikasi, Unggah |
+| `teks-angka` | 24/1.1 (mengecil sampai 20 lewat `clamp(20px, 2vw, 24px)`) | 700 | lebar 125%, tabular, tanpa putus baris | nilai ringkasan |
+| `teks-nomor-kamar` | 22/1 | 750 | lebar 125%, tabular | nomor kamar di tabel, kartu, kisi kamar |
+| `teks-badan` | 15/1.5 | 400 | | isi umum, sel tabel |
+| `teks-badan-kuat` | 15/1.5 | 600 | | nama di tabel, periode |
+| `teks-label` | 14/1.4 | 600 | | label isian, legend |
+| `teks-kolom` | 13/1.3 | 550 | Ink-muted | kepala tabel, label ringkasan |
+| `teks-bantuan` | 13/1.4 | 400 | Ink-muted | bantuan isian, meta, keterangan kecil |
+| `teks-galat` | 13/1.4 | 400 | status-late | pesan galat (ukuran sama dengan bantuan) |
+| `teks-isian` | 16/1.4 | 400 | | input, select, textarea, date (semua ukuran layar) |
+| `teks-tombol` / `teks-tombol-kecil` | 15 / 14 | 600 | | tombol standar / tombol kecil dan tautan aksi di tabel |
+| `teks-chip` | 14 | 550 | angka tabular | chip filter, segmen periode |
+| `teks-menu` / `teks-menu-aktif` | 15 | 500 / 650 | | item sidebar (tab bawah penghuni 12/600) |
+| `teks-status` | 14 | 600 | | `x-status` |
+| `teks-pil` | 13 | (diatur terpisah) | tabular | angka antrean di menu |
+| toast | 14/1.4 | 500 | | toast |
+
+Ukuran kontrol, sama di semua halaman semua peran:
+
+- Tombol standar tinggi 44 px, padding 0 18 px, radius 8 px (`tombol` untuk tautan dan `button` biasa; `flux:button`
+  diatur di CSS). Tombol kecil 36 px, padding 0 14 px (`tombol-kecil`).
+- Isian (input, select, date) tinggi 44 px, padding 12 px, radius 8 px; textarea minimal 96 px. Semua 16 px.
+- Chip 36 px, padding 0 12 px, radius penuh, jarak antarchip 8 px. Segmen periode 40 px.
+- Baris tabel minimal 60 px, sel 15 px dengan padding 20 px horizontal; kepala tabel 13 px, padding 14 px 20 px, tanpa
+  latar dan tanpa huruf kapital semua.
 - Semua nominal, tanggal di tabel, dan kode (KLH-0012, KPK-PAY-000041) memakai `font-variant-numeric: tabular-nums`.
 
 ## Layout
@@ -262,8 +289,19 @@ Skala jarak berbasis 4 px: 4, 8, 12, 16, 24, 32, 48.
   [ASUMSI] Prompt 4 membuat menu geser untuk semua peran. Tab bawah ditambahkan saat fitur penghuni dibangun.
 - **Ponsel vendor**: header putih dengan logo, judul "Permintaan kerja", nama vendor, dan tautan Keluar.
 - Halaman detail di ponsel memakai header putih 56 px dengan tombol kembali.
-- Setiap halaman: judul, satu kalimat penjelasan, aksi utama, filter, lalu konten. Tidak ada gulir horizontal di
+- Setiap halaman: judul dan aksi halaman dalam satu baris, filter, lalu konten. Tidak ada gulir horizontal di
   360 px (NFR-06). Tabel desktop boleh bergulir di dalam kartunya sendiri.
+- **Kepala halaman** (`x-judul-halaman`): h1 di kiri, aksi halaman di kanan, sejajar tengah, jarak 16 px, boleh turun
+  baris. Slot hanya berisi aksi tingkat halaman (Tambah, Buat, segmen periode dan Terbitkan); aksi tidak ditaruh di
+  baris filter. Jarak kepala ke filter 24 px, filter ke konten 16 px. Tanpa filter, konten 24 px di bawah kepala.
+  Di ponsel (< sm) judul dan tombol satu kata tetap sebaris bila muat; kontrol lebar turun ke baris sendiri selebar
+  layar. Subhalaman menaruh tautan kembali 8 px di atas judul.
+- **Ringkasan angka** (`x-ringkasan-angka`, dipakai Tagihan, Riwayat, dan nanti Dasbor): kartu putih radius 16 px,
+  padding 20 px 24 px, kisi dengan kolom sama lebar (`repeat(n, minmax(0, 1fr))`, jarak 24 px) sehingga label dan nilai
+  sejajar walau hanya satu sel berketerangan. Setiap sel: label (`teks-kolom`), nilai (`teks-angka`, tanpa putus
+  baris), keterangan (`teks-bantuan`) bila ada. Item bahaya (Tunggakan) berwarna status-late dan dipisah garis kiri
+  1 px dengan padding kiri 24 px. Di md sampai lg kisi tiga kolom (baris kedua rata kiri); di ponsel berupa daftar baris
+  dengan label di kiri dan nilai di kanan, item bahaya di baris terakhir.
 
 ## Elevation & Depth
 
@@ -330,11 +368,11 @@ mengikuti status ATB-07: diajukan 1, ditugaskan 2, dikerjakan 3, selesai 4. Sela
   lalu nama atau keterangan. Dipakai di Dashboard (papan kamar) dan pemilih kamar di form kontrak. Kamar yang tidak
   bisa dipilih berlatar Surface-disabled, kamar terpilih bergaris Primary 2 px dan berlatar Primary-container.
 - **Tombol**: Primary, Secondary (putih, garis Border-strong), Danger (putih, teks merah) untuk tolak, hapus, dan
-  nonaktifkan. Tombol konfirmasi tolak di dialog berlatar status-late. Tinggi 44–46 px di desktop, 48 px dan
-  selebar layar di ponsel.
+  nonaktifkan. Tombol konfirmasi tolak di dialog berlatar status-late. Tinggi 44 px di semua ukuran layar; di ponsel
+  tombol form dan dialog selebar layar.
 - **Tautan aksi di baris tabel**: teks Primary berat 600 tanpa garis bawah ("Ubah", "Aktifkan"); aksi berbahaya
   berwarna Danger ("Nonaktifkan", "Hapus", "Akhiri").
-- **Input**: label di atas, bantuan atau error 13 px di bawah. Error: garis #B3261E, `aria-invalid`, pesan
+- **Input**: tinggi 44 px, huruf 16 px, label di atas, bantuan atau error 13 px di bawah. Error: garis #B3261E, `aria-invalid`, pesan
   menyebut cara memperbaiki ("NIK harus 16 angka. Baru 8 angka."). Bila ada lebih dari satu error, tampilkan
   ringkasan Danger-container di atas form.
 - **Chip filter**: pil 36 px dengan jumlah ("Belum bayar 3"). Chip aktif berlatar #18211F. Di ponsel chip bergulir

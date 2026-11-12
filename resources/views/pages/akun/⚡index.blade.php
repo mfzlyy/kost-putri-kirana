@@ -251,16 +251,16 @@ new #[Title('Akun')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full flex-col gap-4 lg:gap-6">
+<section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Akun">
         <flux:modal.trigger name="tambah-akun">
-            <flux:button variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-akun-button">
+            <flux:button variant="primary" data-test="tambah-akun-button">
                 Tambah
             </flux:button>
         </flux:modal.trigger>
     </x-judul-halaman>
 
-    <div class="flex flex-col gap-3 lg:-m-1 lg:flex-row lg:flex-wrap lg:gap-x-4 lg:gap-y-3 lg:overflow-hidden lg:p-1">
+    <div class="baris-filter flex flex-col gap-3 lg:-m-1 lg:flex-row lg:flex-wrap lg:gap-x-4 lg:gap-y-3 lg:overflow-hidden lg:p-1">
         <div role="group" aria-label="Saring peran" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
             <x-chip-filter :aktif="$filterPeran === ''" :jumlah="$this->hitungan['penghuni'] + $this->hitungan['vendor']" wire:click="$set('filterPeran', '')">Semua</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'penghuni'" :jumlah="$this->hitungan['penghuni']" wire:click="$set('filterPeran', 'penghuni')">Penghuni</x-chip-filter>
@@ -274,7 +274,7 @@ new #[Title('Akun')] class extends Component {
         </div>
     </div>
 
-    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4 lg:gap-6">
+    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
     @if ($this->daftarAkun->isEmpty())
         <p class="m-0 rounded-2xl border border-border bg-surface py-10 text-center text-ink-muted" data-test="pesan-kosong">
             {{ $this->adaFilter ? 'Tidak ada akun yang sesuai filter.' : 'Belum ada akun.' }}
@@ -285,11 +285,11 @@ new #[Title('Akun')] class extends Component {
             <table class="w-full min-w-[720px] border-collapse">
                 <thead>
                     <tr>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nama</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Email</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Peran</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Nama</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Email</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Peran</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Status</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-end whitespace-nowrap teks-kolom"><span class="sr-only">Aksi</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -309,7 +309,7 @@ new #[Title('Akun')] class extends Component {
                                 @if ($akun->isAktif())
                                     <button
                                         type="button"
-                                        class="min-h-10 cursor-pointer px-2 text-sm font-semibold text-danger"
+                                        class="min-h-10 cursor-pointer px-2 text-danger teks-tombol-kecil"
                                         wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
                                     >
                                         Nonaktifkan
@@ -317,7 +317,7 @@ new #[Title('Akun')] class extends Component {
                                 @else
                                     <button
                                         type="button"
-                                        class="min-h-10 cursor-pointer px-2 text-sm font-semibold text-primary"
+                                        class="min-h-10 cursor-pointer px-2 text-primary teks-tombol-kecil"
                                         wire:click="aktifkan({{ $akun->id }})"
                                     >
                                         Aktifkan
@@ -336,15 +336,15 @@ new #[Title('Akun')] class extends Component {
                 <li wire:key="akun-kartu-{{ $akun->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                     <div class="flex items-center justify-between gap-3">
                         <span class="min-w-0 font-[650] break-words">{{ $akun->nama }}</span>
-                        <span class="shrink-0 text-sm">{{ $akun->peran->label() }}</span>
+                        <span class="shrink-0 teks-badan">{{ $akun->peran->label() }}</span>
                     </div>
-                    <span class="text-sm break-all text-ink-muted">{{ $akun->email }}</span>
+                    <span class="break-all teks-bantuan">{{ $akun->email }}</span>
                     <div class="flex items-center justify-between gap-3">
                         @if ($akun->isAktif())
                             <x-status jenis="ok">{{ $akun->status_akun->label() }}</x-status>
                             <button
                                 type="button"
-                                class="min-h-10 cursor-pointer px-1 text-sm font-semibold text-danger"
+                                class="min-h-10 cursor-pointer px-1 text-danger teks-tombol-kecil"
                                 wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
                             >
                                 Nonaktifkan
@@ -353,7 +353,7 @@ new #[Title('Akun')] class extends Component {
                             <x-status jenis="belum">{{ $akun->status_akun->label() }}</x-status>
                             <button
                                 type="button"
-                                class="min-h-10 cursor-pointer px-1 text-sm font-semibold text-primary"
+                                class="min-h-10 cursor-pointer px-1 text-primary teks-tombol-kecil"
                                 wire:click="aktifkan({{ $akun->id }})"
                             >
                                 Aktifkan
@@ -399,7 +399,7 @@ new #[Title('Akun')] class extends Component {
             {{-- Header desktop --}}
             <div class="flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4 max-sm:hidden">
                 <div>
-                    <h2 id="judul-tambah-akun" class="m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded">Tambah Akun</h2>
+                    <h2 id="judul-tambah-akun" class="teks-judul-dialog m-0">Tambah Akun</h2>
                 </div>
                 <flux:modal.close>
                     <button type="button" aria-label="Tutup" class="-me-2 -mt-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink">
@@ -415,13 +415,13 @@ new #[Title('Akun')] class extends Component {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                     </button>
                 </flux:modal.close>
-                <span class="text-[17px] font-[650]">Tambah Akun</span>
+                <span class="teks-bagian">Tambah Akun</span>
             </div>
 
             {{-- Isi: hanya bagian ini yang bergulir --}}
             <div class="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-7 py-2 max-sm:px-4 max-sm:py-5">
                 <fieldset class="m-0 border-0 p-0">
-                    <legend class="mb-1.5 p-0 text-sm font-semibold">Peran</legend>
+                    <legend class="mb-1.5 p-0 teks-label">Peran</legend>
                     <div class="grid grid-cols-2 overflow-hidden rounded-lg border border-border-strong">
                         @foreach (['penghuni' => 'Penghuni', 'vendor' => 'Vendor'] as $nilai => $label)
                             <div @class(['relative', 'border-s border-border-strong' => ! $loop->first])>
@@ -436,13 +436,13 @@ new #[Title('Akun')] class extends Component {
                                 />
                                 <label
                                     for="peran-{{ $nilai }}"
-                                    class="flex h-11 cursor-pointer items-center justify-center text-[15px] font-semibold hover:bg-surface-muted peer-checked:bg-chip-active peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-primary"
+                                    class="flex h-11 cursor-pointer items-center justify-center hover:bg-surface-muted peer-checked:bg-chip-active peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-primary teks-tombol"
                                 >{{ $label }}</label>
                             </div>
                         @endforeach
                     </div>
                     @error('peran')
-                        <p class="mt-1.5 mb-0 text-[13px] text-status-late" role="alert">{{ $message }}</p>
+                        <p class="mt-1.5 mb-0 teks-galat" role="alert">{{ $message }}</p>
                     @enderror
                 </fieldset>
 
@@ -501,17 +501,17 @@ new #[Title('Akun')] class extends Component {
                             <flux:error name="password_confirmation" />
                         </flux:field>
                     </div>
-                    <p class="m-0 text-[13px] text-ink-muted">Minimal 8 karakter, huruf dan angka.</p>
+                    <p class="m-0 teks-bantuan">Minimal 8 karakter, huruf dan angka.</p>
                 </div>
             </div>
 
             {{-- Footer menempel --}}
             <div class="flex shrink-0 justify-end gap-2 border-t border-divider px-7 py-[18px] max-sm:px-4">
                 <flux:modal.close>
-                    <flux:button type="button" variant="outline" class="h-11! border-border-strong! max-sm:hidden">Batal</flux:button>
+                    <flux:button type="button" variant="outline" class="border-border-strong! max-sm:hidden">Batal</flux:button>
                 </flux:modal.close>
 
-                <flux:button type="submit" variant="primary" class="h-12! max-sm:w-full sm:h-11!" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
+                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
                     Buat
                 </flux:button>
             </div>

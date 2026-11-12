@@ -34,7 +34,7 @@
                     <p class="m-0 max-w-[400px] text-[17px] text-on-sidebar">Tagihan, bukti bayar, dan laporan kerusakan kos di Cikarang Utara tercatat di sini.</p>
                 </div>
 
-                <p class="m-0 text-[13px] text-on-sidebar-muted">Akun dibuat oleh pengelola kos.</p>
+                <p class="m-0 text-on-sidebar-muted! teks-bantuan">Akun dibuat oleh pengelola kos.</p>
             </section>
 
             {{-- Pita ponsel --}}

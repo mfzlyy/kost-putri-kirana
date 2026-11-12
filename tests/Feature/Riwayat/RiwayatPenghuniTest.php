@@ -88,8 +88,10 @@ it('F-14: pembayaran dari kontrak lama milik penghuni yang sama tampil', functio
     halamanRiwayat($kontrak->penghuni->user)
         ->assertSee('Maret 2025')
         ->assertSee('Rp1.111.000')
-        ->assertSee('Sejak Maret 2025')
-        ->assertSee('2 kali, Rp2.511.000');
+        ->assertSee('Sejak')
+        ->assertSee('Maret 2025')
+        ->assertSee('2 kali')
+        ->assertSee('Rp2.511.000');
 });
 
 it('F-14 butir 3: penghuni tidak melihat status Odoo, nama pengelola, atau kolom penghuni dan kamar', function () {
@@ -113,8 +115,10 @@ it('F-14: ringkasan Sejak dan jumlah kali serta total benar', function () {
     buatPembayaranDiterima($kontrak, '2026-09-01', '2026-09-08', '2026-09-09 10:00', 1400000);
 
     halamanRiwayat($kontrak->penghuni->user)
-        ->assertSee('Sejak Februari 2026')
-        ->assertSee('3 kali, Rp3.600.000');
+        ->assertSee('Sejak')
+        ->assertSee('Februari 2026')
+        ->assertSee('3 kali')
+        ->assertSee('Rp3.600.000');
 });
 
 it('F-14: Lainnya muncul bila lebih dari 12, menambah baris, dan hilang bila semua tampil', function () {

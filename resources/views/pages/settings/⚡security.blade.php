@@ -38,7 +38,7 @@ new #[Title('Ganti Password')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full max-w-[520px] flex-col gap-4 lg:gap-6">
+<section class="flex w-full max-w-[520px] flex-col gap-6">
     <x-judul-halaman judul="Ganti Password" />
 
     <form wire:submit="updatePassword" class="flex flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
@@ -68,7 +68,7 @@ new #[Title('Ganti Password')] class extends Component {
         />
 
         <div class="flex flex-col gap-2 sm:flex-row">
-            <flux:button variant="primary" type="submit" class="h-11! sm:w-auto" wire:loading.attr="disabled" data-test="update-password-button">
+            <flux:button variant="primary" type="submit" class="max-sm:w-full" wire:loading.attr="disabled" data-test="update-password-button">
                 Simpan
             </flux:button>
             <x-tautan-batal :href="url('/beranda')" />

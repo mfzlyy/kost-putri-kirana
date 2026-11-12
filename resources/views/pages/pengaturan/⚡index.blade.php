@@ -68,7 +68,7 @@ new #[Title('Pengaturan')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full max-w-[760px] flex-col gap-4 lg:gap-6">
+<section class="flex w-full max-w-[760px] flex-col gap-6">
     <x-judul-halaman judul="Pengaturan" />
 
     @can('update', $this->pengaturan)
@@ -80,8 +80,8 @@ new #[Title('Pengaturan')] class extends Component {
 
         <form wire:submit="simpan" class="flex flex-col gap-[26px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
             <fieldset class="m-0 border-0 p-0">
-                <legend class="mb-1 p-0 text-[15px] font-semibold">Tanggal Jatuh Tempo</legend>
-                <p id="bantuan-hari" class="mt-0 mb-2.5 text-sm text-ink-muted">Tanggal 1 sampai 28, setiap bulan.</p>
+                <legend class="mb-1 p-0 teks-tombol">Tanggal Jatuh Tempo</legend>
+                <p id="bantuan-hari" class="mt-0 mb-2.5 teks-bantuan">Tanggal 1 sampai 28, setiap bulan.</p>
 
                 <div role="radiogroup" aria-describedby="bantuan-hari" class="grid grid-cols-7 gap-1.5 lg:grid-cols-[repeat(14,40px)]">
                     @foreach (range(1, 28) as $hari)
@@ -96,20 +96,20 @@ new #[Title('Pengaturan')] class extends Component {
                             />
                             <label
                                 for="hari-{{ $hari }}"
-                                class="num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface text-sm font-semibold peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+                                class="num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-tombol-kecil"
                             >{{ $hari }}</label>
                         </div>
                     @endforeach
                 </div>
 
                 @error('tanggal_jatuh_tempo')
-                    <p class="mt-2 mb-0 text-[13px] text-danger" role="alert">{{ $message }}</p>
+                    <p class="mt-2 mb-0 teks-galat" role="alert">{{ $message }}</p>
                 @enderror
             </fieldset>
 
             <div>
-                <label for="batas-peringatan" class="mb-1 block text-[15px] font-semibold">Batas Peringatan</label>
-                <p id="bantuan-batas" class="mt-0 mb-2 text-sm text-ink-muted">Jumlah hari sebelum kontrak berakhir.</p>
+                <label for="batas-peringatan" class="mb-1 block teks-tombol">Batas Peringatan</label>
+                <p id="bantuan-batas" class="mt-0 mb-2 teks-bantuan">Jumlah hari sebelum kontrak berakhir.</p>
                 <div class="flex items-center gap-2.5">
                     <input
                         id="batas-peringatan"
@@ -120,40 +120,40 @@ new #[Title('Pengaturan')] class extends Component {
                         wire:model="batas_peringatan_kontrak_hari"
                         aria-describedby="bantuan-batas"
                         @if ($errors->has('batas_peringatan_kontrak_hari')) aria-invalid="true" @endif
-                        class="num h-[46px] w-28 rounded-lg border bg-surface px-3 text-base {{ $errors->has('batas_peringatan_kontrak_hari') ? 'border-[#B3261E]' : 'border-border-strong' }}"
+                        class="num w-28 rounded-lg border bg-surface px-3 teks-isian {{ $errors->has('batas_peringatan_kontrak_hari') ? 'border-[#B3261E]' : 'border-border-strong' }}"
                     />
                     <span>hari</span>
                 </div>
                 @error('batas_peringatan_kontrak_hari')
-                    <p class="mt-2 mb-0 text-[13px] text-danger" role="alert">{{ $message }}</p>
+                    <p class="mt-2 mb-0 teks-galat" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="flex flex-col gap-3 border-t border-divider pt-[18px] sm:flex-row sm:items-center sm:gap-4">
-                <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
+                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
                     <span wire:loading.remove wire:target="simpan">Simpan</span>
                     <span wire:loading wire:target="simpan">Menyimpan</span>
                 </flux:button>
 
                 @if ($this->pengaturan->diperbaruiOleh)
-                    <span class="text-sm text-ink-muted max-sm:text-center">Terakhir diubah oleh {{ $this->pengaturan->diperbaruiOleh->nama }}</span>
+                    <span class="max-sm:text-center teks-bantuan">Terakhir diubah oleh {{ $this->pengaturan->diperbaruiOleh->nama }}</span>
                 @endif
             </div>
         </form>
     @else
         <section class="grid grid-cols-1 gap-6 rounded-2xl border border-border bg-surface p-6 sm:grid-cols-2">
             <div>
-                <p class="mt-0 mb-1.5 text-sm text-ink-muted">Jatuh Tempo</p>
-                <p class="num m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded sm:text-[28px]">
+                <p class="mt-0 mb-1.5 teks-bantuan">Jatuh Tempo</p>
+                <p class="num m-0 teks-angka">
                     {{ $this->pengaturan->tanggal_jatuh_tempo !== null ? 'Tanggal '.$this->pengaturan->tanggal_jatuh_tempo : 'Belum diatur' }}
                 </p>
                 @if ($this->pengaturan->tanggal_jatuh_tempo !== null)
-                    <p class="mt-1 mb-0 text-sm text-ink-muted">setiap bulan</p>
+                    <p class="mt-1 mb-0 teks-bantuan">setiap bulan</p>
                 @endif
             </div>
             <div>
-                <p class="mt-0 mb-1.5 text-sm text-ink-muted">Batas Peringatan</p>
-                <p class="num m-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded sm:text-[28px]">
+                <p class="mt-0 mb-1.5 teks-bantuan">Batas Peringatan</p>
+                <p class="num m-0 teks-angka">
                     {{ $this->pengaturan->batas_peringatan_kontrak_hari !== null ? $this->pengaturan->batas_peringatan_kontrak_hari.' hari' : 'Belum diatur' }}
                 </p>
             </div>

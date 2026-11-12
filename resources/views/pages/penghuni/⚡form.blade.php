@@ -269,8 +269,8 @@ new #[Title('Penghuni')] class extends Component {
     $namaTampil = $penghuni?->user?->nama ?? $nama;
 @endphp
 
-<section class="flex w-full flex-col gap-4 lg:gap-6">
-    <div class="flex flex-col gap-2.5">
+<section class="flex w-full flex-col gap-6">
+    <div class="flex flex-col gap-2">
         <a href="{{ route('penghuni.index') }}" wire:navigate class="hidden w-fit lg:inline">Penghuni</a>
         <div class="flex items-start gap-1">
             <a href="{{ route('penghuni.index') }}" wire:navigate aria-label="Kembali ke penghuni" class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg lg:hidden">
@@ -283,7 +283,7 @@ new #[Title('Penghuni')] class extends Component {
     <div class="flex flex-wrap items-start gap-6">
         <form wire:submit="simpan" novalidate class="flex flex-[2_1_460px] flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
             @if ($jumlahGalat > 0)
-                <p role="alert" class="m-0 rounded-[10px] bg-danger-container px-3.5 py-3 text-sm text-on-danger-container" data-test="ringkasan-galat">
+                <p role="alert" class="m-0 rounded-[10px] bg-danger-container px-3.5 py-3 text-on-danger-container teks-badan" data-test="ringkasan-galat">
                     {{ $kataJumlah[$jumlahGalat] ?? $jumlahGalat }} isian perlu diperbaiki sebelum disimpan.
                 </p>
             @endif
@@ -331,9 +331,9 @@ new #[Title('Penghuni')] class extends Component {
                         <flux:description class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                             <span class="num tracking-[0.02em]" aria-live="polite" data-test="nik-tersimpan">Tersimpan: {{ $this->identitasTerbuka ? $this->identitasUtuh : $penghuni->no_identitas_tersamar }}.</span>
                             @if ($this->identitasTerbuka)
-                                <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="sembunyikan-identitas">Sembunyikan</button>
+                                <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="sembunyikan-identitas">Sembunyikan</button>
                             @else
-                                <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-sm font-semibold text-primary" data-test="tampilkan-identitas">Tampilkan</button>
+                                <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="tampilkan-identitas">Tampilkan</button>
                             @endif
                             <span>Kosongkan bila tidak berubah.</span>
                         </flux:description>
@@ -349,7 +349,7 @@ new #[Title('Penghuni')] class extends Component {
             </div>
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-                <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaAkun" data-test="simpan-penghuni">
+                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaAkun" data-test="simpan-penghuni">
                     Simpan
                 </flux:button>
                 <x-tautan-batal :href="route('penghuni.index')" />
@@ -360,21 +360,21 @@ new #[Title('Penghuni')] class extends Component {
             @if ($penghuni)
                 @if ($penghuni->status_penghuni === StatusPenghuni::Aktif)
                     <section class="flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-status" data-test="kartu-status">
-                        <h2 id="judul-status" class="m-0 text-base font-[650]">Penghuni Keluar</h2>
+                        <h2 id="judul-status" class="m-0 teks-bagian">Penghuni Keluar</h2>
 
                         @if ($this->izinNonaktifkan->denied())
-                            <p class="m-0 text-sm text-ink-muted" data-test="alasan-tidak-bisa-keluar">{{ $this->izinNonaktifkan->message() }}</p>
-                            <button type="button" disabled class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-sm font-semibold text-[#8A918F]">Tandai Keluar</button>
+                            <p class="m-0 teks-bantuan" data-test="alasan-tidak-bisa-keluar">{{ $this->izinNonaktifkan->message() }}</p>
+                            <button type="button" disabled class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-[#8A918F] teks-tombol-kecil">Tandai Keluar</button>
                         @else
                             <flux:modal.trigger name="tandai-keluar">
-                                <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-semibold text-danger" data-test="buka-tandai-keluar">Tandai Keluar</button>
+                                <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-danger teks-tombol-kecil" data-test="buka-tandai-keluar">Tandai Keluar</button>
                             </flux:modal.trigger>
                         @endif
                     </section>
                 @else
                     <section class="flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-5" aria-labelledby="judul-status" data-test="kartu-status">
-                        <h2 id="judul-status" class="m-0 text-base font-[650]">Sudah Keluar</h2>
-                        <button type="button" wire:click="aktifkanKembali" wire:loading.attr="disabled" wire:target="aktifkanKembali" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-semibold" data-test="aktifkan-kembali">Aktifkan</button>
+                        <h2 id="judul-status" class="m-0 teks-bagian">Sudah Keluar</h2>
+                        <button type="button" wire:click="aktifkanKembali" wire:loading.attr="disabled" wire:target="aktifkanKembali" class="h-10 w-fit cursor-pointer rounded-lg border border-border-strong bg-surface px-3.5 teks-tombol-kecil" data-test="aktifkan-kembali">Aktifkan</button>
                     </section>
                 @endif
             @endif

@@ -13,14 +13,14 @@
                     <path d="M14 22h12M14 28h12" stroke="#CFCBC1" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
 
-                <h1 class="m-0 text-[26px] leading-[1.1] font-[750] font-stretch-expanded sm:text-[34px] sm:leading-[1.05]">Akses ditolak</h1>
-                <p class="m-0 text-[17px] text-ink-muted">Anda tidak memiliki akses ke halaman ini.</p>
+                <h1 class="teks-judul m-0">Akses ditolak</h1>
+                <p class="teks-badan m-0 text-ink-muted">Anda tidak memiliki akses ke halaman ini.</p>
 
-                <a href="{{ url('/beranda') }}" class="inline-flex h-[46px] items-center justify-center rounded-lg bg-primary px-5 font-semibold text-white no-underline hover:bg-primary-hover">
+                <a href="{{ url('/beranda') }}" class="tombol bg-primary text-white no-underline hover:bg-primary-hover">
                     Beranda
                 </a>
 
-                <p class="m-0 text-[13px] text-ink-muted">Kode 403</p>
+                <p class="m-0 teks-bantuan">Kode 403</p>
             </div>
         </main>
     </body>

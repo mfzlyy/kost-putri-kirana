@@ -81,27 +81,27 @@ new #[Title('Penghuni')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full flex-col gap-4 lg:gap-6">
+<section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Penghuni">
         @if ($this->bisaKelola)
-            <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="h-12! w-full sm:h-11! sm:w-auto" data-test="tambah-penghuni">
+            <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate data-test="tambah-penghuni">
                 Tambah
             </flux:button>
         @endif
     </x-judul-halaman>
 
-    <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <div role="group" aria-label="Saring status" class="baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
         <x-chip-filter :aktif="$this->filterAktif === 'semua'" :jumlah="$this->hitungan['semua']" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'keluar'" :jumlah="$this->hitungan['keluar']" wire:click="$set('filterStatus', 'keluar')">Keluar</x-chip-filter>
     </div>
 
-    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4 lg:gap-6">
+    <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
     @if ($this->daftarPenghuni->isEmpty())
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada data penghuni.' : 'Tidak ada penghuni yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="h-11!">Tambah</flux:button>
+                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate>Tambah</flux:button>
             @endif
         </div>
     @else
@@ -110,14 +110,14 @@ new #[Title('Penghuni')] class extends Component {
             <table class="w-full min-w-[860px] border-collapse">
                 <thead>
                     <tr>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nama Lengkap</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Kamar</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Telepon</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nomor Identitas</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Email</th>
-                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Nama Lengkap</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Kamar</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Telepon</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Nomor Identitas</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Email</th>
+                        <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Status</th>
                         @if ($this->bisaKelola)
-                            <th scope="col" class="border-b border-border px-5 py-3.5 text-end text-[13px] font-[550] whitespace-nowrap text-ink-muted"><span class="sr-only">Aksi</span></th>
+                            <th scope="col" class="border-b border-border px-5 py-3.5 text-end whitespace-nowrap teks-kolom"><span class="sr-only">Aksi</span></th>
                         @endif
                     </tr>
                 </thead>
@@ -139,7 +139,7 @@ new #[Title('Penghuni')] class extends Component {
                             </td>
                             @if ($this->bisaKelola)
                                 <td class="px-5 text-end whitespace-nowrap">
-                                    <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="inline-flex min-h-10 items-center px-2 text-sm font-semibold no-underline">Ubah</a>
+                                    <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="inline-flex min-h-10 items-center px-2 no-underline teks-tombol-kecil">Ubah</a>
                                 </td>
                             @endif
                         </tr>
@@ -160,7 +160,7 @@ new #[Title('Penghuni')] class extends Component {
                                 <x-status jenis="belum">Nonaktif</x-status>
                             @endif
                         </span>
-                        <span class="shrink-0 text-sm {{ $nomorKamar ? '' : 'text-ink-muted' }}">
+                        <span class="shrink-0 teks-badan {{ $nomorKamar ? '' : 'text-ink-muted' }}">
                             @if ($nomorKamar)
                                 Kamar <strong class="num">{{ $nomorKamar }}</strong>
                             @else
@@ -168,12 +168,12 @@ new #[Title('Penghuni')] class extends Component {
                             @endif
                         </span>
                     </div>
-                    <div class="flex items-center justify-between gap-3 text-sm text-ink-muted">
+                    <div class="flex items-center justify-between gap-3 teks-bantuan">
                         <span class="num">{{ Format::telepon($penghuni->no_telepon) }}</span>
                         <span class="num tracking-[0.02em]">{{ $penghuni->no_identitas_tersamar }}</span>
                     </div>
                     @if ($this->bisaKelola)
-                        <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="inline-flex min-h-10 w-fit items-center px-1 text-sm font-semibold no-underline">Ubah</a>
+                        <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="inline-flex min-h-10 w-fit items-center px-1 no-underline teks-tombol-kecil">Ubah</a>
                     @endif
                 </li>
             @endforeach

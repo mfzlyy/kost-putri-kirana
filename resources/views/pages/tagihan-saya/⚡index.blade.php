@@ -189,7 +189,7 @@ new #[Title('Tagihan')] class extends Component {
     $penghuni = $this->penghuni;
 @endphp
 
-<section class="flex w-full max-w-[880px] flex-col gap-4 lg:gap-6">
+<section class="flex w-full max-w-[880px] flex-col gap-6">
     @if ($penghuni === null)
         <x-judul-halaman judul="Tagihan" />
         <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">Data diri Anda belum dilengkapi pengelola. Hubungi pengelola kos.</p>
@@ -210,19 +210,19 @@ new #[Title('Tagihan')] class extends Component {
                 @endphp
                 <div class="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between md:gap-x-8">
                     <div class="flex min-w-0 flex-col gap-2.5 md:gap-1.5">
-                        <h2 id="judul-utama" class="m-0 text-[15px] font-[550] text-ink-muted">Tagihan {{ $b['periode']->locale('id')->translatedFormat('F') }}</h2>
-                        <div class="num text-[38px] leading-none font-[750] font-stretch-expanded tracking-[-0.01em] md:text-[44px] md:leading-[1.05]">{{ Format::rupiah($b['nominal']) }}</div>
+                        <h2 id="judul-utama" class="m-0 font-[550] text-ink-muted teks-badan">Tagihan {{ $b['periode']->locale('id')->translatedFormat('F') }}</h2>
+                        <div class="num teks-angka-utama">{{ Format::rupiah($b['nominal']) }}</div>
 
                         @if ($b['telatHari'] > 0)
                             <x-status jenis="telat">Jatuh Tempo {{ $jatuhTempo }}, Telat {{ $b['telatHari'] }} Hari</x-status>
                         @elseif ($sisaHari === 0)
-                            <p class="m-0 text-sm md:text-[15px]">Jatuh Tempo Hari Ini</p>
+                            <p class="m-0 teks-badan">Jatuh Tempo Hari Ini</p>
                         @else
-                            <p class="m-0 text-sm md:text-[15px]">Jatuh Tempo <strong class="font-semibold">{{ $jatuhTempo }}</strong>, {{ $sisaHari }} Hari Lagi</p>
+                            <p class="m-0 teks-badan">Jatuh Tempo <strong class="font-semibold">{{ $jatuhTempo }}</strong>, {{ $sisaHari }} Hari Lagi</p>
                         @endif
 
                         @if ($b['alasanDitolak'] !== null)
-                            <div role="status" class="rounded-[10px] bg-danger-container px-3.5 py-3 text-sm text-on-danger-container" data-test="kotak-ditolak">
+                            <div role="status" class="rounded-[10px] bg-danger-container px-3.5 py-3 text-on-danger-container teks-badan" data-test="kotak-ditolak">
                                 Ditolak{{ $b['ditolakPada'] ? ', '.$b['ditolakPada']->locale('id')->translatedFormat('j M') : '' }}: {{ $b['alasanDitolak'] }}
                             </div>
                         @endif
@@ -232,38 +232,38 @@ new #[Title('Tagihan')] class extends Component {
                         <a
                             href="{{ route('tagihan-saya.unggah', $b['id']) }}"
                             wire:navigate
-                            class="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-white no-underline hover:bg-primary-hover hover:text-white md:h-11"
+                            class="tombol bg-primary text-white no-underline hover:bg-primary-hover hover:text-white max-md:w-full"
                         >Unggah Bukti</a>
                         @if ($utama['lainnya'] > 0)
-                            <p class="m-0 text-[13px] text-ink-muted" data-test="tagihan-lain">{{ $utama['lainnya'] }} tagihan lain belum dibayar.</p>
+                            <p class="m-0 teks-bantuan" data-test="tagihan-lain">{{ $utama['lainnya'] }} tagihan lain belum dibayar.</p>
                         @endif
                     </div>
                 </div>
             @elseif ($utama['keadaan'] === 'menunggu')
-                <h2 id="judul-utama" class="m-0 text-base font-[650]">Bukti {{ $utama['baris']['periode']->locale('id')->translatedFormat('F') }} sedang dicek pengelola.</h2>
+                <h2 id="judul-utama" class="m-0 teks-bagian">Bukti {{ $utama['baris']['periode']->locale('id')->translatedFormat('F') }} sedang dicek pengelola.</h2>
                 <x-status jenis="tunggu">Menunggu</x-status>
             @elseif ($utama['keadaan'] === 'lunas')
-                <h2 id="judul-utama" class="m-0 text-base font-[650]">Semua tagihan sudah lunas.</h2>
+                <h2 id="judul-utama" class="m-0 teks-bagian">Semua tagihan sudah lunas.</h2>
                 <x-status jenis="ok">Lunas</x-status>
             @else
-                <h2 id="judul-utama" class="m-0 text-base font-[650]">Belum ada tagihan.</h2>
+                <h2 id="judul-utama" class="m-0 teks-bagian">Belum ada tagihan.</h2>
             @endif
         </section>
 
         {{-- Semua tagihan --}}
         @if ($this->adaTagihan)
             <section aria-labelledby="judul-semua" class="flex flex-col gap-3">
-                <h2 id="judul-semua" class="m-0 text-[17px] font-[650] md:text-lg">Riwayat Tagihan</h2>
+                <h2 id="judul-semua" class="m-0 teks-bagian">Riwayat Tagihan</h2>
 
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
                     <table class="w-full min-w-[640px] border-collapse">
                         <thead>
                             <tr>
-                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Periode</th>
-                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Jatuh Tempo</th>
-                                <th scope="col" class="border-b border-border px-5 py-3.5 text-right text-[13px] font-[550] whitespace-nowrap text-ink-muted">Nominal</th>
-                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left text-[13px] font-[550] whitespace-nowrap text-ink-muted">Status</th>
+                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left whitespace-nowrap teks-kolom">Periode</th>
+                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left whitespace-nowrap teks-kolom">Jatuh Tempo</th>
+                                <th scope="col" class="border-b border-border px-5 py-3.5 text-right whitespace-nowrap teks-kolom">Nominal</th>
+                                <th scope="col" class="border-b border-border px-5 py-3.5 text-left whitespace-nowrap teks-kolom">Status</th>
                             </tr>
                         </thead>
                         <tbody>

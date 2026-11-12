@@ -137,8 +137,8 @@ new #[Title('Kamar')] class extends Component {
     }
 }; ?>
 
-<section class="flex w-full flex-col gap-4 lg:gap-6">
-    <div class="flex flex-col gap-2.5">
+<section class="flex w-full flex-col gap-6">
+    <div class="flex flex-col gap-2">
         <a href="{{ route('kamar.index') }}" wire:navigate class="w-fit">Kamar</a>
         <x-judul-halaman :judul="$this->kamar ? 'Ubah Kamar '.$this->kamar->nomor_kamar : 'Tambah Kamar'" />
     </div>
@@ -181,13 +181,13 @@ new #[Title('Kamar')] class extends Component {
 
             @if ($this->kamar?->kontrakAktif)
                 @php($kontrak = $this->kamar->kontrakAktif)
-                <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-sm text-on-primary-container" data-test="catatan-kontrak">
+                <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-on-primary-container teks-badan" data-test="catatan-kontrak">
                     Kontrak {{ $kontrak->penghuni?->user?->nama }} tetap {{ Format::rupiah($kontrak->tarif_bulanan) }} sampai {{ $kontrak->tanggal_berakhir->locale('id')->translatedFormat('j F Y') }}.
                 </p>
             @endif
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-                <flux:button type="submit" variant="primary" class="h-12! w-full sm:h-11! sm:w-auto" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
+                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
                     Simpan
                 </flux:button>
                 <x-tautan-batal :href="route('kamar.index')" />
@@ -196,14 +196,14 @@ new #[Title('Kamar')] class extends Component {
 
         @if ($this->kamar)
             <aside class="flex flex-[1_1_260px] flex-col gap-2.5 rounded-2xl border border-dashed border-border-strong p-5">
-                <h2 class="m-0 text-base font-[650]">Hapus</h2>
+                <h2 class="m-0 teks-bagian">Hapus</h2>
 
                 @if ($this->izinHapus->denied())
-                    <p class="m-0 text-sm text-ink-muted" data-test="alasan-tidak-bisa-hapus">{{ $this->izinHapus->message() }}</p>
-                    <button type="button" disabled title="{{ str_contains($this->izinHapus->message(), 'fasilitas') ? 'Masih punya fasilitas' : 'Masih punya kontrak' }}" class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-sm font-semibold text-[#8A918F]">Hapus</button>
+                    <p class="m-0 teks-bantuan" data-test="alasan-tidak-bisa-hapus">{{ $this->izinHapus->message() }}</p>
+                    <button type="button" disabled title="{{ str_contains($this->izinHapus->message(), 'fasilitas') ? 'Masih punya fasilitas' : 'Masih punya kontrak' }}" class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-[#8A918F] teks-tombol-kecil">Hapus</button>
                 @else
                     <flux:modal.trigger name="hapus-kamar">
-                        <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-[#E3B4AD] bg-surface px-3.5 text-sm font-semibold text-danger" data-test="buka-hapus-kamar">Hapus</button>
+                        <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-[#E3B4AD] bg-surface px-3.5 text-danger teks-tombol-kecil" data-test="buka-hapus-kamar">Hapus</button>
                     </flux:modal.trigger>
                 @endif
             </aside>

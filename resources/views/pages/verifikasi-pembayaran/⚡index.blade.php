@@ -248,7 +248,7 @@ new #[Title('Verifikasi')] class extends Component {
     $namaDepan = fn (?string $nama) => explode(' ', trim((string) $nama))[0];
 @endphp
 
-<section class="flex w-full flex-col gap-4 lg:gap-7">
+<section class="flex w-full flex-col gap-6">
     {{-- Ponsel yang sedang membuka satu bukti tidak memakai kepala halaman; judulnya ada di panel periksa. --}}
     <x-judul-halaman :class="$adaPilihan ? 'max-lg:hidden' : ''" judul="Verifikasi" />
 
@@ -281,7 +281,7 @@ new #[Title('Verifikasi')] class extends Component {
                     >
                         <span class="font-[650]">Kamar {{ $kontrakItem->kamar?->nomor_kamar }}, {{ $namaDepan($kontrakItem->penghuni?->user?->nama) }}</span>
                         <span class="num font-[650]">{{ Format::rupiah($tagihanItem->nominal) }}</span>
-                        <span class="text-[13px] text-ink-muted">{{ $tagihanItem->periode->locale('id')->translatedFormat('F') }}, diunggah {{ Format::waktuUnggah($item->diunggah_pada) }}</span>
+                        <span class="teks-bantuan">{{ $tagihanItem->periode->locale('id')->translatedFormat('F') }}, diunggah {{ Format::waktuUnggah($item->diunggah_pada) }}</span>
                         <span class="justify-self-end">
                             @if ($telat)
                                 <x-status jenis="telat">Telat {{ (int) $tagihanItem->jatuh_tempo->diffInDays($this->hariIni) }} Hari</x-status>
@@ -318,7 +318,7 @@ new #[Title('Verifikasi')] class extends Component {
                             <flux:icon.arrow-left class="size-5" />
                         </a>
                         <div class="min-w-0">
-                            <h2 id="judul-panel" class="m-0 text-lg font-[650] lg:text-xl">Kamar {{ $nomorKamar }}, Tagihan {{ $bulan }}</h2>
+                            <h2 id="judul-panel" class="m-0 teks-bagian">Kamar {{ $nomorKamar }}, Tagihan {{ $bulan }}</h2>
                             <p class="m-0 mt-1 text-ink-muted">{{ $kontrak->penghuni?->user?->nama }}</p>
                         </div>
                     </div>
@@ -329,11 +329,11 @@ new #[Title('Verifikasi')] class extends Component {
                     <figure class="m-0 flex min-h-[200px] flex-col items-center justify-center gap-2.5 rounded-xl border border-divider bg-surface-disabled p-4 text-center text-ink-muted lg:min-h-[280px] lg:flex-[1_1_220px]" data-test="pratinjau">
                         @if ($berkas === null)
                             <flux:icon.document class="size-10" />
-                            <figcaption class="text-sm" data-test="bukti-tidak-tersedia">Bukti tidak tersedia.</figcaption>
+                            <figcaption class="teks-badan" data-test="bukti-tidak-tersedia">Bukti tidak tersedia.</figcaption>
                         @else
                             @if ($berkas['ekstensi'] === 'pdf')
                                 <flux:icon.document-text class="size-10" />
-                                <span class="text-sm font-semibold">Berkas PDF</span>
+                                <span class="teks-tombol-kecil">Berkas PDF</span>
                             @else
                                 <img
                                     src="{{ $urlBukti }}"
@@ -341,15 +341,15 @@ new #[Title('Verifikasi')] class extends Component {
                                     class="max-h-[420px] w-full rounded-lg object-contain"
                                 >
                             @endif
-                            <figcaption class="text-sm">{{ strtoupper($berkas['ekstensi']) }}, {{ Format::ukuranBerkas($berkas['ukuran']) }}</figcaption>
-                            <a href="{{ $urlBukti }}" target="_blank" rel="noopener" class="text-sm font-semibold">Buka</a>
+                            <figcaption class="teks-badan">{{ strtoupper($berkas['ekstensi']) }}, {{ Format::ukuranBerkas($berkas['ukuran']) }}</figcaption>
+                            <a href="{{ $urlBukti }}" target="_blank" rel="noopener" class="teks-tombol-kecil">Buka</a>
                         @endif
                     </figure>
 
                     <div class="flex min-w-0 flex-col gap-[18px] lg:flex-[1_1_240px]">
                         <div>
                             <p class="m-0 text-ink-muted">Nominal</p>
-                            <p class="num m-0 mt-0.5 text-[30px] leading-[1.1] font-bold font-stretch-expanded lg:text-[34px]" data-test="nominal-tagihan">{{ Format::rupiah($tagihan->nominal) }}</p>
+                            <p class="num m-0 mt-0.5 teks-angka-utama" data-test="nominal-tagihan">{{ Format::rupiah($tagihan->nominal) }}</p>
                         </div>
                         <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
                             <dt class="text-ink-muted">Tanggal Bayar</dt>
@@ -371,12 +371,12 @@ new #[Title('Verifikasi')] class extends Component {
 
                 <div class="flex flex-col gap-3 border-t border-divider pt-5 lg:flex-row lg:flex-wrap">
                     <flux:modal.trigger name="terima-pembayaran">
-                        <button type="button" class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-primary px-5 text-[15px] font-semibold text-white hover:bg-primary-hover lg:h-[46px] lg:w-auto" data-test="buka-terima">Terima</button>
+                        <button type="button" class="tombol w-full bg-primary text-white hover:bg-primary-hover lg:w-auto" data-test="buka-terima">Terima</button>
                     </flux:modal.trigger>
                     <button
                         type="button"
                         wire:click="bukaTolak({{ $panel->id }})"
-                        class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-[#E3B4AD] bg-surface px-5 text-[15px] font-semibold text-danger lg:h-[46px] lg:w-auto"
+                        class="tombol w-full border border-[#E3B4AD] bg-surface text-danger lg:w-auto"
                         data-test="buka-tolak"
                     >Tolak</button>
                 </div>
@@ -429,21 +429,21 @@ new #[Title('Verifikasi')] class extends Component {
 
             <x-slot:isi>
                 <div>
-                    <label for="alasan" class="mb-1.5 block text-sm font-semibold">Alasan</label>
+                    <label for="alasan" class="mb-1.5 block teks-label">Alasan</label>
                     <textarea
                         id="alasan"
                         wire:model="alasan"
                         rows="4"
                         @error('alasan') aria-invalid="true" aria-describedby="galat-alasan" @enderror
                         @class([
-                            'min-h-[110px] w-full rounded-lg border bg-surface px-3 py-2.5 text-base text-ink',
+                            'min-h-[110px] w-full rounded-lg border bg-surface px-3 py-2.5 text-ink teks-isian',
                             'border-border-strong' => ! $errors->has('alasan'),
                             'border-red-400' => $errors->has('alasan'),
                         ])
                     ></textarea>
-                    <p class="m-0 mt-1.5 text-[13px] text-ink-muted">Tampil ke penghuni. Contoh: Nominal kurang Rp100.000.</p>
+                    <p class="m-0 mt-1.5 teks-bantuan">Tampil ke penghuni. Contoh: Nominal kurang Rp100.000.</p>
                     @error('alasan')
-                        <p id="galat-alasan" role="alert" class="m-0 mt-1.5 text-[13px] text-danger" data-test="galat-alasan">{{ $message }}</p>
+                        <p id="galat-alasan" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-alasan">{{ $message }}</p>
                     @enderror
                 </div>
             </x-slot:isi>

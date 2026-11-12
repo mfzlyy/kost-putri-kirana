@@ -67,7 +67,7 @@ it('F-14: pengelola dan pemilik melihat semua pembayaran diterima dengan nama, k
         ->assertSee('oleh Budi Pengelola')
         ->assertSee('1 Nov, 09.10')
         ->assertSee('31 Okt')
-        ->assertSee('5 pembayaran')
+        ->assertRingkasan('jumlah', '5')
         ->assertSee('Rp6.500.000')
         ->assertDontSee('Rp7.777.000')
         ->assertDontSee('Rp8.888.000');
@@ -88,7 +88,7 @@ it('F-14 butir 2: filter penghuni lewat query string; ringkasan mengikuti filter
     $idRina = $data['rina_nov']->tagihan->kontrak->penghuni_id;
 
     $komponen = halamanRiwayatKantor(query: ['penghuni' => (string) $idRina])
-        ->assertSee('2 pembayaran')
+        ->assertRingkasan('jumlah', '2')
         ->assertSee('Rp2.600.000');
 
     expect($komponen->instance()->halamanKantor->map(fn ($b) => $b->tagihan->kontrak->penghuni_id)->unique()->all())->toBe([$idRina])
@@ -99,12 +99,12 @@ it('F-14 butir 2: filter periode lewat query string', function () {
     dataRiwayatKantor();
 
     $november = halamanRiwayatKantor(query: ['periode' => '2026-11'])
-        ->assertSee('2 pembayaran')
+        ->assertRingkasan('jumlah', '2')
         ->assertSee('Rp2.550.000');
     expect($november->instance()->halamanKantor->map(fn ($b) => $b->tagihan->periode->format('Y-m'))->unique()->all())->toBe(['2026-11']);
 
     $oktober = halamanRiwayatKantor(query: ['periode' => '2026-10'])
-        ->assertSee('3 pembayaran')
+        ->assertRingkasan('jumlah', '3')
         ->assertSee('Rp3.950.000');
     expect($oktober->instance()->halamanKantor->map(fn ($b) => $b->tagihan->kontrak->kamar->nomor_kamar)->all())->toBe(['01', '02', '03']);
 });
@@ -113,7 +113,7 @@ it('F-14 butir 2: filter penghuni dan periode digabung', function () {
     $data = dataRiwayatKantor();
 
     halamanRiwayatKantor(query: ['penghuni' => (string) $data['anisa_okt']->tagihan->kontrak->penghuni_id, 'periode' => '2026-10'])
-        ->assertSee('1 pembayaran')
+        ->assertRingkasan('jumlah', '1')
         ->assertSee('Rp1.250.000');
 });
 
@@ -121,7 +121,7 @@ it('F-14: nilai filter tidak dikenal dianggap Semua', function (string $penghuni
     dataRiwayatKantor();
 
     $komponen = halamanRiwayatKantor(query: ['penghuni' => $penghuni, 'periode' => $periode])
-        ->assertSee('5 pembayaran')
+        ->assertRingkasan('jumlah', '5')
         ->assertSet('filterPenghuni', '')
         ->assertSet('filterPeriode', '');
 
@@ -153,7 +153,7 @@ it('F-14 butir 4: penghuni yang sudah keluar tetap tampil dengan (sudah keluar) 
     expect(substr_count($komponen->html(), '(sudah keluar)'))->toBeGreaterThanOrEqual(3);
 
     halamanRiwayatKantor(query: ['penghuni' => (string) $data['dina_okt']->tagihan->kontrak->penghuni_id])
-        ->assertSee('1 pembayaran')
+        ->assertRingkasan('jumlah', '1')
         ->assertSee('Rp1.400.000');
 });
 
@@ -218,24 +218,24 @@ it('F-14: paginasi 20 per halaman, ringkasan dari seluruh hasil filter, dan hala
 
     expect($komponen->instance()->halamanKantor)->toHaveCount(20)
         ->and($komponen->instance()->halamanKantor->total())->toBe(25);
-    $komponen->assertSee('25 pembayaran')->assertSee('Rp25.000.000');
+    $komponen->assertRingkasan('jumlah', '25')->assertSee('Rp25.000.000');
 
     $komponen->call('gotoPage', 2);
     expect($komponen->instance()->getPage())->toBe(2)
         ->and($komponen->instance()->halamanKantor)->toHaveCount(5);
-    $komponen->assertSee('25 pembayaran');
+    $komponen->assertRingkasan('jumlah', '25');
 
     $periode = Carbon::parse('2026-11-01')->subMonthsNoOverflow(3)->format('Y-m');
     $komponen->set('filterPeriode', $periode);
 
     expect($komponen->instance()->getPage())->toBe(1);
-    $komponen->assertSee('1 pembayaran')->assertSee('Rp1.000.000');
+    $komponen->assertRingkasan('jumlah', '1')->assertSee('Rp1.000.000');
 });
 
 it('F-14: kosong tanpa pembayaran diterima, dan kosong karena filter', function () {
     halamanRiwayatKantor()
         ->assertSee('Belum ada pembayaran yang diterima.')
-        ->assertSee('0 pembayaran')
+        ->assertRingkasan('jumlah', '0')
         ->assertSee('Semua');
 
     $data = dataRiwayatKantor();
@@ -243,7 +243,7 @@ it('F-14: kosong tanpa pembayaran diterima, dan kosong karena filter', function 
     // Penghuni dan periode valid, tetapi tidak berpotongan: Dina tidak membayar November.
     halamanRiwayatKantor(query: ['penghuni' => (string) $data['dina_okt']->tagihan->kontrak->penghuni_id, 'periode' => '2026-11'])
         ->assertSee('Tidak ada pembayaran untuk filter ini.')
-        ->assertSee('0 pembayaran')
+        ->assertRingkasan('jumlah', '0')
         ->assertDontSee('Belum ada pembayaran yang diterima.');
 });
 

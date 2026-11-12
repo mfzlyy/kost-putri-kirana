@@ -94,14 +94,207 @@
     }
 
     body {
-        @apply bg-background text-ink;
-        font-size: 15px;
-        line-height: 1.5;
+        @apply bg-background text-ink teks-badan;
     }
 }
 
 .num {
     font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Skala tipografi dan ukuran kontrol (docs/design/DESIGN.md, bagian Typography). Satu-satunya tempat ukuran
+ * huruf didefinisikan: view memakai token ini, bukan ukuran lepas seperti text-[17px].
+ */
+@utility teks-judul {
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 750;
+    font-stretch: 125%;
+    letter-spacing: -0.01em;
+
+    @media (min-width: 48rem) {
+        font-size: 34px;
+        line-height: 1.05;
+    }
+}
+
+@utility teks-judul-dialog {
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 750;
+    font-stretch: 125%;
+
+    @media (min-width: 40rem) {
+        font-size: 24px;
+        line-height: 1.15;
+    }
+}
+
+@utility teks-bagian {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 650;
+}
+
+@utility teks-angka-utama {
+    font-size: 34px;
+    line-height: 1.05;
+    font-weight: 750;
+    font-stretch: 125%;
+    font-variant-numeric: tabular-nums;
+
+    @media (min-width: 48rem) {
+        font-size: 40px;
+    }
+}
+
+@utility teks-angka {
+    font-size: clamp(20px, 2vw, 24px);
+    line-height: 1.1;
+    font-weight: 700;
+    font-stretch: 125%;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+@utility teks-nomor-kamar {
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 750;
+    font-stretch: 125%;
+    font-variant-numeric: tabular-nums;
+}
+
+@utility teks-badan {
+    font-size: 15px;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+@utility teks-badan-kuat {
+    font-size: 15px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+@utility teks-label {
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+@utility teks-kolom {
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 550;
+    color: var(--color-ink-muted);
+}
+
+@utility teks-bantuan {
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: var(--color-ink-muted);
+}
+
+/* Galat: ukuran teks-bantuan dengan warna danger. */
+@utility teks-galat {
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: var(--color-status-late);
+}
+
+@utility teks-isian {
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 400;
+}
+
+@utility teks-tombol {
+    font-size: 15px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+@utility teks-tombol-kecil {
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+@utility teks-chip {
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 550;
+}
+
+@utility teks-menu {
+    font-size: 15px;
+    line-height: 1.3;
+    font-weight: 500;
+}
+
+@utility teks-menu-aktif {
+    font-size: 15px;
+    line-height: 1.3;
+    font-weight: 650;
+}
+
+/* Angka di pil menu (antrean): 13px, tabular. Berat diatur terpisah (aktif 600). */
+@utility teks-pil {
+    font-size: 13px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+@utility teks-status {
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 600;
+}
+
+@utility teks-toast {
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* Tombol standar 44px dan tombol kecil 36px untuk elemen yang bukan flux:button (tautan dan button biasa). */
+@utility tombol {
+    display: inline-flex;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.2;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+@utility tombol-kecil {
+    display: inline-flex;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* Baris filter dirapatkan ke konten di bawahnya: 24px dari kepala (jarak halaman), 16px ke konten. */
+@utility baris-filter {
+    margin-bottom: -8px;
 }
 
 /*
@@ -116,7 +309,7 @@
     margin-bottom: 6px !important;
     font-size: 14px;
     font-weight: 600;
-    line-height: 1.3 !important;
+    line-height: 1.4 !important;
     color: var(--color-ink);
 }
 
@@ -145,9 +338,61 @@
     color: var(--color-status-late);
 }
 
-/* Tinggi input 46px (DESIGN.md). */
-input[data-flux-control]:not([type='checkbox'], [type='radio'], [type='file']) {
-    height: 46px;
+/*
+ * Kontrol isian seragam (DESIGN.md): input, select, dan date 44px, huruf 16px di semua ukuran layar (Safari iOS
+ * memperbesar layar untuk isian < 16px). Textarea minimal 96px. Padding 12px dan radius 8px berasal dari Flux
+ * (ps-3, pe-3, rounded-lg) dan dari kelas px-3 rounded-lg pada isian bawaan browser di view.
+ */
+input:not([type='checkbox'], [type='radio'], [type='file'], [type='hidden'], [type='submit'], [type='button']),
+select {
+    height: 44px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+textarea {
+    min-height: 96px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* Tombol Flux standar 44px; padding 0 18px, radius 8px, huruf 15px berat 600. */
+[data-flux-button] {
+    height: 44px;
+    padding-inline: 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+/* Tabel (DESIGN.md): baris minimal 60px, sel 15px, padding sel 20px, kepala 13px dengan padding 14px 20px. */
+table {
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+table thead th {
+    padding: 14px 20px;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 550;
+    color: var(--color-ink-muted);
+}
+
+table tbody td {
+    padding: 8px 20px;
+    vertical-align: middle;
+}
+
+table tbody tr {
+    height: 60px;
+}
+
+[data-flux-toast-dialog] {
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
 }
 
 input:focus[data-flux-control],
@@ -161,11 +406,6 @@ select:focus[data-flux-control] {
     outline-offset: 2px;
 }
 
-/* Isian form 16px agar tidak diperbesar otomatis di ponsel. */
-[data-flux-input] input,
-[data-flux-control] {
-    font-size: 16px;
-}
 
 /* Tautan dan tombol di blok pengguna sidebar: tampil identik (14px, berat 400, garis bawah lewat utilitas underline di markup). */
 .tautan-sidebar {

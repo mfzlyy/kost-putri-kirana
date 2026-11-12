@@ -198,7 +198,7 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
     $nominal = Format::rupiah($tagihan->nominal);
 @endphp
 
-<section class="flex w-full max-w-[880px] flex-col gap-5 md:gap-6">
+<section class="flex w-full max-w-[880px] flex-col gap-6">
     {{-- Ponsel: header putih 60px dengan tombol kembali. Desktop: tautan kembali lalu judul. --}}
     <header class="max-md:-mx-4 max-md:-mt-5 max-md:flex max-md:h-[60px] max-md:items-center max-md:gap-1 max-md:border-b max-md:border-divider max-md:bg-surface max-md:px-2 md:flex md:flex-col md:gap-2.5">
         <a
@@ -210,7 +210,7 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         </a>
         <a href="{{ route('tagihan-saya.index') }}" wire:navigate class="font-semibold no-underline max-md:hidden">Tagihan</a>
-        <h1 class="m-0 text-[17px] font-[650] md:text-[34px] md:leading-[1.05] md:font-[750] md:font-stretch-expanded md:tracking-[-0.01em]">Unggah Bukti</h1>
+        <h1 class="teks-judul m-0">Unggah Bukti</h1>
     </header>
 
     <div class="flex flex-col gap-5 md:flex-row md:flex-wrap md:items-start md:gap-6">
@@ -218,8 +218,8 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
         <aside class="flex flex-col gap-3.5 max-md:order-first md:order-2 md:flex-[1_1_240px]">
             <div class="md:rounded-2xl md:border md:border-border md:bg-surface md:p-5">
                 <div class="flex items-baseline justify-between gap-3 md:block">
-                    <span class="text-ink-muted md:text-sm">Nominal</span>
-                    <div class="num text-[30px] leading-none font-[750] font-stretch-expanded md:text-[32px] md:leading-[1.1]" data-test="nominal">{{ $nominal }}</div>
+                    <span class="teks-kolom">Nominal</span>
+                    <div class="num teks-angka-utama" data-test="nominal">{{ $nominal }}</div>
                 </div>
             </div>
 
@@ -227,7 +227,7 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
 
         <form wire:submit="kirim" novalidate class="flex flex-col gap-[22px] md:order-1 md:flex-[2_1_420px] md:gap-5 md:rounded-2xl md:border md:border-border md:bg-surface md:p-6">
             <div>
-                <span class="mb-1.5 block text-sm font-semibold" id="label-bukti">Bukti</span>
+                <span class="mb-1.5 block teks-label" id="label-bukti">Bukti</span>
                 <label
                     for="bukti"
                     aria-labelledby="label-bukti"
@@ -239,13 +239,13 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
                     <span class="flex min-w-0 flex-1 flex-col">
                         @if ($bukti)
                             <span class="truncate font-semibold" data-test="nama-berkas">{{ $bukti->getClientOriginalName() }}</span>
-                            <span class="num text-[13px] text-ink-muted" data-test="ukuran-berkas">{{ Format::ukuranBerkas($bukti->getSize()) }}</span>
+                            <span class="num teks-bantuan" data-test="ukuran-berkas">{{ Format::ukuranBerkas($bukti->getSize()) }}</span>
                         @else
                             <span class="text-ink-muted">Belum ada berkas</span>
                         @endif
-                        <span wire:loading wire:target="bukti" class="text-[13px] text-ink-muted" role="status">Mengunggah…</span>
+                        <span wire:loading wire:target="bukti" class="teks-bantuan" role="status">Mengunggah…</span>
                     </span>
-                    <span class="shrink-0 text-sm font-semibold text-primary">{{ $bukti ? 'Ganti' : 'Pilih' }}</span>
+                    <span class="shrink-0 text-primary teks-tombol-kecil">{{ $bukti ? 'Ganti' : 'Pilih' }}</span>
                     <input
                         id="bukti"
                         type="file"
@@ -255,28 +255,28 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
                         @error('bukti') aria-invalid="true" aria-describedby="galat-bukti" @enderror
                     >
                 </label>
-                <p class="m-0 mt-1.5 text-[13px] text-ink-muted">JPG, PNG, PDF. Maks 5 MB.</p>
+                <p class="m-0 mt-1.5 teks-bantuan">JPG, PNG, PDF. Maks 5 MB.</p>
                 @error('bukti')
-                    <p id="galat-bukti" role="alert" class="m-0 mt-1.5 text-[13px] text-danger" data-test="galat-bukti">{{ $message }}</p>
+                    <p id="galat-bukti" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-bukti">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="md:max-w-[260px]">
-                <label for="tanggal_bayar" class="mb-1.5 block text-sm font-semibold">Tanggal Transfer</label>
+                <label for="tanggal_bayar" class="mb-1.5 block teks-label">Tanggal Transfer</label>
                 <input
                     id="tanggal_bayar"
                     type="date"
                     wire:model="tanggal_bayar"
                     max="{{ $this->hariIni->toDateString() }}"
                     @class([
-                        'h-12 w-full rounded-lg border bg-surface px-3 text-base text-ink',
+                        'w-full rounded-lg border bg-surface px-3 text-ink teks-isian',
                         'border-border-strong' => ! $errors->has('tanggal_bayar'),
                         'border-red-400' => $errors->has('tanggal_bayar'),
                     ])
                     @error('tanggal_bayar') aria-invalid="true" aria-describedby="galat-tanggal" @enderror
                 >
                 @error('tanggal_bayar')
-                    <p id="galat-tanggal" role="alert" class="m-0 mt-1.5 text-[13px] text-danger" data-test="galat-tanggal">{{ $message }}</p>
+                    <p id="galat-tanggal" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-tanggal">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -285,7 +285,7 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
                     type="submit"
                     wire:loading.attr="disabled"
                     wire:target="bukti,kirim"
-                    class="inline-flex h-[50px] w-full cursor-pointer items-center justify-center rounded-lg bg-primary px-[18px] text-[15px] font-semibold text-white hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60 md:h-[46px] md:w-auto"
+                    class="tombol w-full bg-primary text-white hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60 md:w-auto"
                 >
                     <span wire:loading.remove wire:target="bukti,kirim">Kirim</span>
                     <span wire:loading wire:target="bukti">Mengunggah…</span>

@@ -38,7 +38,7 @@
     <div role="group" aria-labelledby="{{ $idJudul }}" class="flex flex-col gap-[18px] p-7 max-sm:p-4 max-sm:pb-[max(1rem,env(safe-area-inset-bottom))]">
         {{-- Kepala --}}
         <div class="flex items-start justify-between gap-4">
-            <h2 id="{{ $idJudul }}" class="m-0 min-w-0 text-2xl leading-[1.1] font-[750] font-stretch-expanded break-words text-ink">{{ $judul }}</h2>
+            <h2 id="{{ $idJudul }}" class="teks-judul-dialog m-0 min-w-0 break-words text-ink">{{ $judul }}</h2>
             <flux:modal.close>
                 <button type="button" aria-label="Tutup" class="-me-2 -mt-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
@@ -48,21 +48,21 @@
 
         {{-- Ringkasan objek --}}
         @if ($ringkasan && ! $ringkasan->isEmpty())
-            <dl class="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 rounded-xl bg-background px-4 py-3.5 [&_dd]:m-0 [&_dd]:text-[15px] [&_dd]:font-semibold [&_dd]:break-words [&_dd]:text-ink [&_dt]:text-sm [&_dt]:text-ink-muted" data-test="ringkasan-dialog">
+            <dl class="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 rounded-xl bg-background px-4 py-3.5 [&_dd]:m-0 [&_dd]:teks-badan-kuat [&_dd]:break-words [&_dd]:text-ink [&_dt]:teks-bantuan" data-test="ringkasan-dialog">
                 {{ $ringkasan }}
             </dl>
         @endif
 
         {{-- Akibat --}}
         @if ($akibat && ! $akibat->isEmpty())
-            <ul class="m-0 flex list-disc flex-col gap-1.5 ps-5 text-[15px] text-ink marker:text-ink-muted" data-test="akibat-dialog">
+            <ul class="m-0 flex list-disc flex-col gap-1.5 ps-5 text-ink marker:text-ink-muted teks-badan" data-test="akibat-dialog">
                 {{ $akibat }}
             </ul>
         @endif
 
         {{-- Catatan info --}}
         @if ($catatan && ! $catatan->isEmpty())
-            <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-sm text-on-primary-container" data-test="catatan-dialog">{{ $catatan }}</p>
+            <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-on-primary-container teks-badan" data-test="catatan-dialog">{{ $catatan }}</p>
         @endif
 
         {{-- Field isian --}}
@@ -75,14 +75,14 @@
         {{-- Kaki --}}
         <div class="flex justify-end gap-2 border-t border-divider pt-[18px] max-sm:flex-col-reverse">
             <flux:modal.close>
-                <flux:button type="button" variant="outline" autofocus class="h-12! w-full border-border-strong! bg-surface! text-ink! sm:h-11! sm:w-auto">Batal</flux:button>
+                <flux:button type="button" variant="outline" autofocus class="max-sm:w-full border-border-strong! bg-surface! text-ink!">Batal</flux:button>
             </flux:modal.close>
 
             <flux:button
                 type="button"
                 :variant="$variant === 'bahaya' ? 'danger' : 'primary'"
                 {{ $attributes->class([
-                    'h-12! w-full sm:h-11! sm:w-auto',
+                    'max-sm:w-full',
                     'bg-status-late! text-white! hover:bg-on-danger-container!' => $variant === 'bahaya',
                 ])->merge($targetAksi !== '' ? ['wire:target' => $targetAksi] : []) }}
                 wire:loading.attr="disabled"

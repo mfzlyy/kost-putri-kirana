@@ -9,7 +9,7 @@
 
 @php
     // Angka antrean: pil 22px, 13px, angka tabular. Item aktif berlatar Primary, item biasa berlatar putih transparan.
-    $kelasAngka = 'num inline-flex h-[22px] flex-none items-center rounded-full px-2 text-[13px] leading-none text-white';
+    $kelasAngka = 'teks-pil inline-flex h-[22px] flex-none items-center rounded-full px-2 text-white';
     $kelasAngkaAktif = 'bg-primary font-semibold';
     $kelasAngkaBiasa = 'bg-primary-container/[.14]';
 @endphp
@@ -20,8 +20,8 @@
     @if ($aktif) aria-current="page" @endif
     {{ $attributes->class([
         'flex min-h-11 pendek:min-h-10 items-center justify-between gap-2 rounded-lg px-3 no-underline',
-        'bg-primary-container font-[650] text-on-primary-container' => $aktif,
-        'font-medium text-on-sidebar hover:bg-white/[.08] hover:text-white' => ! $aktif,
+        'teks-menu-aktif bg-primary-container text-on-primary-container' => $aktif,
+        'teks-menu text-on-sidebar hover:bg-white/[.08] hover:text-white' => ! $aktif,
     ]) }}
 >
     {{-- Label satu baris; bila tetap tidak muat dipotong dengan elipsis dan title berisi teks lengkap. --}}
