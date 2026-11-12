@@ -269,20 +269,37 @@ new #[Title('Tagihan')] class extends Component {
     }
 
     /**
-     * Bulan pertama setelah periode terakhir yang sudah punya tagihan, atau bulan berjalan bila belum ada tagihan.
-     * Dibatasi pada rentang yang boleh diterbitkan.
+     * Kontrak berhak pada periode terpilih yang belum punya tagihan: angka "Kontrak yang ditagih" di pratinjau dialog.
+     * 0 bila periode di luar rentang terbit atau tanggal jatuh tempo belum diatur (tidak ada yang bisa diterbitkan).
      */
     #[Computed]
-    public function periodeTerbitBawaan(): CarbonImmutable
+    public function belumDitagih(): int
+    {
+        try {
+            return Tagihan::pratinjauPeriode($this->periodeTerpilih)->dibuat;
+        } catch (PenerbitanTagihanDitolak) {
+            return 0;
+        }
+    }
+
+    /**
+     * Periode tombol terbitkan: periode yang dilihat bila masih ada kontrak yang belum ditagih, bila tidak
+     * bulan setelahnya (asal masih dalam rentang terbit). Null bila tidak ada yang bisa diterbitkan,
+     * dan tombol tidak tampil. Tanpa tanggal jatuh tempo tombol tampil nonaktif untuk periode yang dilihat.
+     */
+    #[Computed]
+    public function periodeTombol(): ?CarbonImmutable
     {
         [$awal, $akhir] = Tagihan::rentangPeriodeTerbit();
-        $terakhir = Tagihan::query()->max('periode');
+        $dalamRentang = fn (CarbonImmutable $periode) => $periode->gte($awal) && $periode->lte($akhir);
+        $terpilih = $this->periodeTerpilih;
+        $berikutnya = $terpilih->addMonthNoOverflow();
 
-        $bawaan = $terakhir === null
-            ? $this->hariIni->startOfMonth()
-            : CarbonImmutable::parse($terakhir)->startOfMonth()->addMonthNoOverflow();
+        if (! $this->jatuhTempoSiap || $this->belumDitagih > 0) {
+            return $dalamRentang($terpilih) ? $terpilih : null;
+        }
 
-        return $bawaan->lt($awal) ? $awal : ($bawaan->gt($akhir) ? $akhir : $bawaan);
+        return $dalamRentang($berikutnya) ? $berikutnya : null;
     }
 
     /**
@@ -291,7 +308,7 @@ new #[Title('Tagihan')] class extends Component {
     #[Computed]
     public function periodeDialog(): CarbonImmutable
     {
-        return $this->parsePeriode($this->periodeTerbit) ?? $this->periodeTerbitBawaan;
+        return $this->parsePeriode($this->periodeTerbit) ?? $this->periodeTombol ?? $this->periodeTerpilih;
     }
 
     #[Computed]
@@ -320,8 +337,15 @@ new #[Title('Tagihan')] class extends Component {
             return;
         }
 
+        // Dialog membuka periode yang sama dengan label tombol.
+        $periodeTombol = $this->periodeTombol;
+
+        if ($periodeTombol === null) {
+            return;
+        }
+
         $this->resetErrorBag();
-        $this->periodeTerbit = $this->periodeTerbitBawaan->format('Y-m');
+        $this->periodeTerbit = $periodeTombol->format('Y-m');
         $this->dialogDibuka = true;
         unset($this->pratinjau);
 
@@ -375,7 +399,7 @@ new #[Title('Tagihan')] class extends Component {
         $this->periode = $hasil->periode->format('Y-m');
         $this->dialogDibuka = false;
         $this->reset('periodeTerbit');
-        unset($this->semuaTunggakan, $this->semuaBaris, $this->hitungan, $this->barisTersaring, $this->grupLama, $this->grupPeriode, $this->ringkasan, $this->infoPeriode, $this->periodeTerbitBawaan, $this->pratinjau, $this->periodeTerpilih);
+        unset($this->semuaTunggakan, $this->semuaBaris, $this->hitungan, $this->barisTersaring, $this->grupLama, $this->grupPeriode, $this->ringkasan, $this->infoPeriode, $this->belumDitagih, $this->periodeTombol, $this->pratinjau, $this->periodeTerpilih);
 
         Flux::modal('terbitkan-tagihan')->close();
         Flux::toast(variant: $varian, text: $pesan);
@@ -406,13 +430,17 @@ new #[Title('Tagihan')] class extends Component {
     };
 
     $labelPeriode = $bulan($periode);
-    $bulanTerbit = $bulan($this->periodeTerbitBawaan);
+    $periodeTombol = $this->periodeTombol;
+    $bulanTerbit = $periodeTombol ? $bulan($periodeTombol) : null;
+    $belumDitagih = $this->belumDitagih;
     $adaIsi = $grupLama->isNotEmpty() || $grupPeriode->isNotEmpty();
     $belumAdaApaPun = $hitungan['semua'] === 0;
 
-    $deskripsi = $info
-        ? "{$labelPeriode}: {$info['jumlah']} tagihan. Jatuh tempo tanggal {$info['tanggal']}."
-        : "{$labelPeriode} belum diterbitkan.";
+    $deskripsi = match (true) {
+        $info === null => "{$labelPeriode} belum diterbitkan.",
+        $belumDitagih > 0 => "{$labelPeriode}: {$info['jumlah']} tagihan, {$belumDitagih} kontrak belum ditagih. Jatuh tempo tanggal {$info['tanggal']}.",
+        default => "{$labelPeriode}: {$info['jumlah']} tagihan. Jatuh tempo tanggal {$info['tanggal']}.",
+    };
 
     $labelDialog = $bulanTahun($this->periodeDialog);
 
@@ -443,7 +471,7 @@ new #[Title('Tagihan')] class extends Component {
             @endforeach
         </nav>
 
-        @if ($bisaKelola)
+        @if ($bisaKelola && $periodeTombol)
             <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" class="h-12! w-full sm:h-11! sm:w-auto" data-test="terbitkan-tagihan">
                 Terbitkan {{ $bulanTerbit }}
             </flux:button>
@@ -528,7 +556,7 @@ new #[Title('Tagihan')] class extends Component {
             <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
                 @if ($belumAdaApaPun)
                     <p class="m-0 text-ink-muted">Tagihan {{ $labelPeriode }} belum diterbitkan.</p>
-                    @if ($bisaKelola)
+                    @if ($bisaKelola && $periodeTombol)
                         <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" class="h-11!" data-test="terbitkan-tagihan-kosong">Terbitkan {{ $bulanTerbit }}</flux:button>
                     @endif
                 @else
