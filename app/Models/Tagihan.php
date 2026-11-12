@@ -4,6 +4,9 @@ namespace App\Models;
 
 use App\Enums\StatusTagihan;
 use App\Enums\StatusVerifikasi;
+use App\Exceptions\PenerbitanTagihanDitolak;
+use App\Support\Tagihan\HasilPenerbitan;
+use App\Support\Tagihan\PenghitungNominal;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Database\Factories\TagihanFactory;
@@ -14,6 +17,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -116,6 +122,153 @@ class Tagihan extends Model
     protected function hariTerlambat(): Attribute
     {
         return Attribute::get(fn (): int => $this->hariTerlambatPada());
+    }
+
+    /**
+     * Rentang periode yang boleh diterbitkan: 12 bulan sebelum bulan berjalan sampai 1 bulan sesudahnya,
+     * supaya salah pilih tahun tidak menerbitkan tagihan yang tidak masuk akal. Keduanya tanggal 1.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    public static function rentangPeriodeTerbit(?CarbonInterface $hariIni = null): array
+    {
+        $bulanIni = Kontrak::hariIni($hariIni)->startOfMonth();
+
+        return [$bulanIni->subMonthsNoOverflow(12), $bulanIni->addMonthNoOverflow()];
+    }
+
+    /**
+     * Menerbitkan satu tagihan untuk setiap kontrak yang berhak pada $periode (F-10). Kontrak yang sudah punya
+     * tagihan periode itu dilewati, juga bila permintaan bersamaan sudah menyisipkannya lebih dulu
+     * (indeks uq_tagihan_kontrak_periode). Kontrak, pembayaran, dan sinkronisasi_erp tidak disentuh.
+     *
+     * @throws PenerbitanTagihanDitolak
+     */
+    public static function terbitkanPeriode(CarbonInterface $periode): HasilPenerbitan
+    {
+        return DB::transaction(function () use ($periode) {
+            $rencana = static::susunRencanaPeriode($periode);
+
+            $dibuat = 0;
+            $dilewati = $rencana['dilewati'];
+            $total = 0;
+            $tidakPenuh = 0;
+
+            foreach ($rencana['baris'] as $baris) {
+                try {
+                    // Savepoint sendiri: pelanggaran indeks unik tidak boleh menggagalkan transaksi luar.
+                    DB::transaction(function () use ($baris, $rencana) {
+                        (new static)->forceFill([
+                            'kontrak_id' => $baris['kontrak']->id,
+                            'periode' => $rencana['periode']->toDateString(),
+                            'nominal' => $baris['nominal'],
+                            'jatuh_tempo' => $baris['jatuhTempo']->toDateString(),
+                            'status_tagihan' => StatusTagihan::BelumDibayar,
+                        ])->save();
+                    });
+                } catch (UniqueConstraintViolationException $e) {
+                    if ($e->index !== 'uq_tagihan_kontrak_periode') {
+                        throw $e;
+                    }
+
+                    $dilewati++;
+
+                    continue;
+                }
+
+                $dibuat++;
+                $total += $baris['nominal'];
+                $tidakPenuh += $baris['penuhSebulan'] ? 0 : 1;
+            }
+
+            return new HasilPenerbitan($rencana['periode'], $dibuat, $dilewati, $total, $tidakPenuh, $rencana['jatuhTempo']);
+        });
+    }
+
+    /**
+     * Pratinjau terbitkanPeriode(): angka yang sama tanpa menyimpan apa pun.
+     *
+     * @throws PenerbitanTagihanDitolak
+     */
+    public static function pratinjauPeriode(CarbonInterface $periode): HasilPenerbitan
+    {
+        $rencana = static::susunRencanaPeriode($periode);
+        $baris = collect($rencana['baris']);
+
+        return new HasilPenerbitan(
+            $rencana['periode'],
+            $baris->count(),
+            $rencana['dilewati'],
+            (int) $baris->sum('nominal'),
+            $baris->where('penuhSebulan', false)->count(),
+            $rencana['jatuhTempo'],
+        );
+    }
+
+    /**
+     * Kontrak berhak untuk $periode, dipisah antara yang perlu dibuatkan tagihan dan yang sudah punya.
+     *
+     * @return array{periode: CarbonImmutable, jatuhTempo: CarbonImmutable, dilewati: int, baris: list<array{kontrak: Kontrak, nominal: int, jatuhTempo: CarbonImmutable, penuhSebulan: bool}>}
+     *
+     * @throws PenerbitanTagihanDitolak
+     */
+    private static function susunRencanaPeriode(CarbonInterface $periode): array
+    {
+        $periode = CarbonImmutable::parse($periode->copy()->startOfMonth()->toDateString());
+        [$terawal, $terakhir] = static::rentangPeriodeTerbit();
+
+        if ($periode->lt($terawal) || $periode->gt($terakhir)) {
+            throw PenerbitanTagihanDitolak::periodeDiLuarRentang();
+        }
+
+        $pengaturan = PengaturanOperasional::aktif();
+
+        if (! $pengaturan->sudahSiapTerbitTagihan()) {
+            throw PenerbitanTagihanDitolak::jatuhTempoBelumDiatur();
+        }
+
+        $penghitung = new PenghitungNominal;
+        $tanggalJatuhTempo = (int) $pengaturan->tanggal_jatuh_tempo;
+
+        $kontrak = Kontrak::query()
+            ->tertagihPadaPeriode($periode, $penghitung->strategi())
+            ->with(['kamar:id,nomor_kamar', 'penghuni:id,user_id', 'penghuni.user:id,nama'])
+            ->withExists(['tagihan as sudah_ditagih' => fn ($tagihan) => $tagihan->where('tagihan.periode', $periode->toDateString())])
+            ->orderBy('kontrak.id')
+            ->get();
+
+        $baris = [];
+        $dilewati = 0;
+
+        foreach ($kontrak as $item) {
+            if ($item->sudah_ditagih) {
+                $dilewati++;
+
+                continue;
+            }
+
+            $baris[] = [
+                'kontrak' => $item,
+                'nominal' => $penghitung->untuk($item, $periode),
+                'jatuhTempo' => $penghitung->jatuhTempoUntuk($item, $periode, $tanggalJatuhTempo),
+                'penuhSebulan' => $penghitung->penuhSebulan($item, $periode),
+            ];
+        }
+
+        return [
+            'periode' => $periode,
+            'jatuhTempo' => $periode->day($tanggalJatuhTempo),
+            'dilewati' => $dilewati,
+            'baris' => $baris,
+        ];
+    }
+
+    /**
+     * Pembayaran terbaru (unggahan terakhir) tagihan ini; dimuat sekaligus untuk semua tagihan lewat with().
+     */
+    public function pembayaranTerakhir(): HasOne
+    {
+        return $this->hasOne(Pembayaran::class, 'tagihan_id')->latestOfMany(['diunggah_pada', 'id']);
     }
 
     public function kontrak(): BelongsTo

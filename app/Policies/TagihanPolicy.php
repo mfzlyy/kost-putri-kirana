@@ -24,6 +24,14 @@ class TagihanPolicy
     }
 
     /**
+     * Menerbitkan tagihan satu periode (F-10): hanya pengelola. Pemilik hanya melihat.
+     */
+    public function terbitkan(User $user): Response
+    {
+        return $this->izinkanBila($user->peran === PeranPengguna::Pengelola);
+    }
+
+    /**
      * Penghuni hanya boleh melihat tagihan kontraknya sendiri; vendor selalu ditolak.
      */
     public function view(User $user, Tagihan $tagihan): Response

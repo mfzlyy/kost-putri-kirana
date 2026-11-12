@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\StatusKontrak;
+use App\Exceptions\KonfigurasiTagihanTidakValid;
 use App\Exceptions\KontrakBentrok;
 use App\Exceptions\KontrakSudahBerakhir;
+use App\Support\Tagihan\PenghitungNominal;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Database\Factories\KontrakFactory;
@@ -124,6 +126,53 @@ class Kontrak extends Model
     {
         $query->where('kontrak.status_kontrak', StatusKontrak::Aktif->value)
             ->where('kontrak.tanggal_berakhir', '<', self::hariIni($tanggal)->toDateString());
+    }
+
+    /**
+     * Kontrak yang berhak ditagih untuk periode $periode (F-10). Rentang kontrak menyentuh bulan itu, dan
+     * kontraknya aktif, atau berakhir karena perpanjangan (ada kontrak lain untuk penghuni dan kamar yang sama
+     * yang dimulai sehari setelah tanggal berakhirnya). Kontrak yang berakhir karena Akhiri atau berakhir
+     * otomatis tanpa penerus tidak ditagih.
+     *
+     * Strategi "penuh": bila kontrak lama dan penerusnya sama-sama menyentuh bulan itu, hanya kontrak lama yang
+     * ditagih. Strategi "prorata": keduanya ditagih sesuai harinya. Tanpa $strategi dipakai config kirana.tagihan.parsial.
+     *
+     * @throws KonfigurasiTagihanTidakValid
+     */
+    #[Scope]
+    protected function tertagihPadaPeriode(Builder $query, CarbonInterface $periode, ?string $strategi = null): void
+    {
+        $strategi = (new PenghitungNominal($strategi))->strategi();
+        $awal = $periode->copy()->startOfMonth()->toDateString();
+        $akhir = $periode->copy()->endOfMonth()->toDateString();
+
+        $query->where('kontrak.tanggal_mulai', '<=', $akhir)
+            ->where('kontrak.tanggal_berakhir', '>=', $awal)
+            ->where(function (Builder $status) {
+                $status->where('kontrak.status_kontrak', StatusKontrak::Aktif->value)
+                    ->orWhere(function (Builder $berakhir) {
+                        $berakhir->where('kontrak.status_kontrak', StatusKontrak::Berakhir->value)
+                            ->whereExists(function ($penerus) {
+                                $penerus->selectRaw('1')
+                                    ->from('kontrak as penerus')
+                                    ->whereColumn('penerus.penghuni_id', 'kontrak.penghuni_id')
+                                    ->whereColumn('penerus.kamar_id', 'kontrak.kamar_id')
+                                    ->whereRaw('penerus.tanggal_mulai = kontrak.tanggal_berakhir + 1');
+                            });
+                    });
+            });
+
+        if ($strategi === PenghitungNominal::PENUH) {
+            $query->whereNotExists(function ($pendahulu) use ($awal, $akhir) {
+                $pendahulu->selectRaw('1')
+                    ->from('kontrak as pendahulu')
+                    ->whereColumn('pendahulu.penghuni_id', 'kontrak.penghuni_id')
+                    ->whereColumn('pendahulu.kamar_id', 'kontrak.kamar_id')
+                    ->whereRaw('pendahulu.tanggal_berakhir + 1 = kontrak.tanggal_mulai')
+                    ->where('pendahulu.tanggal_mulai', '<=', $akhir)
+                    ->where('pendahulu.tanggal_berakhir', '>=', $awal);
+            });
+        }
     }
 
     /**

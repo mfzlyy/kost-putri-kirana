@@ -84,9 +84,8 @@
                 {{ $attributes->class([
                     'h-12! w-full sm:h-11! sm:w-auto',
                     'bg-status-late! text-white! hover:bg-on-danger-container!' => $variant === 'bahaya',
-                ]) }}
+                ])->merge($targetAksi !== '' ? ['wire:target' => $targetAksi] : []) }}
                 wire:loading.attr="disabled"
-                @if ($targetAksi !== '') wire:target="{{ $targetAksi }}" @endif
             >{{ $labelAksi }}</flux:button>
         </div>
     </div>

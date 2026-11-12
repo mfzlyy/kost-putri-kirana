@@ -48,7 +48,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('kamar', 'pages::kamar.index')->name('kamar.index');
         Route::livewire('penghuni', 'pages::penghuni.index')->name('penghuni.index');
         Route::livewire('kontrak', 'pages::kontrak.index')->name('kontrak.index');
-        $disiapkan('tagihan', 'tagihan.index', 'Tagihan', 'F-10, F-15');
+        Route::livewire('tagihan', 'pages::tagihan.index')->name('tagihan.index');
         $disiapkan('tiket-keluhan', 'tiket-keluhan.index', 'Tiket keluhan', 'F-17, F-18');
     });
 
