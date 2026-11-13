@@ -219,7 +219,9 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
             <div class="md:rounded-2xl md:border md:border-border md:bg-surface md:p-5">
                 <div class="flex items-baseline justify-between gap-3 md:block">
                     <span class="teks-kolom">Nominal</span>
-                    <div class="num teks-angka-utama" data-test="nominal">{{ $nominal }}</div>
+                    <div class="@container min-w-0 flex-1 text-end md:text-start">
+                        <div class="num teks-angka-utama" data-test="nominal">{{ $nominal }}</div>
+                    </div>
                 </div>
             </div>
 

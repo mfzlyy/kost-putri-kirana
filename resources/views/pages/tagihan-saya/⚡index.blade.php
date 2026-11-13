@@ -209,7 +209,7 @@ new #[Title('Tagihan')] class extends Component {
                     $sisaHari = (int) $this->hariIni->diffInDays($b['jatuhTempo'], false);
                 @endphp
                 <div class="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between md:gap-x-8">
-                    <div class="flex min-w-0 flex-col gap-2.5 md:gap-1.5">
+                    <div class="@container flex min-w-0 flex-col gap-2.5 md:flex-1 md:gap-1.5">
                         <h2 id="judul-utama" class="m-0 font-[550] text-ink-muted teks-badan">Tagihan {{ $b['periode']->locale('id')->translatedFormat('F') }}</h2>
                         <div class="num teks-angka-utama">{{ Format::rupiah($b['nominal']) }}</div>
 

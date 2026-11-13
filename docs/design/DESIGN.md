@@ -249,7 +249,7 @@ angka besar, dan nomor kamar.
 | `teks-judul` | 34/1.05 (≥ md), 26/1.1 | 750 | lebar 125%, letter-spacing -0.01em | h1 halaman |
 | `teks-judul-dialog` | 24/1.15 (≥ sm), 20/1.2 | 750 | lebar 125% | judul dialog |
 | `teks-bagian` | 18/1.3 | 650 | | h2 bagian, judul kartu |
-| `teks-angka-utama` | 40/1.05 (≥ md), 34/1.05 | 750 | lebar 125%, tabular | nominal kartu Tagihan penghuni, panel Verifikasi, Unggah |
+| `teks-angka-utama` | clamp(24px, 11cqi, 40px) berbasis lebar kotak pembungkus, 1.05 | 750 | lebar 125%, tabular | nominal kartu Tagihan penghuni, panel Verifikasi, Unggah |
 | `teks-angka` | 24/1.1 (mengecil sampai 20 lewat `clamp(20px, 2vw, 24px)`) | 700 | lebar 125%, tabular, tanpa putus baris | nilai ringkasan |
 | `teks-nomor-kamar` | 22/1 | 750 | lebar 125%, tabular | nomor kamar di tabel, kartu, kisi kamar |
 | `teks-badan` | 15/1.5 | 400 | | isi umum, sel tabel |
@@ -403,7 +403,7 @@ bertentangan dengan aturan ini tidak dipakai.
 2. **Tanpa deskripsi** di bawah judul dan tanpa catatan penjelas di bawah daftar. Yang tetap: data, ringkasan
    angka, keadaan kosong, galat, toast, callout yang memblokir aksi, alasan tombol nonaktif, dan bantuan isian yang
    dibutuhkan (format NIK, telepon, "JPG, PNG, PDF. Maks 5 MB.").
-3. **Tombol satu kata**; dua kata hanya bila perlu (Terbitkan {Bulan}, Tandai Keluar, Ganti Password, Unggah Bukti).
+3. **Tombol satu kata**; dua kata hanya bila perlu (Tandai Keluar, Ganti Password, Unggah Bukti).
    Title Case.
 4. **Label isian, judul kolom, chip, status, judul bagian, dan judul dialog: Title Case**, singkat. Judul dialog
    tetap berbentuk tanya ("Hapus Kamar 05?").

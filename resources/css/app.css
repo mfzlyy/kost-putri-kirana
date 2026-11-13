@@ -138,15 +138,12 @@
 }
 
 @utility teks-angka-utama {
-    font-size: 34px;
+    font-size: clamp(24px, 11cqi, 40px);
     line-height: 1.05;
     font-weight: 750;
     font-stretch: 125%;
     font-variant-numeric: tabular-nums;
-
-    @media (min-width: 48rem) {
-        font-size: 40px;
-    }
+    white-space: nowrap;
 }
 
 @utility teks-angka {

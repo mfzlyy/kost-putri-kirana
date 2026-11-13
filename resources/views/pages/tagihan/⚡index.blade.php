@@ -434,7 +434,7 @@ new #[Title('Tagihan')] class extends Component {
 
     $labelPeriode = $bulan($periode);
     $periodeTombol = $this->periodeTombol;
-    $bulanTerbit = $periodeTombol ? $bulan($periodeTombol) : null;
+    $labelAriaTerbit = $periodeTombol ? 'Terbitkan tagihan '.$bulanTahun($periodeTombol) : null;
     $belumDitagih = $this->belumDitagih;
     $adaIsi = $grupLama->isNotEmpty() || $grupPeriode->isNotEmpty();
     $belumAdaApaPun = $hitungan['semua'] === 0;
@@ -470,8 +470,8 @@ new #[Title('Tagihan')] class extends Component {
         </nav>
 
         @if ($bisaKelola && $periodeTombol)
-            <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" class="max-sm:w-full" data-test="terbitkan-tagihan">
-                Terbitkan {{ $bulanTerbit }}
+            <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="max-sm:w-full" data-test="terbitkan-tagihan">
+                Terbitkan
             </flux:button>
         @endif
     </x-judul-halaman>
@@ -513,7 +513,7 @@ new #[Title('Tagihan')] class extends Component {
                 @if ($belumAdaApaPun)
                     <p class="m-0 text-ink-muted">Tagihan {{ $labelPeriode }} belum diterbitkan.</p>
                     @if ($bisaKelola && $periodeTombol)
-                        <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" data-test="terbitkan-tagihan-kosong">Terbitkan {{ $bulanTerbit }}</flux:button>
+                        <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" data-test="terbitkan-tagihan-kosong">Terbitkan</flux:button>
                     @endif
                 @else
                     <p class="m-0 text-ink-muted">Tidak ada tagihan yang sesuai filter.</p>

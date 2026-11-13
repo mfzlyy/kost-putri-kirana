@@ -347,7 +347,7 @@ new #[Title('Verifikasi')] class extends Component {
                     </figure>
 
                     <div class="flex min-w-0 flex-col gap-[18px] lg:flex-[1_1_240px]">
-                        <div>
+                        <div class="@container">
                             <p class="m-0 text-ink-muted">Nominal</p>
                             <p class="num m-0 mt-0.5 teks-angka-utama" data-test="nominal-tagihan">{{ Format::rupiah($tagihan->nominal) }}</p>
                         </div>

@@ -141,6 +141,20 @@ it('CSS mendefinisikan token tipografi dan ukuran kontrol sekali di app.css', fu
     expect($css)->toContain('height: 44px')->toContain('min-height: 96px')->toContain('clamp(20px, 2vw, 24px)');
 });
 
+it('14E: teks-angka-utama memakai satuan cqi dan dibungkus container di tiga halaman', function () {
+    $css = file_get_contents(resource_path('css/app.css'));
+
+    preg_match('/@utility teks-angka-utama \{(.*?)\n\}/s', $css, $token);
+
+    expect($token[1])->toContain('clamp(24px, 11cqi, 40px)')
+        ->and($token[1])->toContain('white-space: nowrap')
+        ->and($token[1])->not->toContain('34px');
+
+    foreach (['verifikasi-pembayaran/⚡index', 'tagihan-saya/⚡index', 'tagihan-saya/⚡unggah'] as $halaman) {
+        expect(file_get_contents(resource_path("views/pages/{$halaman}.blade.php")))->toContain('@container');
+    }
+});
+
 it('teks-isian 15px hanya di laptop dengan pointer halus; 16px bawaan untuk input, select, dan textarea', function () {
     $css = file_get_contents(resource_path('css/app.css'));
 
