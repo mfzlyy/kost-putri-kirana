@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\LokasiKeluhan;
 use App\Enums\StatusTiket;
+use App\Exceptions\KeluhanGagalDikirim;
+use App\Exceptions\LokasiKeluhanTidakValid;
 use Carbon\CarbonImmutable;
 use Database\Factories\TiketKeluhanFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -12,6 +14,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -60,16 +64,126 @@ class TiketKeluhan extends Model
     }
 
     /**
-     * Nomor tiket berikutnya (KLH-0001, KLH-0002, ...) dari nomor numerik terbesar yang ada.
+     * Kunci advisory (bigint tetap) yang membuat penomoran dan pengecekan tiket ganda berjalan satu per satu.
+     * Kunci tingkat transaksi, jadi lepas sendiri saat transaksi selesai.
+     */
+    public const KUNCI_NOMOR_TIKET = 410016;
+
+    /**
+     * Jendela waktu (detik) tiket kembar dianggap klik berulang (F-16 butir 3).
+     */
+    public const JENDELA_TIKET_GANDA = 60;
+
+    /**
+     * Nomor tiket berikutnya (KLH-0001, KLH-0002, ...) dari nomor numerik terbesar yang berpola KLH-angka.
      * Dipanggil di dalam transaksi; indeks unik nomor_tiket menjaga dari nomor ganda.
      */
     public static function nomorBerikutnya(): string
     {
         $terbesar = (int) static::query()
+            ->whereRaw("nomor_tiket ~ '^KLH-[0-9]+$'")
             ->selectRaw('MAX(CAST(SUBSTRING(nomor_tiket FROM 5) AS integer)) AS terbesar')
             ->value('terbesar');
 
         return sprintf('KLH-%04d', $terbesar + 1);
+    }
+
+    /**
+     * Penghuni mengajukan keluhan (F-16). Satu transaksi: kunci penomoran, cek tiket kembar, cek lokasi dan
+     * fasilitas, nomor berikutnya, tiket berstatus diajukan, dan baris riwayat pertamanya.
+     * Tiket kembar (penghuni, fasilitas, lokasi, dan deskripsi sama dalam 60 detik) dikembalikan tanpa tiket baru.
+     * Nomor yang bentrok diulang satu kali; bila bentrok lagi, KeluhanGagalDikirim dilempar.
+     *
+     * @throws LokasiKeluhanTidakValid
+     * @throws KeluhanGagalDikirim
+     */
+    public static function ajukanKeluhan(Penghuni $penghuni, LokasiKeluhan $lokasi, Fasilitas $fasilitas, string $deskripsi, User $pengaju): self
+    {
+        try {
+            return static::ajukanDalamTransaksi($penghuni, $lokasi, $fasilitas, $deskripsi, $pengaju);
+        } catch (UniqueConstraintViolationException) {
+            try {
+                return static::ajukanDalamTransaksi($penghuni, $lokasi, $fasilitas, $deskripsi, $pengaju);
+            } catch (UniqueConstraintViolationException $e) {
+                throw new KeluhanGagalDikirim($e);
+            }
+        }
+    }
+
+    private static function ajukanDalamTransaksi(Penghuni $penghuni, LokasiKeluhan $lokasi, Fasilitas $fasilitas, string $deskripsi, User $pengaju): self
+    {
+        return DB::transaction(function () use ($penghuni, $lokasi, $fasilitas, $deskripsi, $pengaju) {
+            DB::select('select pg_advisory_xact_lock(?)', [self::KUNCI_NOMOR_TIKET]);
+
+            $deskripsi = trim($deskripsi);
+            $sekarang = now();
+
+            $kembar = static::query()
+                ->where('penghuni_id', $penghuni->id)
+                ->where('fasilitas_id', $fasilitas->id)
+                ->where('lokasi', $lokasi->value)
+                ->where('deskripsi', $deskripsi)
+                ->where('tanggal_lapor', '>=', $sekarang->copy()->subSeconds(self::JENDELA_TIKET_GANDA))
+                ->orderByDesc('id')
+                ->first();
+
+            if ($kembar !== null) {
+                return $kembar;
+            }
+
+            static::pastikanLokasiSesuai($penghuni, $lokasi, $fasilitas);
+
+            $tiket = (new static)->forceFill([
+                'nomor_tiket' => static::nomorBerikutnya(),
+                'penghuni_id' => $penghuni->id,
+                'fasilitas_id' => $fasilitas->id,
+                'lokasi' => $lokasi,
+                'deskripsi' => $deskripsi,
+                'status_tiket' => StatusTiket::Diajukan,
+                'tanggal_lapor' => $sekarang,
+            ]);
+            $tiket->save();
+
+            $tiket->riwayatStatus()->create([
+                'status_sebelum' => null,
+                'status_sesudah' => StatusTiket::Diajukan,
+                'diubah_oleh' => $pengaju->id,
+                'waktu_perubahan' => $sekarang,
+            ]);
+
+            return $tiket->refresh();
+        });
+    }
+
+    /**
+     * Lokasi kamar: penghuni wajib berkontrak aktif dan fasilitas milik kamar kontrak itu.
+     * Lokasi area bersama: fasilitas tidak boleh milik kamar mana pun.
+     */
+    private static function pastikanLokasiSesuai(Penghuni $penghuni, LokasiKeluhan $lokasi, Fasilitas $fasilitas): void
+    {
+        if ($lokasi === LokasiKeluhan::Kamar) {
+            $kontrak = $penghuni->kontrakAktif()->first();
+
+            if ($kontrak === null) {
+                throw LokasiKeluhanTidakValid::tanpaKontrakAktif();
+            }
+
+            if ($fasilitas->kamar_id === null || (int) $fasilitas->kamar_id !== (int) $kontrak->kamar_id) {
+                throw LokasiKeluhanTidakValid::fasilitasTidakAda();
+            }
+
+            return;
+        }
+
+        if ($fasilitas->kamar_id !== null) {
+            throw LokasiKeluhanTidakValid::fasilitasTidakAda();
+        }
+    }
+
+    #[Scope]
+    protected function milikPenghuni(Builder $query, Penghuni $penghuni): void
+    {
+        $query->where('tiket_keluhan.penghuni_id', $penghuni->id);
     }
 
     #[Scope]

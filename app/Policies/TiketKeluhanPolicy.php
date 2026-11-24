@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\PeranPengguna;
+use App\Enums\StatusPenghuni;
 use App\Models\TiketKeluhan;
 use App\Models\User;
 use App\Policies\Concerns\MenentukanKepemilikan;
@@ -36,6 +37,17 @@ class TiketKeluhanPolicy
             $this->isStaf($user)
             || ($idPenghuni !== null && $tiket->penghuni_id === $idPenghuni)
             || ($idVendor !== null && $tiket->vendor_id === $idVendor)
+        );
+    }
+
+    /**
+     * Mengajukan keluhan (F-16): hanya penghuni yang punya baris penghuni berstatus aktif.
+     */
+    public function create(User $user): Response
+    {
+        return $this->izinkanBila(
+            $user->peran === PeranPengguna::Penghuni
+            && $user->penghuni?->status_penghuni === StatusPenghuni::Aktif
         );
     }
 }

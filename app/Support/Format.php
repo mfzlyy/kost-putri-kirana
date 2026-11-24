@@ -46,6 +46,16 @@ class Format
     }
 
     /**
+     * Tanggal dan jam untuk riwayat status di zona waktu aplikasi: "20 Okt, 07.10".
+     */
+    public static function tanggalJam(CarbonInterface $waktu): string
+    {
+        $waktu = CarbonImmutable::instance($waktu)->setTimezone(config('app.timezone'))->locale('id');
+
+        return $waktu->translatedFormat('j M').', '.$waktu->format('H.i');
+    }
+
+    /**
      * Ukuran berkas untuk tampilan: 1887436 menjadi "1,8 MB", 320000 menjadi "313 KB".
      */
     public static function ukuranBerkas(int $byte): string

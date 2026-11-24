@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\LokasiKeluhan;
 use Database\Factories\FasilitasFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +33,24 @@ class Fasilitas extends Model
         'kamar_id',
         'odoo_equipment_id',
     ];
+
+    /**
+     * Fasilitas yang boleh dipilih untuk satu lokasi keluhan: milik kamar itu, atau area bersama (tanpa kamar).
+     * Lokasi kamar tanpa kamar (penghuni belum berkontrak) tidak menghasilkan apa pun.
+     */
+    #[Scope]
+    protected function untukLokasi(Builder $query, LokasiKeluhan $lokasi, ?Kamar $kamar = null): void
+    {
+        if ($lokasi === LokasiKeluhan::AreaBersama) {
+            $query->whereNull('fasilitas.kamar_id');
+        } elseif ($kamar === null) {
+            $query->whereRaw('1 = 0');
+        } else {
+            $query->where('fasilitas.kamar_id', $kamar->id);
+        }
+
+        $query->orderBy('fasilitas.nama_fasilitas')->orderBy('fasilitas.id');
+    }
 
     /**
      * Kamar pemilik fasilitas; null untuk fasilitas area bersama.

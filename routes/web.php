@@ -62,11 +62,12 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     });
 
     // Penghuni
-    Route::middleware('peran:penghuni')->group(function () use ($disiapkan) {
+    Route::middleware('peran:penghuni')->group(function () {
         Route::livewire('tagihan-saya', 'pages::tagihan-saya.index')->name('tagihan-saya.index');
         Route::livewire('tagihan-saya/{tagihan}/unggah', 'pages::tagihan-saya.unggah')->name('tagihan-saya.unggah');
         Route::livewire('profil-saya', 'pages::profil-saya.index')->name('profil-saya.index');
-        $disiapkan('keluhan-saya', 'keluhan-saya.index', 'Keluhan', 'F-16, F-18');
+        Route::livewire('keluhan-saya', 'pages::keluhan-saya.index')->name('keluhan-saya.index');
+        Route::livewire('keluhan-saya/ajukan', 'pages::keluhan-saya.ajukan')->name('keluhan-saya.ajukan');
     });
 
     // Vendor

@@ -37,6 +37,7 @@ dataset('akses_halaman', function () {
         '/tagihan-saya' => ['penghuni'],
         '/profil-saya' => ['penghuni'],
         '/keluhan-saya' => ['penghuni'],
+        '/keluhan-saya/ajukan' => ['penghuni'],
         '/permintaan-kerja' => ['vendor'],
         '/settings/security' => $semuaPeran,
     ];
