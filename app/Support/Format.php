@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Carbon\CarbonInterval;
 
 /**
  * Format tampilan angka dan nominal sesuai docs/design/DESIGN.md.
@@ -53,6 +54,23 @@ class Format
         $waktu = CarbonImmutable::instance($waktu)->setTimezone(config('app.timezone'))->locale('id');
 
         return $waktu->translatedFormat('j M').', '.$waktu->format('H.i');
+    }
+
+    /**
+     * Lama pengerjaan untuk tampilan: "1 hari 5 jam", "5 jam", "3 hari"; di bawah satu jam menjadi "Kurang dari 1 jam".
+     */
+    public static function durasi(CarbonInterval $durasi): string
+    {
+        $totalJam = (int) floor($durasi->totalHours);
+        $hari = intdiv($totalJam, 24);
+        $jam = $totalJam % 24;
+
+        $bagian = array_filter([
+            $hari > 0 ? $hari.' hari' : null,
+            $jam > 0 ? $jam.' jam' : null,
+        ]);
+
+        return $bagian === [] ? 'Kurang dari 1 jam' : implode(' ', $bagian);
     }
 
     /**

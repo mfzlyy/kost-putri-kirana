@@ -47,13 +47,13 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     });
 
     // Pengelola dan pemilik
-    Route::middleware('peran:pengelola,pemilik')->group(function () use ($disiapkan) {
+    Route::middleware('peran:pengelola,pemilik')->group(function () {
         Route::livewire('pengaturan', 'pages::pengaturan.index')->name('pengaturan.index');
         Route::livewire('kamar', 'pages::kamar.index')->name('kamar.index');
         Route::livewire('penghuni', 'pages::penghuni.index')->name('penghuni.index');
         Route::livewire('kontrak', 'pages::kontrak.index')->name('kontrak.index');
         Route::livewire('tagihan', 'pages::tagihan.index')->name('tagihan.index');
-        $disiapkan('tiket-keluhan', 'tiket-keluhan.index', 'Keluhan', 'F-17, F-18');
+        Route::livewire('tiket-keluhan', 'pages::tiket-keluhan.index')->name('tiket-keluhan.index');
     });
 
     // Pengelola, pemilik, dan penghuni (milik sendiri)

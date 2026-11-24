@@ -172,11 +172,12 @@ it('angka antrean disembunyikan saat kosong, dan tidak ada untuk pemilik', funct
     $this->actingAs(User::factory()->pemilik()->create())
         ->get('/tagihan')
         ->assertOk()
-        ->assertDontSee('angka-antrean', false)
+        ->assertDontSee('antrean-verifikasi', false)
+        ->assertDontSee('bukti menunggu')
         ->assertDontSee('Verifikasi pembayaran');
 });
 
-it('menghitung angka antrean memakai satu query', function () {
+it('menghitung angka antrean memakai satu query per angka (verifikasi dan keluhan)', function () {
     siapkanBuktiMenunggu('01', 'Anisa Putri');
     $pengelola = User::factory()->pengelola()->create();
 
@@ -185,7 +186,7 @@ it('menghitung angka antrean memakai satu query', function () {
     $jumlahQuery = count(DB::getQueryLog());
     DB::disableQueryLog();
 
-    expect($jumlahQuery)->toBe(1)
+    expect($jumlahQuery)->toBe(2)
         ->and(collect($menu)->firstWhere('route', 'verifikasi-pembayaran.index')['jumlah'])->toBe(1);
 });
 

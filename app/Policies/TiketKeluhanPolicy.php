@@ -50,4 +50,12 @@ class TiketKeluhanPolicy
             && $user->penghuni?->status_penghuni === StatusPenghuni::Aktif
         );
     }
+
+    /**
+     * Menugaskan tiket ke vendor (F-17): hanya pengelola. Pemilik hanya melihat.
+     */
+    public function tugaskan(User $user, TiketKeluhan $tiket): Response
+    {
+        return $this->izinkanBila($user->peran === PeranPengguna::Pengelola);
+    }
 }

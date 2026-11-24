@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use App\Enums\LokasiKeluhan;
+use App\Enums\StatusAkun;
 use App\Enums\StatusTiket;
 use App\Exceptions\KeluhanGagalDikirim;
 use App\Exceptions\LokasiKeluhanTidakValid;
+use App\Exceptions\TiketSudahDitugaskan;
+use App\Exceptions\VendorTidakAktif;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterval;
 use Database\Factories\TiketKeluhanFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -178,6 +182,77 @@ class TiketKeluhan extends Model
         if ($fasilitas->kamar_id !== null) {
             throw LokasiKeluhanTidakValid::fasilitasTidakAda();
         }
+    }
+
+    /**
+     * Pengelola menugaskan tiket ke satu vendor aktif (F-17, ATB-07: diajukan menjadi ditugaskan).
+     * Satu transaksi: tiket dikunci dan dibaca ulang, status harus masih diajukan, akun vendor harus masih aktif,
+     * lalu data penugasan disimpan beserta baris riwayat statusnya.
+     *
+     * @throws TiketSudahDitugaskan
+     * @throws VendorTidakAktif
+     */
+    public function tugaskanVendor(Vendor $vendor, string $jenisKerusakan, string $instruksi, User $pengelola): void
+    {
+        DB::transaction(function () use ($vendor, $jenisKerusakan, $instruksi, $pengelola) {
+            $terkini = static::query()->lockForUpdate()->findOrFail($this->getKey());
+
+            if ($terkini->status_tiket !== StatusTiket::Diajukan) {
+                throw TiketSudahDitugaskan::sudahDitugaskan();
+            }
+
+            $vendorTerkini = Vendor::query()->with('user')->findOrFail($vendor->getKey());
+
+            if ($vendorTerkini->user?->status_akun !== StatusAkun::Aktif) {
+                throw VendorTidakAktif::nonaktif();
+            }
+
+            $terkini->forceFill([
+                'vendor_id' => $vendorTerkini->id,
+                'jenis_kerusakan' => trim($jenisKerusakan),
+                'catatan_instruksi' => trim($instruksi),
+                'status_tiket' => StatusTiket::Ditugaskan,
+            ])->save();
+
+            $terkini->riwayatStatus()->create([
+                'status_sebelum' => StatusTiket::Diajukan,
+                'status_sesudah' => StatusTiket::Ditugaskan,
+                'diubah_oleh' => $pengelola->id,
+                'waktu_perubahan' => now(),
+            ]);
+
+            $this->setRawAttributes($terkini->getAttributes(), true);
+            $this->unsetRelation('vendor');
+            $this->unsetRelation('riwayatStatus');
+        });
+    }
+
+    /**
+     * Lama penanganan: dari waktu riwayat diajukan sampai waktu riwayat selesai (F-18 butir 4); null bila belum selesai.
+     */
+    public function durasiPenanganan(): ?CarbonInterval
+    {
+        $riwayat = $this->relationLoaded('riwayatStatus') ? $this->riwayatStatus : $this->riwayatStatus()->get();
+
+        $diajukan = $riwayat->firstWhere('status_sesudah', StatusTiket::Diajukan);
+        $selesai = $riwayat->firstWhere('status_sesudah', StatusTiket::Selesai);
+
+        if ($diajukan === null || $selesai === null) {
+            return null;
+        }
+
+        return $diajukan->waktu_perubahan->diff($selesai->waktu_perubahan);
+    }
+
+    /**
+     * Antrean kerja kantor: tiket diajukan di atas, lalu status lain; di tiap kelompok yang terlama di atas (F-17 butir 1 dan 4).
+     */
+    #[Scope]
+    protected function antreanKantor(Builder $query): void
+    {
+        $query->orderByRaw('CASE WHEN tiket_keluhan.status_tiket = ? THEN 0 ELSE 1 END', [StatusTiket::Diajukan->value])
+            ->orderBy('tiket_keluhan.tanggal_lapor')
+            ->orderBy('tiket_keluhan.id');
     }
 
     #[Scope]

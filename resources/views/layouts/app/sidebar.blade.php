@@ -39,6 +39,7 @@
                         :aktif="request()->routeIs($item['route'], \Illuminate\Support\Str::beforeLast($item['route'], '.').'.*')"
                         :jumlah="$item['jumlah'] ?? null"
                         :antrean="$item['antrean'] ?? null"
+                        :satuan="$item['satuan'] ?? 'bukti menunggu'"
                     >
                         {{ $item['label'] }}
                     </x-menu-samping.item>

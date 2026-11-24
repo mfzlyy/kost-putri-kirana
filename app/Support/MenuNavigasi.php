@@ -3,7 +3,9 @@
 namespace App\Support;
 
 use App\Enums\PeranPengguna;
+use App\Enums\StatusTiket;
 use App\Models\Pembayaran;
+use App\Models\TiketKeluhan;
 
 /**
  * Satu-satunya sumber menu sidebar per peran (F-03 butir 1).
@@ -52,24 +54,36 @@ class MenuNavigasi
     }
 
     /**
-     * Menambah angka antrean pada item menu: jumlah bukti bayar yang menunggu di "Verifikasi pembayaran",
-     * hanya untuk pengelola dan dengan satu query per permintaan.
+     * Menambah angka antrean pada item menu: bukti bayar yang menunggu di "Verifikasi" (pengelola) dan tiket
+     * berstatus diajukan di "Keluhan" (pengelola dan pemilik). Satu query per angka, per permintaan.
      *
      * @param  list<array{label: string, route: string, ikon: string}>  $menu
-     * @return list<array{label: string, route: string, ikon: string, jumlah?: int, antrean?: string}>
+     * @return list<array{label: string, route: string, ikon: string, jumlah?: int, antrean?: string, satuan?: string}>
      */
     public static function denganAngka(array $menu, PeranPengguna $peran): array
     {
-        if ($peran !== PeranPengguna::Pengelola) {
+        if (! in_array($peran, [PeranPengguna::Pengelola, PeranPengguna::Pemilik], true)) {
             return $menu;
         }
 
-        $menunggu = Pembayaran::query()->menunggu()->count();
+        $angka = [];
+
+        if ($peran === PeranPengguna::Pengelola) {
+            $angka['verifikasi-pembayaran.index'] = [
+                'jumlah' => Pembayaran::query()->menunggu()->count(),
+                'antrean' => 'verifikasi',
+                'satuan' => 'bukti menunggu',
+            ];
+        }
+
+        $angka['tiket-keluhan.index'] = [
+            'jumlah' => TiketKeluhan::query()->where('status_tiket', StatusTiket::Diajukan->value)->count(),
+            'antrean' => 'keluhan',
+            'satuan' => 'keluhan baru',
+        ];
 
         return array_map(
-            fn (array $item) => $item['route'] === 'verifikasi-pembayaran.index'
-                ? $item + ['jumlah' => $menunggu, 'antrean' => 'verifikasi']
-                : $item,
+            fn (array $item) => isset($angka[$item['route']]) ? $item + $angka[$item['route']] : $item,
             $menu,
         );
     }

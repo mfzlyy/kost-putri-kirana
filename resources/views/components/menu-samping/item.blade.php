@@ -5,6 +5,8 @@
     'jumlah' => null,
     // Kunci antrean: angka ikut berubah lewat event window "antrean-{kunci}" (detail.jumlah) tanpa memuat ulang menu.
     'antrean' => null,
+    // Keterangan untuk pembaca layar: "{n} {satuan}".
+    'satuan' => 'bukti menunggu',
 ])
 
 @php
@@ -34,7 +36,7 @@
             @if (! $jumlah) style="display: none" @endif
             @class([$kelasAngka, $aktif ? $kelasAngkaAktif : $kelasAngkaBiasa])
             data-test="angka-antrean"
-        ><span x-text="n" aria-hidden="true">{{ $jumlah }}</span><span class="sr-only" x-text="n + ' bukti menunggu'">{{ $jumlah }} bukti menunggu</span></span>
+        ><span x-text="n" aria-hidden="true">{{ $jumlah }}</span><span class="sr-only" x-text="n + ' {{ $satuan }}'">{{ $jumlah }} {{ $satuan }}</span></span>
     @elseif ($jumlah)
         <span @class([$kelasAngka, $aktif ? $kelasAngkaAktif : $kelasAngkaBiasa]) data-test="angka-menu">{{ $jumlah }}</span>
     @endif
