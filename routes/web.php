@@ -71,8 +71,9 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     });
 
     // Vendor
-    Route::middleware('peran:vendor')->group(function () use ($disiapkan) {
-        $disiapkan('permintaan-kerja', 'permintaan-kerja.index', 'Pekerjaan', 'F-19, F-20');
+    Route::middleware('peran:vendor')->group(function () {
+        Route::livewire('permintaan-kerja', 'pages::permintaan-kerja.index')->name('permintaan-kerja.index');
+        Route::livewire('permintaan-kerja/{tiket}', 'pages::permintaan-kerja.detail')->name('permintaan-kerja.detail');
     });
 });
 

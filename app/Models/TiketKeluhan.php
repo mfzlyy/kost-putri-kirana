@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\JenisTransaksiErp;
 use App\Enums\LokasiKeluhan;
 use App\Enums\StatusAkun;
+use App\Enums\StatusSinkronisasi;
 use App\Enums\StatusTiket;
 use App\Exceptions\KeluhanGagalDikirim;
 use App\Exceptions\LokasiKeluhanTidakValid;
+use App\Exceptions\StatusTiketBerubah;
 use App\Exceptions\TiketSudahDitugaskan;
 use App\Exceptions\VendorTidakAktif;
 use Carbon\CarbonImmutable;
@@ -20,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * @property int $id
@@ -228,6 +232,103 @@ class TiketKeluhan extends Model
     }
 
     /**
+     * Vendor mulai mengerjakan (F-19, ATB-07: ditugaskan menjadi dikerjakan). Satu transaksi: tiket dikunci dan dibaca
+     * ulang, status harus masih ditugaskan, lalu status dan baris riwayatnya disimpan. Hak vendor atas tiket diperiksa
+     * pemanggil lewat TiketKeluhanPolicy::kerjakan.
+     *
+     * @throws StatusTiketBerubah
+     */
+    public function mulaiKerjakan(User $vendorUser): void
+    {
+        DB::transaction(function () use ($vendorUser) {
+            $terkini = static::query()->lockForUpdate()->findOrFail($this->getKey());
+
+            if ($terkini->status_tiket !== StatusTiket::Ditugaskan) {
+                throw StatusTiketBerubah::sudahBerubah();
+            }
+
+            $terkini->forceFill(['status_tiket' => StatusTiket::Dikerjakan])->save();
+
+            $terkini->riwayatStatus()->create([
+                'status_sebelum' => StatusTiket::Ditugaskan,
+                'status_sesudah' => StatusTiket::Dikerjakan,
+                'diubah_oleh' => $vendorUser->id,
+                'waktu_perubahan' => now(),
+            ]);
+
+            $this->muatUlangDari($terkini);
+        });
+    }
+
+    /**
+     * Vendor menyelesaikan tiket dengan biaya perbaikan (F-20, ATB-07, ATB-09: dikerjakan menjadi selesai). Satu transaksi:
+     * status dan biaya disimpan, riwayat dicatat, dan antrean ERP dibuat berstatus menunggu: satu baris biaya perbaikan,
+     * ditambah satu baris pemeliharaan bila fasilitasnya punya odoo_equipment_id. Pengiriman ke Odoo bukan di sini.
+     *
+     * @throws StatusTiketBerubah
+     * @throws InvalidArgumentException bila biaya negatif
+     */
+    public function selesaikan(int $biaya, User $vendorUser): void
+    {
+        DB::transaction(function () use ($biaya, $vendorUser) {
+            $terkini = static::query()->with('fasilitas')->lockForUpdate()->findOrFail($this->getKey());
+
+            if ($terkini->status_tiket !== StatusTiket::Dikerjakan) {
+                throw StatusTiketBerubah::sudahBerubah();
+            }
+
+            if ($biaya < 0) {
+                throw new InvalidArgumentException('Biaya perbaikan tidak boleh negatif.');
+            }
+
+            $terkini->forceFill([
+                'biaya_perbaikan' => $biaya,
+                'status_tiket' => StatusTiket::Selesai,
+            ])->save();
+
+            $terkini->riwayatStatus()->create([
+                'status_sebelum' => StatusTiket::Dikerjakan,
+                'status_sesudah' => StatusTiket::Selesai,
+                'diubah_oleh' => $vendorUser->id,
+                'waktu_perubahan' => now(),
+            ]);
+
+            $this->buatAntreanErp($terkini, JenisTransaksiErp::BiayaPerbaikan, 'B');
+
+            if ($terkini->fasilitas?->odoo_equipment_id !== null) {
+                $this->buatAntreanErp($terkini, JenisTransaksiErp::Pemeliharaan, 'M');
+            }
+
+            $this->muatUlangDari($terkini);
+        });
+    }
+
+    private function buatAntreanErp(self $tiket, JenisTransaksiErp $jenis, string $akhiran): void
+    {
+        (new SinkronisasiErp)->forceFill([
+            'jenis_transaksi' => $jenis,
+            'tiket_id' => $tiket->id,
+            'referensi_unik' => $tiket->referensiErp($akhiran),
+            'status_sinkronisasi' => StatusSinkronisasi::Menunggu,
+        ])->save();
+    }
+
+    private function muatUlangDari(self $terkini): void
+    {
+        $this->setRawAttributes($terkini->getAttributes(), true);
+        $this->unsetRelation('riwayatStatus');
+    }
+
+    /**
+     * Referensi unik untuk Odoo: KLH-0001 menjadi KPK-TKT-0001-B (biaya perbaikan) atau KPK-TKT-0001-M (pemeliharaan).
+     * Angka nomor tiket dipertahankan apa adanya, termasuk lebih dari 4 digit (KLH-10000 menjadi KPK-TKT-10000-B).
+     */
+    public function referensiErp(string $akhiran): string
+    {
+        return 'KPK-TKT-'.substr($this->nomor_tiket, 4).'-'.$akhiran;
+    }
+
+    /**
      * Lama penanganan: dari waktu riwayat diajukan sampai waktu riwayat selesai (F-18 butir 4); null bila belum selesai.
      */
     public function durasiPenanganan(): ?CarbonInterval
@@ -259,6 +360,15 @@ class TiketKeluhan extends Model
     protected function milikPenghuni(Builder $query, Penghuni $penghuni): void
     {
         $query->where('tiket_keluhan.penghuni_id', $penghuni->id);
+    }
+
+    /**
+     * Tiket yang ditugaskan kepada vendor ini (ATB-08).
+     */
+    #[Scope]
+    protected function milikVendor(Builder $query, Vendor $vendor): void
+    {
+        $query->where('tiket_keluhan.vendor_id', $vendor->id);
     }
 
     #[Scope]

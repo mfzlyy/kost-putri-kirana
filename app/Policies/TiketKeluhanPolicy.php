@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\PeranPengguna;
+use App\Enums\StatusAkun;
 use App\Enums\StatusPenghuni;
 use App\Models\TiketKeluhan;
 use App\Models\User;
@@ -48,6 +49,22 @@ class TiketKeluhanPolicy
         return $this->izinkanBila(
             $user->peran === PeranPengguna::Penghuni
             && $user->penghuni?->status_penghuni === StatusPenghuni::Aktif
+        );
+    }
+
+    /**
+     * Mengerjakan tiket (F-19, F-20): hanya vendor berakun aktif yang punya baris vendor, dan hanya untuk tiket
+     * yang ditugaskan kepadanya (ATB-08).
+     */
+    public function kerjakan(User $user, TiketKeluhan $tiket): Response
+    {
+        $idVendor = $this->idProfilVendor($user);
+
+        return $this->izinkanBila(
+            $user->status_akun === StatusAkun::Aktif
+            && $idVendor !== null
+            && $tiket->vendor_id !== null
+            && (int) $tiket->vendor_id === $idVendor
         );
     }
 

@@ -5,7 +5,9 @@ use App\Models\Kontrak;
 use App\Models\PengaturanOperasional;
 use App\Models\Penghuni;
 use App\Models\Tagihan;
+use App\Models\TiketKeluhan;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(fn () => PengaturanOperasional::factory()->create());
@@ -178,6 +180,27 @@ it('F-12: /tagihan-saya/{tagihan}/unggah hanya untuk penghuni pemilik tagihan; p
     'pengelola' => ['pengelola', false],
     'pemilik' => ['pemilik', false],
     'vendor' => ['vendor', false],
+]);
+
+it('F-19: /permintaan-kerja/{tiket} hanya untuk vendor yang ditugasi; vendor lain dan peran lain 403', function (string $peran, bool $boleh) {
+    $vendor = Vendor::factory()->create();
+    $tiket = TiketKeluhan::factory()->ditugaskan()->create(['vendor_id' => $vendor->id]);
+
+    $user = match ($peran) {
+        'vendor' => $vendor->user,
+        'vendor_lain' => Vendor::factory()->create()->user,
+        default => User::factory()->{$peran}()->create(),
+    };
+
+    $respons = $this->actingAs($user)->get(route('permintaan-kerja.detail', $tiket));
+
+    $boleh ? $respons->assertOk() : $respons->assertForbidden();
+})->with([
+    'vendor yang ditugasi' => ['vendor', true],
+    'vendor lain' => ['vendor_lain', false],
+    'pengelola' => ['pengelola', false],
+    'pemilik' => ['pemilik', false],
+    'penghuni' => ['penghuni', false],
 ]);
 
 it('F-13: /bukti-bayar/{pembayaran} dibuka pemilik, pengelola, dan penghuni pemilik; penghuni lain dan vendor 403', function (string $peran, bool $boleh) {
