@@ -2,14 +2,11 @@
 
 use App\Enums\StatusSinkronisasi;
 use App\Enums\StatusTagihan;
-use App\Enums\StatusTiket;
 use App\Exceptions\PembayaranSudahDiputuskan;
 use App\Jobs\KirimSinkronisasiErp;
 use App\Models\Pembayaran;
 use App\Models\SinkronisasiErp;
-use App\Models\TiketKeluhan;
 use App\Models\User;
-use App\Models\Vendor;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Support\Facades\Artisan;
@@ -115,19 +112,56 @@ it('galat tak terduga di worker menandai baris gagal lewat failed()', function (
         ->and(DB::table('jobs')->count())->toBe(0);
 });
 
-it('menyelesaikan tiket belum memasukkan job', function () {
+it('F-23/F-24: menyelesaikan tiket memasukkan tepat satu job untuk setiap baris sinkronisasinya, setelah commit', function (?int $idPeralatan, array $referensi) {
     Queue::fake();
-    $vendor = Vendor::factory()->create();
-    $tiket = TiketKeluhan::factory()->create([
-        'nomor_tiket' => 'KLH-0001',
-        'vendor_id' => $vendor->id,
-        'status_tiket' => StatusTiket::Dikerjakan,
-    ]);
 
-    $tiket->selesaikan(150000, $vendor->user);
+    $tiket = tiketErpUji(idPeralatan: $idPeralatan);
 
-    expect(SinkronisasiErp::query()->menunggu()->count())->toBeGreaterThan(0);
-    Queue::assertNothingPushed();
+    $baris = $tiket->sinkronisasi()->orderBy('id')->get();
+    expect($baris->pluck('referensi_unik')->all())->toBe($referensi);
+
+    Queue::assertPushed(KirimSinkronisasiErp::class, count($referensi));
+    foreach ($baris as $satu) {
+        expect(Queue::pushed(KirimSinkronisasiErp::class, fn (KirimSinkronisasiErp $job) => $job->sinkronisasi->is($satu)
+            && $job->afterCommit === true))->toHaveCount(1);
+    }
+    Http::assertNothingSent();
+})->with([
+    'fasilitas tertaut' => [42, ['KPK-TKT-0001-B', 'KPK-TKT-0001-M']],
+    'fasilitas belum tertaut' => [null, ['KPK-TKT-0001-B']],
+]);
+
+it('job tiket baru masuk tabel jobs setelah commit, dan tidak pernah bila penyelesaian dibatalkan', function () {
+    config(['queue.default' => 'database']);
+
+    expect(fn () => DB::transaction(function () {
+        tiketErpUji();
+        expect(DB::table('jobs')->count())->toBe(0);
+
+        throw new RuntimeException('batalkan');
+    }))->toThrow(RuntimeException::class, 'batalkan');
+
+    expect(DB::table('jobs')->count())->toBe(0);
+
+    tiketErpUji(nomor: 'KLH-0002');
+
+    expect(DB::table('jobs')->count())->toBe(2);
+    Http::assertNothingSent();
+});
+
+it('worker antrean database mengirim baris biaya perbaikan dan pemeliharaan sampai terkirim', function () {
+    config(['queue.default' => 'database']);
+    fakeOdooBiaya();
+    fakeOdooPemeliharaan();
+    $tiket = tiketErpUji();
+
+    Artisan::call('queue:work', ['--once' => true]);
+    Artisan::call('queue:work', ['--once' => true]);
+
+    expect($tiket->sinkronisasi()->orderBy('id')->pluck('status_sinkronisasi', 'referensi_unik')->map->value->all())
+        ->toBe(['KPK-TKT-0001-B' => 'terkirim', 'KPK-TKT-0001-M' => 'terkirim'])
+        ->and(DB::table('jobs')->count())->toBe(0)
+        ->and(DB::table('failed_jobs')->count())->toBe(0);
 });
 
 it('baris yang dibuat sudah terkirim atau gagal tidak memasukkan job', function () {

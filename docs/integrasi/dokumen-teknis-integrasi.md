@@ -204,7 +204,7 @@ POST /json/2/maintenance.request/write
 
 Status dibaca kembali: `{"name": "KPK-TKT-0001-M AC tidak dingin", "equipment_id": [1, "KPK-UJI AC Kamar 03"], "stage_id": [3, "Repaired"], "maintenance_team_id": [1, "Internal Maintenance"]}`, dan `maintenance.stage` #3 memiliki `done = true`. Arti **terkirim**: permintaan ada dan berada di tahap dengan `done = true`.
 
-Pencarian idempotensi memakai `=like` pada awal `name`, jadi `KPK-TKT-0001-M` tidak boleh menjadi awalan nomor lain (nomor tiket berformat tetap 4 digit, aman sampai 9999).
+Pencarian idempotensi memakai `=like` pada awal `name`. Implementasi memakai pola `KPK-TKT-0001-M %` (referensi, spasi, lalu apa saja), sehingga hanya nama berbentuk `<referensi> <jenis_kerusakan>` yang cocok (bagian 9.4).
 
 **Pemetaan kolom web → field Odoo**
 
@@ -225,7 +225,7 @@ Peralatan (`maintenance.equipment`) dibuat oleh pengelola/F-28, bukan oleh integ
 |---|---|
 | `payment_state` | Setelah `action_create_payments`, faktur langsung `payment_state = paid`, `amount_residual = 0` (bukan `in_payment`). Pembayaran terbentuk di `account.payment` (`PBNK1/2026/00001`, `state = paid`, `payment_type = inbound`, `memo = KPK-PAY-...`) pada jurnal Bank. |
 | Pajak | **`tax_ids` wajib dikosongkan** (`[[6, 0, []]]`). Perusahaan memiliki pajak bawaan penjualan dan pembelian `12% (Non-Luxury Good)` (`account_sale_tax_id` #1, `account_purchase_tax_id` #2), sehingga tanpa pengosongan Odoo menambah pajak otomatis dan `amount_total` tidak sama dengan nominal tagihan. Dengan `tax_ids` kosong, `amount_total` = 1.400.000 persis. |
-| Tagihan bernilai 0 | **Diterima**: tagihan vendor `price_unit = 0` berhasil dibuat dan di-post (`state = posted`, `amount_total = 0`). Jadi F-20 butir 2 (biaya nol atau lebih) tidak terhalang di sisi Odoo. Pertimbangkan apakah tagihan bernilai 0 memang perlu dikirim. |
+| Tagihan bernilai 0 | **Diterima**: tagihan vendor `price_unit = 0` berhasil dibuat dan di-post (`state = posted`, `amount_total = 0`). Jadi F-20 butir 2 (biaya nol atau lebih) tidak terhalang di sisi Odoo. Keputusan implementasi: tagihan bernilai 0 tetap dikirim (bagian 9.3). |
 | Posting ulang | `action_post` pada faktur yang sudah `posted` ditolak (HTTP 422 `UserError`: "must be in draft"). Karena itu pengiriman ulang tidak boleh memanggil `action_post` membabi buta. |
 | Pemulihan pengiriman setengah jadi | Setiap panggilan adalah transaksi terpisah, jadi faktur bisa ada tetapi belum diposting atau belum dibayar. Saat referensi ditemukan: bila `state = draft` → `action_post`; bila `posted` dan `payment_state` bukan `paid` → buat pembayaran; bila sudah `paid` → langsung tandai `terkirim`. Ini melengkapi aturan "cek referensi dulu, jangan buat ganda" di CLAUDE.md. |
 | Hak akses | Tidak ada hak yang kurang: ketiga alur berjalan dengan hak pengguna integrasi saat ini. Pengguna ini tidak berhak mengakses `ir.config_parameter`, `ir.cron`, dan `ir.mail_server` (HTTP 403). Berbeda dari dugaan awal, `ir.module.module` ternyata dapat dibaca; pengecekan modul tetap sebaiknya lewat `fields_get`. |
@@ -286,10 +286,13 @@ Daftar ini tidak memuat laporan berjudul Profit and Loss atau Balance Sheet. Daf
 |---|---|
 | `php artisan odoo:periksa` | Hanya membaca. Cek koneksi, pengguna dan grup, model dan field yang dibutuhkan, jurnal, mata uang, dan masa berlaku API key. Exit 1 bila ada GAGAL atau API key kurang dari 14 hari |
 | `php artisan odoo:uji-alur --ya` | Hanya `APP_ENV=local`. Membuat catatan uji `KPK-UJI-` dan menunjukkan bahwa menjalankannya ulang tidak menggandakan catatan |
-| `php artisan erp:kirim-tertunda` | Mengirim pembayaran yang masih `menunggu` (bagian 8.5) |
+| `php artisan erp:kirim-tertunda` | Mengirim semua transaksi yang masih `menunggu` (bagian 8.5) |
+| `php artisan erp:cocokkan-peralatan` | Menautkan fasilitas web ke peralatan Odoo menurut nama; tanpa opsi hanya pratinjau (bagian 9.6) |
 | `tests/Feature/Odoo`, `tests/Feature/Integrasi` | Tes dengan `Http::fake()`; tidak memanggil Odoo sungguhan. `tests/Pest.php` memasang `Http::preventStrayRequests()` untuk semua tes Feature |
 
 ## 8. Implementasi F-22
+
+Kelas, antrean, kunci per baris, dan pencatatan hasil di bagian ini berlaku juga untuk F-23 dan F-24 (bagian 9).
 
 ### 8.1 Alur kelas
 
@@ -304,14 +307,14 @@ Pembayaran::terima()  (DB::transaction)
 
 | Kelas | Tugas |
 |---|---|
-| `App\Models\SinkronisasiErp` | Memasukkan job saat baris pembayaran berstatus `menunggu` dibuat. Job baru masuk antrean setelah transaksi commit; transaksi yang dibatalkan tidak meninggalkan job |
+| `App\Models\SinkronisasiErp` | Memasukkan job saat baris berstatus `menunggu` (jenis apa pun) dibuat. Job baru masuk antrean setelah transaksi commit; transaksi yang dibatalkan tidak meninggalkan job |
 | `App\Jobs\KirimSinkronisasiErp` | Unik per baris (kunci 10 menit), satu kali percobaan. `failed()` menandai `gagal` untuk galat yang lolos dari service |
-| `App\Services\Odoo\IntegrasiErpService` | Kunci per baris (bagian 8.6), urutan panggilan, pemeriksaan kecocokan faktur, pemulihan, dan pencatatan hasil. Hanya baris `sinkronisasi_erp` yang diubah; `pembayaran` dan `tagihan` tidak disentuh, dan tidak ada panggilan Odoo di dalam transaksi web |
+| `App\Services\Odoo\IntegrasiErpService` | Kunci per baris (bagian 8.6), urutan panggilan, pemeriksaan kecocokan catatan, pemulihan, dan pencatatan hasil. Yang diubah di web hanya baris `sinkronisasi_erp` dan `vendor.odoo_partner_id`; `pembayaran`, `tagihan`, dan `tiket_keluhan` tidak disentuh, dan tidak ada panggilan Odoo di dalam transaksi web |
 | `App\Services\Odoo\OdooClient` | Satu-satunya pemanggil HTTP |
 
-Hanya baris `menunggu` dan `gagal` yang diproses; baris `terkirim` tidak memanggil Odoo. Baris `biaya_perbaikan` dan `pemeliharaan` belum dikirim dan tetap `menunggu`.
+Hanya baris `menunggu` dan `gagal` yang diproses; baris `terkirim` tidak memanggil Odoo.
 
-Yang dikirim ke Odoo hanya ID penghuni (di `ref` dan nama partner), referensi, periode, jatuh tempo, nominal, dan tanggal bayar. `amount` pada wizard selalu diisi `pembayaran.nominal_bayar`, yang sudah diputuskan sama dengan `tagihan.nominal`; bila berbeda, baris ditandai `gagal` tanpa memanggil Odoo.
+Untuk pembayaran, yang dikirim ke Odoo hanya ID penghuni (di `ref` dan nama partner), referensi, periode, jatuh tempo, nominal, dan tanggal bayar. `amount` pada wizard selalu diisi `pembayaran.nominal_bayar`, yang sudah diputuskan sama dengan `tagihan.nominal`; bila berbeda, baris ditandai `gagal` tanpa memanggil Odoo.
 
 Hasil dicatat sebagai berikut. Berhasil: `status_sinkronisasi = terkirim`, `odoo_record_id` = `account.move.id`, `pesan_error` kosong. Gagal: `status_sinkronisasi = gagal`, `pesan_error` diisi, `odoo_record_id` tidak diubah. Keduanya mengisi `waktu_kirim` dengan waktu percobaan.
 
@@ -330,6 +333,8 @@ Hasil dicatat sebagai berikut. Berhasil: `status_sinkronisasi = terkirim`, `odoo
 | 9 | `account.payment.register/create` | Faktur `not_paid` |
 | 10 | `account.payment.register/action_create_payments` | Faktur `not_paid` |
 | 11 | `account.move/read` | Selalu; berhasil bila `posted` dan `paid` atau `in_payment` |
+
+Langkah 1 dan 2 berjalan di bawah kunci partner penghuni (bagian 9.2).
 
 Pencarian faktur memakai `limit` 2 (contoh di bagian 2.1 memakai 1) agar faktur ganda terdeteksi, dan meminta `id`, `state`, `payment_state`, `amount_total`, `invoice_date`, `partner_id`. Langkah 4 dan 5 tidak pernah terjadi dalam pengiriman yang sama, jadi satu pengiriman paling banyak 10 panggilan.
 
@@ -376,14 +381,14 @@ Paling panjang 500 karakter, tanpa traceback, API key, header, atau isi perminta
 | Belum lunas setelah semua langkah | `Faktur {REF} sudah dibuat tetapi belum lunas di Odoo (status {payment_state}).` |
 | Galat tak terduga (dari job) | `Kesalahan tak terduga saat mengirim ke Odoo.` |
 
-Log: `info` per keberhasilan (referensi dan ID faktur), `warning` per kegagalan (referensi dan `pesan_error`), `error` untuk galat tak terduga (referensi dan nama kelas exception).
+Log: `info` per keberhasilan (referensi dan `odoo_record_id`), `warning` per kegagalan (referensi dan `pesan_error`), `error` untuk galat tak terduga (referensi dan nama kelas exception).
 
 ### 8.5 Menjalankan antrean
 
 - `.env`: `QUEUE_CONNECTION=database` dan `DB_QUEUE_RETRY_AFTER=300`. Nilai kedua harus lebih lama dari satu pengiriman terburuk (10 panggilan, masing-masing paling lama 30 detik).
 - Pengembangan: `composer run dev` (menjalankan `php artisan dev`, yang sudah memuat `queue:listen --tries=1 --timeout=0`). Jalankan satu worker saja.
 - Di Windows tanpa ekstensi PCNTL, timeout job tidak ditegakkan worker; batas yang berlaku adalah timeout HTTP `OdooClient` (30 detik).
-- `php artisan erp:kirim-tertunda`: memasukkan baris pembayaran `menunggu` yang tertinggal ke antrean. Baris yang job-nya masih antre dilewati.
+- `php artisan erp:kirim-tertunda`: memasukkan baris `menunggu` (semua jenis) yang tertinggal ke antrean, urut ID. Baris yang job-nya masih antre dilewati.
 - `php artisan erp:kirim-tertunda --sekarang`: mengirim langsung tanpa worker dan mencetak `referensi | status | pesan_error`; exit code 1 bila ada yang gagal. Boleh dijalankan saat worker berjalan: baris yang sedang dikirim proses lain dilaporkan `sedang diproses, dilewati` (bagian 8.6) dan tidak mengubah exit code.
 - Baris `gagal` tidak disentuh perintah ini; kirim ulang adalah F-25.
 
@@ -395,3 +400,151 @@ Log: `info` per keberhasilan (referensi dan ID faktur), `warning` per kegagalan 
 - Kunci didapat: baris dibaca ulang dari basis data; yang sudah `terkirim` selesai tanpa memanggil Odoo. Kunci dilepas di `finally`, juga saat gagal.
 - Proses yang mati di tengah pengiriman meninggalkan kunci sampai 330 detik. Job antrean yang datang selama itu selesai tanpa mengirim; bila barisnya masih `menunggu`, jalankan `erp:kirim-tertunda`.
 - Kunci disimpan di cache store aplikasi (`CACHE_STORE=database`; `array` saat tes). Semua proses harus memakai store yang sama; `array` tidak berlaku antarproses.
+
+## 9. Implementasi F-23 dan F-24
+
+### 9.1 Alur
+
+```
+TiketKeluhan::selesaikan()  (DB::transaction)
+  ├─ SinkronisasiErp biaya_perbaikan  KPK-TKT-<nomor>-B  (selalu)
+  └─ SinkronisasiErp pemeliharaan     KPK-TKT-<nomor>-M  (bila fasilitas.odoo_equipment_id terisi)
+       └─ tiap baris: KirimSinkronisasiErp setelah commit → IntegrasiErpService::kirim()
+```
+
+Kedua baris independen: masing-masing punya job, kunci, status, dan `pesan_error` sendiri. Kegagalan satu tidak membatalkan atau mengubah yang lain, dan status `selesai` di web tidak pernah dibatalkan.
+
+**Tanggal selesai** (`TiketKeluhan::tanggalSelesai()`) = `riwayat_status_tiket.waktu_perubahan` dengan `status_sesudah = selesai`, dikonversi ke tanggal Asia/Jakarta (`app.timezone`). Dipakai sebagai `invoice_date` dan `request_date`.
+
+**Data yang dikirim:** referensi, ID dan nama vendor, jenis kerusakan (diisi pengelola), nama dan lokasi fasilitas, biaya, tanggal selesai, dan ID peralatan. Nama, kontak, dan identitas penghuni, deskripsi keluhan, serta catatan instruksi tidak dikirim.
+
+### 9.2 Partner vendor dan kunci partner
+
+| # | Panggilan | Kapan |
+|---|---|---|
+| 1 | `res.partner/read` (`ids` = [`vendor.odoo_partner_id`], `fields` = [`ref`]) | ID sudah tersimpan. Dipakai bila partnernya masih ada dan `ref` = `VDR-<id>`; selain itu nilai lama diabaikan. Partner yang sudah dihapus dijawab `[]` |
+| 2 | `res.partner/search_read` (`ref = VDR-<id>`, `limit` 2) | Nilai tersimpan tidak ada atau tidak sah. Dua hasil → `gagal` |
+| 3 | `res.partner/create` (`ref`, `name` = `nama_vendor`, `supplier_rank` 1) | Partner belum ada |
+
+ID hasil langkah 2 atau 3 disimpan ke `vendor.odoo_partner_id`. **Nama partner yang sudah ada tidak diubah**, walaupun `nama_vendor` di web berbeda; ubah manual di Odoo bila perlu.
+
+Langkah 2, 3, dan penyimpanan ID berjalan di bawah `Cache::lock("odoo-partner-vendor:<vendor.id>", 60)`, supaya dua tiket dari vendor yang sama tidak membuat partner ganda. Cari-lalu-buat partner penghuni (F-22) memakai pola yang sama: `odoo-partner-penghuni:<penghuni.id>`. Bila kunci partner sedang dipegang, pengiriman dilewati: tidak ada panggilan cari atau buat, baris tidak diubah (`menunggu` tetap `menunggu`, `gagal` tetap `gagal`), dan event `sinkronisasi-erp.dilewati` dikirim. Job antreannya selesai, jadi baris `menunggu` seperti itu dikirim lewat `erp:kirim-tertunda`. Umur 60 detik cukup untuk dua panggilan dengan batas 30 detik.
+
+### 9.3 Biaya perbaikan (F-23)
+
+| # | Panggilan | Kapan |
+|---|---|---|
+| 1–3 | Partner vendor (bagian 9.2) | |
+| 4 | `account.move/search_read` (`in_invoice` + `ref`, `fields` = `id`, `state`, `amount_total`, `invoice_date`, `partner_id`, `limit` 2) | Selalu |
+| 5 | `res.partner/read` (`ref` partner pada tagihan) | Tagihan sudah ada dan punya partner |
+| 6 | `account.move/create` | Tagihan belum ada |
+| 7 | `account.move/action_post` | Tagihan `draft` |
+| 8 | `account.move/read` (`state`) | Setelah posting; harus `posted` |
+
+Payload final:
+
+```json
+POST /json/2/account.move/create
+{"vals_list": [{
+  "move_type": "in_invoice",
+  "partner_id": 8,
+  "ref": "KPK-TKT-0001-B",
+  "invoice_date": "2026-11-05",
+  "invoice_line_ids": [[0, 0, {
+    "name": "Perbaikan Tidak dingin - AC Kamar 03",
+    "quantity": 1,
+    "price_unit": 150000,
+    "tax_ids": [[6, 0, []]]
+  }]]
+}]}
+```
+
+- Teks baris = `Perbaikan <jenis_kerusakan> - <Fasilitas::namaPeralatanErp()>`, misalnya `... - AC Kamar 03` atau `... - Pompa air Area Bersama`.
+- `journal_id` tidak dikirim: Odoo memilih jurnal pembelian bawaan.
+- Tagihan **tidak dibayar** lewat integrasi; pembayaran ke vendor di luar cakupan.
+- **Biaya 0:** tetap dikirim dan diposting sebagai tagihan bernilai 0, karena Odoo menerimanya (bagian 3, temuan "Tagihan bernilai 0").
+
+**Pemeriksaan kecocokan** untuk tagihan yang sudah ada (termasuk `draft`): `ref` partner = `VDR-<vendor.id>`, `invoice_date` = tanggal selesai, dan `amount_total` = `biaya_perbaikan` (rupiah bulat). Tagihan yang tidak cocok tidak diposting atau diubah.
+
+| Keadaan tagihan dengan referensi itu | Tindakan |
+|---|---|
+| Belum ada | Buat, posting |
+| Lebih dari satu, `cancel`, atau tidak cocok | `gagal`, periksa manual |
+| Cocok, `draft` | Posting |
+| Cocok, `posted` | Langsung `terkirim` |
+
+Arti **terkirim**: tagihan vendor ada dengan `state = posted`; `odoo_record_id` = `account.move.id`.
+
+### 9.4 Pemeliharaan (F-24)
+
+| # | Panggilan | Kapan |
+|---|---|---|
+| 1 | `maintenance.request/search_read` (`name =like "<REF> %"`, `fields` = `id`, `name`, `equipment_id`, `stage_id`, `request_date`, `limit` 2) | Selalu |
+| 2 | `maintenance.request/create` | Permintaan belum ada |
+| 3 | `maintenance.equipment/search_read` (`id`, context `active_test: false`) | Hanya bila langkah 2 ditolak Odoo, untuk mengenali peralatan yang sudah dihapus |
+| 4 | `maintenance.stage/search_read` (`done = true`, `order` = `sequence asc, id asc`, `limit` 1) | Selalu |
+| 5 | `maintenance.stage/read` (`done`) | Permintaan berada di tahap selain hasil langkah 4 |
+| 6 | `maintenance.request/write` (`stage_id`) | Permintaan belum di tahap `done` mana pun |
+| 7 | `maintenance.request/read` (`stage_id`) | Setelah langkah 6; harus tahap `done` |
+
+Payload final:
+
+```json
+POST /json/2/maintenance.request/create
+{"vals_list": [{
+  "name": "KPK-TKT-0001-M Tidak dingin",
+  "equipment_id": 1,
+  "maintenance_type": "corrective",
+  "request_date": "2026-11-05",
+  "description": "Biaya perbaikan Rp150.000. Vendor: CV Teknik Aliran Jaya."
+}]}
+```
+
+- Bila `jenis_kerusakan` kosong, nama memakai `<REF> Perbaikan`.
+- `description` berupa field HTML di Odoo, jadi teksnya di-escape. Web tidak menyimpan ringkasan perbaikan dari vendor, sehingga keterangan hanya memuat biaya dan nama vendor.
+
+**Pemeriksaan kecocokan** untuk permintaan yang sudah ada: `equipment_id` = `fasilitas.odoo_equipment_id` dan `request_date` = tanggal selesai. Yang tidak cocok tidak diubah.
+
+Arti **terkirim**: permintaan ada dan berada di tahap `done = true`; `odoo_record_id` = `maintenance.request.id`.
+
+### 9.5 Daftar `pesan_error` F-23 dan F-24
+
+Pesan umum di bagian 8.4 (konfigurasi, koneksi, 401, `Odoo menolak: ...`, galat tak terduga) berlaku juga.
+
+| Situasi | `pesan_error` |
+|---|---|
+| Tiket tidak selesai, tanpa riwayat selesai, atau tanpa biaya | `Tiket belum berstatus selesai.` |
+| Tiket tanpa vendor (F-23) | `Tiket tidak punya vendor.` |
+| Partner vendor ganda | `Ada lebih dari satu partner VDR-{id} di Odoo. Periksa manual.` |
+| Tagihan ganda | `Ada lebih dari satu tagihan vendor {REF} di Odoo. Periksa manual.` |
+| Tagihan dibatalkan | `Tagihan vendor {REF} dibatalkan di Odoo. Periksa manual.` |
+| Tagihan tidak cocok | `Tagihan vendor {REF} di Odoo tidak cocok dengan data web ({beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.` dengan `{beda}` = satu atau lebih dari `vendor, tanggal, nominal` |
+| Tagihan belum posted | `Tagihan vendor {REF} sudah dibuat tetapi belum posted di Odoo.` |
+| Fasilitas belum tertaut | `Fasilitas belum ditautkan ke peralatan Odoo. Jalankan php artisan erp:cocokkan-peralatan.` |
+| Peralatan sudah dihapus | `Peralatan Odoo #{id} untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan.` |
+| Permintaan ganda | `Ada lebih dari satu permintaan perawatan {REF} di Odoo. Periksa manual.` |
+| Permintaan tidak cocok | `Permintaan perawatan {REF} di Odoo tidak cocok dengan data web ({beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.` dengan `{beda}` = `peralatan`, `tanggal`, atau keduanya |
+| Tidak ada tahap selesai | `Tahap perawatan selesai tidak ditemukan di Odoo.` |
+| Belum di tahap selesai setelah dipindahkan | `Permintaan perawatan {REF} sudah dibuat tetapi belum di tahap selesai di Odoo.` |
+
+### 9.6 Menautkan fasilitas ke peralatan (F-28)
+
+Peralatan dibuat manual di Odoo; integrasi hanya membacanya.
+
+1. `php artisan erp:cocokkan-peralatan` (pratinjau, tidak mengubah apa pun). Kolom "nama yang dicari di Odoo" berasal dari `Fasilitas::namaPeralatanErp()`.
+2. Di Odoo → Maintenance → Equipments, buat peralatan dengan nama persis seperti kolom itu.
+3. `php artisan erp:cocokkan-peralatan --simpan` menulis `fasilitas.odoo_equipment_id` untuk yang `cocok`.
+
+Format nama [ASUMSI, menunggu daftar fasilitas acuan DEP-P01]: `<nama_fasilitas> Kamar <nomor_kamar>` untuk fasilitas kamar dan `<nama_fasilitas> Area Bersama` untuk area bersama. Bila lokasi itu sudah tertulis di `nama_fasilitas`, tidak ditambahkan lagi. Pencocokan mengabaikan spasi berlebih dan huruf besar-kecil.
+
+| Hasil | Arti | `--simpan` |
+|---|---|---|
+| `cocok #id` | Satu peralatan bernama sama, fasilitas belum tertaut | Disimpan |
+| `sudah tertaut #id` | Tautan web sama dengan Odoo, atau ID tertaut masih ada walau namanya berbeda | Tidak diubah |
+| `berbeda: web #x, Odoo #y` | Tertaut ke ID lain | Diubah hanya dengan `--simpan --timpa` |
+| `ganda: #a, #b` | Lebih dari satu peralatan bernama sama | Tidak diubah |
+| `tidak ditemukan` | Tidak ada peralatan bernama sama (disebut bila ID tertaut sudah tidak ada di Odoo) | Tidak diubah |
+
+- Peralatan yang diarsipkan tidak ikut dicocokkan.
+- Nama fasilitas dalam satu lokasi sebaiknya unik; dua fasilitas bernama sama akan tertaut ke peralatan yang sama.
+- Baris pemeliharaan dibuat saat tiket diselesaikan. Fasilitas yang ditautkan **setelah** tiketnya selesai tidak membuat baris pemeliharaan baru untuk tiket itu.

@@ -1,10 +1,8 @@
 <?php
 
-use App\Enums\JenisTransaksiErp;
 use App\Enums\StatusSinkronisasi;
 use App\Jobs\KirimSinkronisasiErp;
 use App\Models\SinkronisasiErp;
-use App\Models\TiketKeluhan;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -48,24 +46,52 @@ function fakeOdooSudahLunas(array $timpa = []): void
     ], $timpa));
 }
 
-it('memasukkan antrean hanya baris pembayaran yang menunggu', function () {
+it('memasukkan antrean semua jenis baris yang menunggu, dan hanya yang menunggu', function () {
     Queue::fake();
     $menunggu = [barisTanpaJob('01'), barisTanpaJob('02')];
     barisTanpaJob('03', 'terkirim');
     barisTanpaJob('04', 'gagal');
-    $tiket = TiketKeluhan::factory()->create(['nomor_tiket' => 'KLH-0001']);
-    SinkronisasiErp::factory()->untukTiket($tiket, JenisTransaksiErp::BiayaPerbaikan)->create();
+    $tiket = SinkronisasiErp::withoutEvents(fn () => tiketErpUji());
+    array_push($menunggu, ...$tiket->sinkronisasi()->orderBy('id')->get()->all());
     Queue::assertNothingPushed();
 
     $this->artisan('erp:kirim-tertunda')
-        ->expectsOutputToContain('2 baris dimasukkan antrean.')
+        ->expectsOutputToContain('4 baris dimasukkan antrean.')
         ->expectsOutputToContain('Pastikan worker antrean berjalan (composer run dev).')
         ->doesntExpectOutputToContain('dilewati')
         ->assertExitCode(0);
 
-    Queue::assertPushed(KirimSinkronisasiErp::class, 2);
+    Queue::assertPushed(KirimSinkronisasiErp::class, 4);
     expect(Queue::pushed(KirimSinkronisasiErp::class)->map(fn (KirimSinkronisasiErp $job) => $job->sinkronisasi->id)->all())
-        ->toBe([$menunggu[0]->id, $menunggu[1]->id]);
+        ->toBe(collect($menunggu)->pluck('id')->all());
+    Http::assertNothingSent();
+});
+
+it('--sekarang mengirim baris biaya perbaikan dan pemeliharaan', function () {
+    fakeOdooBiaya();
+    fakeOdooPemeliharaan();
+    SinkronisasiErp::withoutEvents(fn () => tiketErpUji());
+
+    $this->artisan('erp:kirim-tertunda --sekarang')
+        ->expectsTable(['referensi', 'status', 'pesan_error'], [
+            ['KPK-TKT-0001-B', 'terkirim', '-'],
+            ['KPK-TKT-0001-M', 'terkirim', '-'],
+        ])
+        ->assertExitCode(0);
+});
+
+it('--sekarang melaporkan baris yang dilewati karena kunci partner vendor', function () {
+    fakeOdooBiaya();
+    $tiket = SinkronisasiErp::withoutEvents(fn () => tiketErpUji(idPeralatan: null));
+    Cache::lock("odoo-partner-vendor:{$tiket->vendor_id}", 60)->get();
+
+    $this->artisan('erp:kirim-tertunda --sekarang')
+        ->expectsTable(['referensi', 'status', 'pesan_error'], [
+            ['KPK-TKT-0001-B', 'sedang diproses, dilewati', '-'],
+        ])
+        ->assertExitCode(0);
+
+    expect($tiket->sinkronisasi()->sole()->status_sinkronisasi)->toBe(StatusSinkronisasi::Menunggu);
     Http::assertNothingSent();
 });
 
@@ -158,7 +184,7 @@ it('--sekarang tanpa baris menunggu selesai tanpa memanggil Odoo', function () {
     barisTanpaJob('01', 'terkirim');
 
     $this->artisan('erp:kirim-tertunda --sekarang')
-        ->expectsOutputToContain('Tidak ada pembayaran yang menunggu dikirim.')
+        ->expectsOutputToContain('Tidak ada transaksi yang menunggu dikirim.')
         ->assertExitCode(0);
 
     Http::assertNothingSent();

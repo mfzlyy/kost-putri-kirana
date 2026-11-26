@@ -9,8 +9,13 @@ use App\Models\SinkronisasiErp;
 use App\Models\TiketKeluhan;
 use App\Models\Vendor;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Queue;
 
-beforeEach(fn () => Carbon::setTestNow(Carbon::parse('2026-11-05 09:00:00', 'Asia/Jakarta')));
+beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-11-05 09:00:00', 'Asia/Jakarta'));
+    // Pengiriman ke Odoo diuji di tests/Feature/Integrasi; di sini antreannya saja.
+    Queue::fake();
+});
 
 afterEach(fn () => Carbon::setTestNow());
 

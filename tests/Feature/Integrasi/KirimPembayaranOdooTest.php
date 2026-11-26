@@ -1,19 +1,17 @@
 <?php
 
-use App\Enums\JenisTransaksiErp;
 use App\Enums\StatusSinkronisasi;
 use App\Enums\StatusTagihan;
 use App\Enums\StatusVerifikasi;
 use App\Models\SinkronisasiErp;
-use App\Models\TiketKeluhan;
 use App\Services\Odoo\IntegrasiErpService;
 use App\Services\Odoo\OdooClient;
 use App\Services\Odoo\OdooException;
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -35,26 +33,6 @@ function sinkronPembayaranUji(): SinkronisasiErp
     $kontrak = buatKontrakUji('ZX9', 'Rina Maharani');
 
     return buatPembayaranDiterima($kontrak, '2026-11-01', '2026-11-03', '2026-11-04 09:00', 1250000, sinkron: 'menunggu')->sinkronisasi;
-}
-
-function kirimKeOdoo(SinkronisasiErp $baris): SinkronisasiErp
-{
-    app(IntegrasiErpService::class)->kirim($baris);
-
-    return $baris->fresh();
-}
-
-/**
- * Isi body satu panggilan "model/method" yang terkirim tepat sekali.
- *
- * @return array<string, mixed>
- */
-function bodyOdoo(string $jalur): array
-{
-    $cocok = Http::recorded(fn (Request $request) => str_ends_with($request->url(), "/json/2/{$jalur}"));
-    expect($cocok)->toHaveCount(1);
-
-    return $cocok->first()[0]->data();
 }
 
 const ALUR_BAYAR = [
@@ -461,17 +439,29 @@ it('baris terkirim tidak memanggil Odoo, juga bila objek di memori masih menungg
     Http::assertNothingSent();
 });
 
-it('baris tiket belum dikirim: tetap menunggu dan tidak berubah', function (JenisTransaksiErp $jenis) {
-    $tiket = TiketKeluhan::factory()->create(['nomor_tiket' => 'KLH-0001']);
-    $baris = SinkronisasiErp::factory()->untukTiket($tiket, $jenis)->create();
+it('kunci partner penghuni dipegang proses lain: baris dilewati tanpa membuat partner, lalu terkirim setelah dilepas', function () {
+    fakeOdooPembayaran();
+    Event::fake([IntegrasiErpService::PERISTIWA_DILEWATI]);
+    $baris = sinkronPembayaranUji();
+    $penghuniId = $baris->pembayaran->tagihan->kontrak->penghuni_id;
+    $sebelum = (array) DB::table('sinkronisasi_erp')->find($baris->id);
+    $kunci = Cache::lock("odoo-partner-penghuni:{$penghuniId}", 60);
+    expect($kunci->get())->toBeTrue();
 
-    $hasil = kirimKeOdoo($baris);
+    kirimKeOdoo($baris);
 
-    expect($hasil->status_sinkronisasi)->toBe(StatusSinkronisasi::Menunggu)
-        ->and($hasil->pesan_error)->toBeNull()
-        ->and($hasil->waktu_kirim)->toBeNull();
     Http::assertNothingSent();
-})->with([JenisTransaksiErp::BiayaPerbaikan, JenisTransaksiErp::Pemeliharaan]);
+    Event::assertDispatched(IntegrasiErpService::PERISTIWA_DILEWATI);
+    expect((array) DB::table('sinkronisasi_erp')->find($baris->id))->toBe($sebelum)
+        // Kunci baris dilepas walaupun barisnya dilewati.
+        ->and(Cache::lock("sinkronisasi-erp:{$baris->id}", 1)->get())->toBeTrue();
+
+    $kunci->release();
+    Cache::lock("sinkronisasi-erp:{$baris->id}")->forceRelease();
+
+    expect(kirimKeOdoo($baris)->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim)
+        ->and(Cache::lock("odoo-partner-penghuni:{$penghuniId}", 1)->get())->toBeTrue();
+});
 
 it('pesan_error yang panjang dipotong paling banyak 500 karakter', function () {
     // OdooClient sudah memotong pesannya; klien tiruan ini memastikan service punya batas sendiri.
@@ -528,7 +518,7 @@ it('mencatat log info berisi referensi dan ID faktur saat berhasil', function ()
 
     Log::shouldHaveReceived('info')->once()->with('Sinkronisasi ERP terkirim.', [
         'referensi_unik' => $baris->referensi_unik,
-        'id_faktur' => 41,
+        'odoo_record_id' => 41,
     ]);
     Log::shouldNotHaveReceived('warning');
 });

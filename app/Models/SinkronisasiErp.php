@@ -41,15 +41,14 @@ class SinkronisasiErp extends Model
     ];
 
     /**
-     * Baris pembayaran baru langsung diantrekan untuk dikirim ke Odoo (F-22). afterCommit: job baru masuk
-     * antrean setelah transaksi pembuatnya berhasil, dan tidak pernah masuk bila transaksinya dibatalkan.
-     * Jenis lain (biaya perbaikan, pemeliharaan) belum dikirim.
+     * Baris menunggu yang baru dibuat, jenis apa pun, langsung diantrekan untuk dikirim ke Odoo (F-22 s.d. F-24).
+     * afterCommit: job baru masuk antrean setelah transaksi pembuatnya berhasil, dan tidak pernah masuk bila
+     * transaksinya dibatalkan.
      */
     protected static function booted(): void
     {
         static::created(function (self $sinkronisasi) {
-            if ($sinkronisasi->jenis_transaksi === JenisTransaksiErp::Pembayaran
-                && $sinkronisasi->status_sinkronisasi === StatusSinkronisasi::Menunggu) {
+            if ($sinkronisasi->status_sinkronisasi === StatusSinkronisasi::Menunggu) {
                 KirimSinkronisasiErp::dispatch($sinkronisasi)->afterCommit();
             }
         });

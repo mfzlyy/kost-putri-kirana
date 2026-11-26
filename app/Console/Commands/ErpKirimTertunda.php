@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\JenisTransaksiErp;
 use App\Enums\StatusSinkronisasi;
 use App\Jobs\KirimSinkronisasiErp;
 use App\Models\SinkronisasiErp;
@@ -14,22 +13,18 @@ use Illuminate\Support\Facades\Event;
 use Throwable;
 
 /**
- * Mengirim baris sinkronisasi_erp pembayaran yang masih menunggu, misalnya baris tanpa job di antrean.
+ * Mengirim baris sinkronisasi_erp (semua jenis) yang masih menunggu, misalnya baris tanpa job di antrean.
  * Baris gagal tidak disentuh: kirim ulang baris gagal adalah F-25.
  */
 class ErpKirimTertunda extends Command
 {
     protected $signature = 'erp:kirim-tertunda {--sekarang : Kirim langsung tanpa worker antrean; baris yang sedang dikirim proses lain dilewati}';
 
-    protected $description = 'Kirim pembayaran yang masih menunggu sinkronisasi ke Odoo';
+    protected $description = 'Kirim transaksi yang masih menunggu sinkronisasi ke Odoo';
 
     public function handle(): int
     {
-        $tertunda = SinkronisasiErp::query()
-            ->menunggu()
-            ->where('jenis_transaksi', JenisTransaksiErp::Pembayaran->value)
-            ->orderBy('id')
-            ->get();
+        $tertunda = SinkronisasiErp::query()->menunggu()->orderBy('id')->get();
 
         return $this->option('sekarang') ? $this->kirimSekarang($tertunda) : $this->masukkanAntrean($tertunda);
     }
@@ -66,12 +61,12 @@ class ErpKirimTertunda extends Command
     private function kirimSekarang(Collection $tertunda): int
     {
         if ($tertunda->isEmpty()) {
-            $this->info('Tidak ada pembayaran yang menunggu dikirim.');
+            $this->info('Tidak ada transaksi yang menunggu dikirim.');
 
             return self::SUCCESS;
         }
 
-        // Baris yang kuncinya dipegang proses lain (worker, perintah lain) tidak dikirim di sini.
+        // Baris yang kunci baris atau kunci partnernya dipegang proses lain tidak dikirim di sini.
         $dilewati = [];
         Event::listen(IntegrasiErpService::PERISTIWA_DILEWATI, function (int $id) use (&$dilewati) {
             $dilewati[] = $id;

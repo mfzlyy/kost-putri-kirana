@@ -1,14 +1,21 @@
 <?php
 
+use App\Enums\JenisTransaksiErp;
 use App\Enums\StatusTagihan;
+use App\Enums\StatusTiket;
+use App\Models\Fasilitas;
 use App\Models\Kamar;
 use App\Models\Kontrak;
 use App\Models\Pembayaran;
 use App\Models\Penghuni;
 use App\Models\SinkronisasiErp;
 use App\Models\Tagihan;
+use App\Models\TiketKeluhan;
 use App\Models\User;
+use App\Models\Vendor;
+use App\Services\Odoo\IntegrasiErpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -244,6 +251,16 @@ function fakturOdoo(string $paymentState, string $state = 'posted', int $id = 41
 }
 
 /**
+ * Memasang Odoo palsu: kunci "model/method", nilai balasannya.
+ *
+ * @param  array<string, mixed>  $balasan
+ */
+function fakeOdoo(array $balasan): void
+{
+    Http::fake(collect($balasan)->mapWithKeys(fn (mixed $isi, string $jalur) => ["*/json/2/{$jalur}" => $isi])->all());
+}
+
+/**
  * Odoo palsu untuk alur pembayaran baru: partner dan faktur belum ada, lalu faktur (id 41) lunas setelah dibayar.
  * res.partner/read menjawab partner milik penghuni pertama di basis data tes. $timpa mengganti balasan per
  * "model/method".
@@ -252,7 +269,7 @@ function fakturOdoo(string $paymentState, string $state = 'posted', int $id = 41
  */
 function fakeOdooPembayaran(array $timpa = []): void
 {
-    $balasan = array_merge([
+    fakeOdoo(array_merge([
         'res.partner/search_read' => Http::response([]),
         'res.partner/create' => Http::response([7]),
         'res.partner/read' => fn () => Http::response([['id' => 7, 'ref' => 'PNH-'.Penghuni::query()->orderBy('id')->value('id')]]),
@@ -263,9 +280,158 @@ function fakeOdooPembayaran(array $timpa = []): void
         'account.journal/search_read' => Http::response([['id' => 6]]),
         'account.payment.register/create' => Http::response([3]),
         'account.payment.register/action_create_payments' => Http::response('false'),
-    ], $timpa);
+    ], $timpa));
+}
 
-    Http::fake(collect($balasan)->mapWithKeys(fn (mixed $isi, string $jalur) => ["*/json/2/{$jalur}" => $isi])->all());
+/**
+ * Balasan account.move/search_read untuk tagihan vendor (id 61) yang cocok dengan tiketErpUji(): Rp150.000,
+ * tanggal 5 November 2026, partner id 8. $timpa mengganti field tagihan.
+ *
+ * @param  array<string, mixed>  $timpa
+ * @return list<array<string, mixed>>
+ */
+function tagihanVendorOdoo(string $state = 'posted', array $timpa = []): array
+{
+    return [array_merge([
+        'id' => 61,
+        'state' => $state,
+        'amount_total' => 150000.0,
+        'invoice_date' => '2026-11-05',
+        'partner_id' => [8, 'Vendor'],
+    ], $timpa)];
+}
+
+/**
+ * Odoo palsu untuk alur biaya perbaikan baru: partner (id 8) dan tagihan vendor (id 61) belum ada, lalu tagihan
+ * posted. res.partner/read menjawab partner milik vendor pertama di basis data tes.
+ *
+ * @param  array<string, mixed>  $timpa
+ */
+function fakeOdooBiaya(array $timpa = []): void
+{
+    fakeOdoo(array_merge([
+        'res.partner/search_read' => Http::response([]),
+        'res.partner/create' => Http::response([8]),
+        'res.partner/read' => fn () => Http::response([['id' => 8, 'ref' => 'VDR-'.Vendor::query()->orderBy('id')->value('id')]]),
+        'account.move/search_read' => Http::response([]),
+        'account.move/create' => Http::response([61]),
+        'account.move/action_post' => Http::response('false'),
+        'account.move/read' => Http::response([['id' => 61, 'state' => 'posted']]),
+    ], $timpa));
+}
+
+/**
+ * Balasan maintenance.request/search_read untuk permintaan (id 5) yang cocok dengan tiketErpUji(): peralatan 42,
+ * tanggal 5 November 2026, tahap $idTahap. $timpa mengganti field permintaan.
+ *
+ * @param  array<string, mixed>  $timpa
+ * @return list<array<string, mixed>>
+ */
+function permintaanOdoo(int $idTahap = 3, array $timpa = []): array
+{
+    return [array_merge([
+        'id' => 5,
+        'name' => 'KPK-TKT-0001-M Tidak dingin',
+        'equipment_id' => [42, 'AC Kamar ZX9'],
+        'stage_id' => [$idTahap, 'Tahap'],
+        'request_date' => '2026-11-05',
+    ], $timpa)];
+}
+
+/**
+ * Odoo palsu untuk alur pemeliharaan baru: permintaan (id 5) belum ada, tahap selesai ber-ID 3.
+ *
+ * @param  array<string, mixed>  $timpa
+ */
+function fakeOdooPemeliharaan(array $timpa = []): void
+{
+    fakeOdoo(array_merge([
+        'maintenance.request/search_read' => Http::response([]),
+        'maintenance.request/create' => Http::response([5]),
+        'maintenance.stage/search_read' => Http::response([['id' => 3]]),
+        'maintenance.request/write' => Http::response('true'),
+        'maintenance.request/read' => Http::response([['id' => 5, 'stage_id' => [3, 'Repaired']]]),
+    ], $timpa));
+}
+
+/**
+ * Tiket $nomor yang diselesaikan vendor saat ini juga (lewat selesaikan()), milik penghuni "Rina Maharani" di kamar
+ * ZX9, untuk fasilitas AC kamar itu. $idPeralatan null berarti fasilitas belum ditautkan (tanpa baris pemeliharaan).
+ * Panggil Queue::fake() lebih dulu supaya barisnya tidak langsung dikirim.
+ */
+function tiketErpUji(int $biaya = 150000, ?int $idPeralatan = 42, string $nomor = 'KLH-0001', ?Vendor $vendor = null): TiketKeluhan
+{
+    $kontrak = Kontrak::query()->whereRelation('kamar', 'nomor_kamar', 'ZX9')->first()
+        ?? buatKontrakUji('ZX9', 'Rina Maharani');
+    $vendor ??= Vendor::factory()->create(['nama_vendor' => 'CV Teknik Uji']);
+    $fasilitas = Fasilitas::factory()->create([
+        'nama_fasilitas' => 'AC',
+        'kamar_id' => $kontrak->kamar_id,
+        'odoo_equipment_id' => $idPeralatan,
+    ]);
+    $tiket = TiketKeluhan::factory()->create([
+        'nomor_tiket' => $nomor,
+        'penghuni_id' => $kontrak->penghuni_id,
+        'fasilitas_id' => $fasilitas->id,
+        'vendor_id' => $vendor->id,
+        'status_tiket' => StatusTiket::Dikerjakan,
+        'deskripsi' => 'AC di kamar saya meneteskan air sejak semalam',
+        'jenis_kerusakan' => 'Tidak dingin',
+        'catatan_instruksi' => 'Hubungi penghuni sebelum datang',
+    ]);
+
+    $tiket->selesaikan($biaya, $vendor->user);
+
+    return $tiket;
+}
+
+/**
+ * Baris sinkronisasi tiket menurut jenisnya.
+ */
+function barisTiket(TiketKeluhan $tiket, JenisTransaksiErp $jenis): SinkronisasiErp
+{
+    return $tiket->sinkronisasi()->where('jenis_transaksi', $jenis->value)->sole();
+}
+
+function kirimKeOdoo(SinkronisasiErp $baris): SinkronisasiErp
+{
+    app(IntegrasiErpService::class)->kirim($baris);
+
+    return $baris->fresh();
+}
+
+/**
+ * Isi body satu panggilan "model/method" yang terkirim tepat sekali.
+ *
+ * @return array<string, mixed>
+ */
+function bodyOdoo(string $jalur): array
+{
+    $cocok = Http::recorded(fn (Request $request) => str_ends_with($request->url(), "/json/2/{$jalur}"));
+    expect($cocok)->toHaveCount(1);
+
+    return $cocok->first()[0]->data();
+}
+
+/**
+ * Tidak satu pun permintaan ke Odoo memuat data penghuni tiket atau teks yang ditulis tentangnya (NFR-02).
+ */
+function pastikanTanpaDataPenghuni(TiketKeluhan $tiket): void
+{
+    $penghuni = $tiket->penghuni;
+    $terlarang = [
+        'Rina', 'Maharani', $penghuni->user->email, $penghuni->no_identitas_enc, $penghuni->no_telepon,
+        'meneteskan air', 'Hubungi penghuni',
+    ];
+
+    expect(Http::recorded())->not->toBeEmpty();
+
+    foreach (Http::recorded() as [$request]) {
+        foreach ($terlarang as $isi) {
+            expect($isi)->toBeString()->not->toBeEmpty()
+                ->and($request->body())->not->toContain($isi);
+        }
+    }
 }
 
 /**

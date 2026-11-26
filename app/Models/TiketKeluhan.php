@@ -329,6 +329,18 @@ class TiketKeluhan extends Model
     }
 
     /**
+     * Tanggal tiket diselesaikan menurut riwayat statusnya, pada zona waktu aplikasi (Asia/Jakarta), tanpa jam;
+     * null bila tidak ada riwayat selesai. Dipakai sebagai tanggal catatan di Odoo (F-23, F-24).
+     */
+    public function tanggalSelesai(): ?CarbonImmutable
+    {
+        $riwayat = $this->relationLoaded('riwayatStatus') ? $this->riwayatStatus : $this->riwayatStatus()->get();
+
+        return $riwayat->firstWhere('status_sesudah', StatusTiket::Selesai)
+            ?->waktu_perubahan->setTimezone(config('app.timezone'))->startOfDay();
+    }
+
+    /**
      * Lama penanganan: dari waktu riwayat diajukan sampai waktu riwayat selesai (F-18 butir 4); null bila belum selesai.
      */
     public function durasiPenanganan(): ?CarbonInterval
