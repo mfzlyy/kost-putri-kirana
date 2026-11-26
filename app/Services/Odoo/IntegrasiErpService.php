@@ -8,6 +8,8 @@ use App\Enums\StatusVerifikasi;
 use App\Exceptions\PengirimanErpGagal;
 use App\Models\Pembayaran;
 use App\Models\SinkronisasiErp;
+use App\Models\Tagihan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -24,7 +26,18 @@ class IntegrasiErpService
 
     public const PESAN_API_KEY_DITOLAK = 'API key Odoo ditolak. Periksa ODOO_API_KEY dan masa berlakunya.';
 
+    /**
+     * Event (dengan ID baris) saat baris dilewati karena proses lain sedang mengirimnya.
+     */
+    public const PERISTIWA_DILEWATI = 'sinkronisasi-erp.dilewati';
+
     private const BATAS_PESAN = 500;
+
+    /**
+     * Umur kunci per baris, lebih lama dari satu pengiriman terburuk (10 panggilan, masing-masing 30 detik).
+     * Kunci dilepas segera setelah selesai; umur ini hanya berlaku bila prosesnya mati di tengah jalan.
+     */
+    private const DETIK_KUNCI = 330;
 
     /**
      * ID jurnal bank, diingat selama instance ini hidup (satu proses); sengaja tidak disimpan di cache.
@@ -36,9 +49,30 @@ class IntegrasiErpService
     /**
      * Mengirim baris yang berstatus menunggu atau gagal. Galat Odoo dan galat bisnis dicatat di baris itu dan
      * tidak dilempar ulang; galat lain dibiarkan lolos supaya ditangani job pengirim.
+     *
+     * Satu baris hanya dikirim oleh satu proses pada satu waktu, dari jalur mana pun: bila kuncinya sedang
+     * dipegang, tidak ada panggilan Odoo dan baris tidak diubah.
      */
     public function kirim(SinkronisasiErp $sinkronisasi): void
     {
+        $kunci = Cache::lock("sinkronisasi-erp:{$sinkronisasi->getKey()}", self::DETIK_KUNCI);
+
+        if (! $kunci->get()) {
+            event(self::PERISTIWA_DILEWATI, [$sinkronisasi->getKey()]);
+
+            return;
+        }
+
+        try {
+            $this->kirimTerkunci($sinkronisasi);
+        } finally {
+            $kunci->release();
+        }
+    }
+
+    private function kirimTerkunci(SinkronisasiErp $sinkronisasi): void
+    {
+        // Dibaca setelah kunci didapat: proses sebelumnya mungkin baru saja menyelesaikan baris ini.
         $baris = $sinkronisasi->fresh();
 
         if ($baris === null || ! in_array($baris->status_sinkronisasi, [StatusSinkronisasi::Menunggu, StatusSinkronisasi::Gagal], true)) {
@@ -109,6 +143,8 @@ class IntegrasiErpService
                 ]]],
             ]);
             $faktur = ['id' => $idFaktur, 'state' => 'draft', 'payment_state' => 'not_paid'];
+        } else {
+            $this->pastikanFakturCocok($faktur, $tagihan, $ref);
         }
 
         $idFaktur = (int) $faktur['id'];
@@ -168,7 +204,7 @@ class IntegrasiErpService
         $ada = $this->odoo->searchRead(
             'account.move',
             [['move_type', '=', 'out_invoice'], ['ref', '=', $ref]],
-            ['id', 'state', 'payment_state', 'amount_total'],
+            ['id', 'state', 'payment_state', 'amount_total', 'invoice_date', 'partner_id'],
             limit: 2,
         );
 
@@ -183,6 +219,47 @@ class IntegrasiErpService
         }
 
         return $faktur;
+    }
+
+    /**
+     * Referensi saja tidak membuktikan faktur yang ditemukan milik pembayaran ini: setelah basis data web
+     * dibangun ulang, ID pembayaran terulang dan referensinya sudah dipakai faktur lama. Faktur yang tidak cocok
+     * tidak diposting, dibayar, atau diubah.
+     *
+     * @param  array<string, mixed>  $faktur  hasil search_read, termasuk invoice_date dan partner_id
+     *
+     * @throws PengirimanErpGagal bila penghuni, periode, atau nominalnya berbeda
+     */
+    private function pastikanFakturCocok(array $faktur, Tagihan $tagihan, string $ref): void
+    {
+        $beda = array_keys(array_filter([
+            'penghuni' => $this->refPartner($faktur['partner_id']) !== "PNH-{$tagihan->kontrak->penghuni->id}",
+            'periode' => $faktur['invoice_date'] !== $tagihan->periode->toDateString(),
+            // Dibandingkan sebagai rupiah bulat: Odoo mengirim angka pecahan.
+            'nominal' => (int) round((float) $faktur['amount_total']) !== (int) round((float) $tagihan->nominal),
+        ]));
+
+        if ($beda !== []) {
+            throw new PengirimanErpGagal(
+                "Faktur {$ref} di Odoo tidak cocok dengan data web (".implode(', ', $beda).'). '
+                .'Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.'
+            );
+        }
+    }
+
+    /**
+     * ref partner pada faktur. $partner adalah nilai many2one dari Odoo: [id, nama], atau false bila kosong.
+     */
+    private function refPartner(mixed $partner): ?string
+    {
+        if (! is_array($partner)) {
+            return null;
+        }
+
+        $data = $this->odoo->read('res.partner', [(int) $partner[0]], ['ref']);
+
+        // Odoo mengirim false untuk field teks yang kosong.
+        return ($data[0]['ref'] ?? false) ?: null;
     }
 
     /**

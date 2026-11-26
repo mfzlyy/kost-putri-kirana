@@ -121,7 +121,7 @@ Arti **terkirim**: faktur ditemukan atau dibuat dengan `state = posted` dan `pay
 | `tagihan.jatuh_tempo` | `account.move.invoice_date_due` | |
 | `tagihan.nominal` | `account.move.line.price_unit` | `quantity` 1, `tax_ids` kosong |
 | `pembayaran.tanggal_bayar` | `account.payment.register.payment_date` | |
-| `pembayaran.nominal_bayar` | `account.payment.register.amount` (opsional) | Bila tidak diisi, wizard melunasi sisa faktur. Bila `nominal_bayar` berbeda dari `nominal`, aturannya belum diputuskan |
+| `pembayaran.nominal_bayar` | `account.payment.register.amount` (opsional) | Bila tidak diisi, wizard melunasi sisa faktur; web selalu mengisinya. `nominal_bayar` harus sama dengan `nominal` (keputusan di bagian 8.1) |
 | `pembayaran.id` | `account.move.ref` dan `account.payment.register.communication` = `KPK-PAY-<id 6 digit>` | Setelah dibayar, `communication` tersimpan di `account.payment.memo` |
 | `pembayaran.status_verifikasi` | tidak dikirim sebagai field | Pengiriman hanya dipicu status `diterima` |
 
@@ -306,7 +306,7 @@ Pembayaran::terima()  (DB::transaction)
 |---|---|
 | `App\Models\SinkronisasiErp` | Memasukkan job saat baris pembayaran berstatus `menunggu` dibuat. Job baru masuk antrean setelah transaksi commit; transaksi yang dibatalkan tidak meninggalkan job |
 | `App\Jobs\KirimSinkronisasiErp` | Unik per baris (kunci 10 menit), satu kali percobaan. `failed()` menandai `gagal` untuk galat yang lolos dari service |
-| `App\Services\Odoo\IntegrasiErpService` | Urutan panggilan, pemulihan, dan pencatatan hasil. Hanya baris `sinkronisasi_erp` yang diubah; `pembayaran` dan `tagihan` tidak disentuh, dan tidak ada panggilan Odoo di dalam transaksi web |
+| `App\Services\Odoo\IntegrasiErpService` | Kunci per baris (bagian 8.6), urutan panggilan, pemeriksaan kecocokan faktur, pemulihan, dan pencatatan hasil. Hanya baris `sinkronisasi_erp` yang diubah; `pembayaran` dan `tagihan` tidak disentuh, dan tidak ada panggilan Odoo di dalam transaksi web |
 | `App\Services\Odoo\OdooClient` | Satu-satunya pemanggil HTTP |
 
 Hanya baris `menunggu` dan `gagal` yang diproses; baris `terkirim` tidak memanggil Odoo. Baris `biaya_perbaikan` dan `pemeliharaan` belum dikirim dan tetap `menunggu`.
@@ -322,29 +322,39 @@ Hasil dicatat sebagai berikut. Berhasil: `status_sinkronisasi = terkirim`, `odoo
 | 1 | `res.partner/search_read` (`ref = PNH-<id>`) | Selalu |
 | 2 | `res.partner/create` | Partner belum ada |
 | 3 | `account.move/search_read` (`out_invoice` + `ref`, `limit` 2) | Selalu |
-| 4 | `account.move/create` | Faktur belum ada |
-| 5 | `account.move/action_post` | Faktur `draft` |
-| 6 | `account.move/read` | Setelah posting |
-| 7 | `account.journal/search_read` (`type = bank`, `order = id asc`) | Faktur `not_paid`; ID diingat selama satu instance service |
-| 8 | `account.payment.register/create` | Faktur `not_paid` |
-| 9 | `account.payment.register/action_create_payments` | Faktur `not_paid` |
-| 10 | `account.move/read` | Selalu; berhasil bila `posted` dan `paid` atau `in_payment` |
+| 4 | `res.partner/read` (`ref` partner pada faktur) | Faktur sudah ada dan punya partner |
+| 5 | `account.move/create` | Faktur belum ada |
+| 6 | `account.move/action_post` | Faktur `draft` |
+| 7 | `account.move/read` | Setelah posting |
+| 8 | `account.journal/search_read` (`type = bank`, `order = id asc`) | Faktur `not_paid`; ID diingat selama satu instance service |
+| 9 | `account.payment.register/create` | Faktur `not_paid` |
+| 10 | `account.payment.register/action_create_payments` | Faktur `not_paid` |
+| 11 | `account.move/read` | Selalu; berhasil bila `posted` dan `paid` atau `in_payment` |
 
-Pencarian faktur memakai `limit` 2 (contoh di bagian 2.1 memakai 1) agar faktur ganda terdeteksi.
+Pencarian faktur memakai `limit` 2 (contoh di bagian 2.1 memakai 1) agar faktur ganda terdeteksi, dan meminta `id`, `state`, `payment_state`, `amount_total`, `invoice_date`, `partner_id`. Langkah 4 dan 5 tidak pernah terjadi dalam pengiriman yang sama, jadi satu pengiriman paling banyak 10 panggilan.
 
 ### 8.3 Melanjutkan dari keadaan setengah jadi
 
 | Keadaan faktur dengan referensi itu | Tindakan |
 |---|---|
 | Belum ada | Buat, posting, bayar |
-| `draft` | Posting, bayar |
-| `posted`, `not_paid` | Bayar |
-| `posted`, `paid` atau `in_payment` | Langsung `terkirim` |
-| `partial` | `gagal`, periksa manual |
-| `cancel` | `gagal`, periksa manual |
 | Lebih dari satu | `gagal`, periksa manual |
+| `cancel` | `gagal`, periksa manual |
+| Tidak cocok dengan data web (lihat di bawah) | `gagal`, periksa manual |
+| Cocok, `draft` | Posting, bayar |
+| Cocok, `posted`, `not_paid` | Bayar |
+| Cocok, `posted`, `paid` atau `in_payment` | Langsung `terkirim` |
+| Cocok, `partial` | `gagal`, periksa manual |
 
-Faktur dikenali dari referensinya saja. Bila basis data web dibangun ulang (`migrate:fresh`) sementara basis data Odoo tidak, ID pembayaran mulai dari awal lagi dan bisa bertemu faktur lama dengan referensi yang sama.
+**Pemeriksaan kecocokan.** Bila basis data web dibangun ulang (`migrate:fresh`) sementara basis data Odoo tidak, ID pembayaran mulai dari awal lagi dan referensinya bisa sudah dipakai faktur lama. Karena itu faktur yang ditemukan, termasuk yang masih `draft`, dianggap milik pembayaran ini hanya bila ketiganya cocok:
+
+| Beda | Syarat cocok |
+|---|---|
+| `penghuni` | `res.partner.ref` pada faktur = `PNH-<penghuni.id>` |
+| `periode` | `invoice_date` = `tagihan.periode` |
+| `nominal` | `amount_total` = `tagihan.nominal`, dibandingkan sebagai rupiah bulat |
+
+Faktur yang tidak cocok tidak diposting, dibayar, atau diubah. Pemeriksaan ini tidak membandingkan tanggal bayar atau jatuh tempo: faktur lama yang penghuni, periode, dan nominalnya sama tetap dianggap milik pembayaran ini.
 
 ### 8.4 Daftar `pesan_error`
 
@@ -360,6 +370,7 @@ Paling panjang 500 karakter, tanpa traceback, API key, header, atau isi perminta
 | `nominal_bayar` berbeda dari `tagihan.nominal` | `Nominal pembayaran berbeda dengan nominal tagihan.` |
 | Faktur ganda | `Ada lebih dari satu faktur {REF} di Odoo. Periksa manual.` |
 | Faktur dibatalkan | `Faktur {REF} dibatalkan di Odoo. Periksa manual.` |
+| Faktur tidak cocok dengan data web | `Faktur {REF} di Odoo tidak cocok dengan data web ({beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.` dengan `{beda}` = satu atau lebih dari `penghuni, periode, nominal` |
 | Faktur dibayar sebagian | `Faktur {REF} baru dibayar sebagian di Odoo. Periksa manual.` |
 | Tidak ada jurnal bank | `Jurnal bank tidak ditemukan di Odoo.` |
 | Belum lunas setelah semua langkah | `Faktur {REF} sudah dibuat tetapi belum lunas di Odoo (status {payment_state}).` |
@@ -373,5 +384,14 @@ Log: `info` per keberhasilan (referensi dan ID faktur), `warning` per kegagalan 
 - Pengembangan: `composer run dev` (menjalankan `php artisan dev`, yang sudah memuat `queue:listen --tries=1 --timeout=0`). Jalankan satu worker saja.
 - Di Windows tanpa ekstensi PCNTL, timeout job tidak ditegakkan worker; batas yang berlaku adalah timeout HTTP `OdooClient` (30 detik).
 - `php artisan erp:kirim-tertunda`: memasukkan baris pembayaran `menunggu` yang tertinggal ke antrean. Baris yang job-nya masih antre dilewati.
-- `php artisan erp:kirim-tertunda --sekarang`: mengirim langsung tanpa worker dan mencetak `referensi | status | pesan_error`; exit code 1 bila ada yang gagal. Jangan dijalankan saat worker berjalan, karena baris yang sama bisa diproses bersamaan dan menghasilkan faktur ganda.
+- `php artisan erp:kirim-tertunda --sekarang`: mengirim langsung tanpa worker dan mencetak `referensi | status | pesan_error`; exit code 1 bila ada yang gagal. Boleh dijalankan saat worker berjalan: baris yang sedang dikirim proses lain dilaporkan `sedang diproses, dilewati` (bagian 8.6) dan tidak mengubah exit code.
 - Baris `gagal` tidak disentuh perintah ini; kirim ulang adalah F-25.
+
+### 8.6 Kunci per baris
+
+`IntegrasiErpService::kirim()` mengambil kunci atomik `sinkronisasi-erp:<id>` (`Cache::lock`, umur 330 detik) sebelum melakukan apa pun, jadi berlaku untuk semua jalur: worker, `--sekarang`, dan kirim ulang (F-25).
+
+- Kunci tidak didapat: tidak ada panggilan Odoo dan baris tidak diubah. Event `sinkronisasi-erp.dilewati` dikirim dengan ID baris.
+- Kunci didapat: baris dibaca ulang dari basis data; yang sudah `terkirim` selesai tanpa memanggil Odoo. Kunci dilepas di `finally`, juga saat gagal.
+- Proses yang mati di tengah pengiriman meninggalkan kunci sampai 330 detik. Job antrean yang datang selama itu selesai tanpa mengirim; bila barisnya masih `menunggu`, jalankan `erp:kirim-tertunda`.
+- Kunci disimpan di cache store aplikasi (`CACHE_STORE=database`; `array` saat tes). Semua proses harus memakai store yang sama; `array` tidak berlaku antarproses.

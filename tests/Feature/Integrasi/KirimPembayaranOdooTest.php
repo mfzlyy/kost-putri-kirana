@@ -12,6 +12,7 @@ use App\Services\Odoo\OdooException;
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -93,7 +94,7 @@ it('F-22: payload faktur, pencarian, dan pembayaran mengikuti dokumen teknis den
     expect($ref)->toStartWith('KPK-PAY-')
         ->and(bodyOdoo('account.move/search_read'))->toBe([
             'domain' => [['move_type', '=', 'out_invoice'], ['ref', '=', $ref]],
-            'fields' => ['id', 'state', 'payment_state', 'amount_total'],
+            'fields' => ['id', 'state', 'payment_state', 'amount_total', 'invoice_date', 'partner_id'],
             'limit' => 2,
         ])
         ->and(bodyOdoo('account.move/create'))->toBe([
@@ -178,10 +179,10 @@ it('idempoten: faktur yang sudah posted dan lunas tidak dibuat atau dibayar lagi
 
     expect($baris->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim)
         ->and($baris->odoo_record_id)->toBe(41)
-        ->and(panggilanOdoo())->toBe(['res.partner/search_read', 'account.move/search_read', 'account.move/read']);
+        ->and(panggilanOdoo())->toBe(['res.partner/search_read', 'account.move/search_read', 'res.partner/read', 'account.move/read']);
 })->with(['paid', 'in_payment']);
 
-it('melanjutkan faktur draft: hanya posting lalu pembayaran, tanpa faktur baru', function () {
+it('melanjutkan faktur draft yang cocok: hanya posting lalu pembayaran, tanpa faktur baru', function () {
     fakeOdooPembayaran([
         'res.partner/search_read' => Http::response([['id' => 7]]),
         'account.move/search_read' => Http::response(fakturOdoo('not_paid', 'draft', 55)),
@@ -194,10 +195,12 @@ it('melanjutkan faktur draft: hanya posting lalu pembayaran, tanpa faktur baru',
         ->and(panggilanOdoo())->toBe([
             'res.partner/search_read',
             'account.move/search_read',
+            'res.partner/read',
             'account.move/action_post',
             'account.move/read',
             ...ALUR_BAYAR,
         ])
+        ->and(bodyOdoo('res.partner/read'))->toBe(['ids' => [7], 'fields' => ['ref']])
         ->and(bodyOdoo('account.move/action_post'))->toBe(['ids' => [55]]);
 });
 
@@ -211,7 +214,7 @@ it('melanjutkan faktur posted belum dibayar: hanya pembayaran', function () {
     $baris = kirimKeOdoo(sinkronPembayaranUji());
 
     expect($baris->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim)
-        ->and(panggilanOdoo())->toBe(['res.partner/search_read', 'account.move/search_read', ...ALUR_BAYAR])
+        ->and(panggilanOdoo())->toBe(['res.partner/search_read', 'account.move/search_read', 'res.partner/read', ...ALUR_BAYAR])
         ->and(bodyOdoo('account.payment.register/create')['context']['active_ids'])->toBe([55]);
 });
 
@@ -225,13 +228,111 @@ it('keadaan yang tidak bisa dilanjutkan ditandai gagal tanpa membuat atau mengub
         ->and($hasil->pesan_error)->toBe(str_replace('{REF}', $baris->referensi_unik, $pesan))
         ->and($hasil->odoo_record_id)->toBeNull()
         ->and($hasil->waktu_kirim->equalTo(now()))->toBeTrue()
-        ->and(panggilanOdoo())->toBe(['res.partner/search_read', 'res.partner/create', 'account.move/search_read']);
+        ->and(panggilanOdoo())->not->toContain('account.move/create', 'account.move/action_post', 'account.payment.register/create');
 })->with([
     'baru dibayar sebagian' => [fn () => fakturOdoo('partial'), 'Faktur {REF} baru dibayar sebagian di Odoo. Periksa manual.'],
     'dibatalkan' => [fn () => fakturOdoo('not_paid', 'cancel'), 'Faktur {REF} dibatalkan di Odoo. Periksa manual.'],
     'ganda' => [fn () => [...fakturOdoo('paid'), ...fakturOdoo('not_paid', id: 42)], 'Ada lebih dari satu faktur {REF} di Odoo. Periksa manual.'],
 ]);
 
+// ---- Faktur yang ditemukan harus cocok dengan data web ----
+
+it('faktur ber-referensi sama tetapi datanya berbeda ditandai gagal tanpa diposting atau dibayar', function (array $timpa, ?string $refPartner, string $beda, string $state, string $paymentState) {
+    $baris = sinkronPembayaranUji();
+    $penghuniId = $baris->pembayaran->tagihan->kontrak->penghuni_id;
+    fakeOdooPembayaran([
+        'account.move/search_read' => Http::response(fakturOdoo($paymentState, $state, timpa: $timpa)),
+        'res.partner/read' => Http::response([['id' => 7, 'ref' => $refPartner ?? "PNH-{$penghuniId}"]]),
+    ]);
+
+    $hasil = kirimKeOdoo($baris);
+
+    expect($hasil->status_sinkronisasi)->toBe(StatusSinkronisasi::Gagal)
+        ->and($hasil->pesan_error)->toBe("Faktur {$baris->referensi_unik} di Odoo tidak cocok dengan data web ({$beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.")
+        ->and($hasil->odoo_record_id)->toBeNull()
+        // Hanya membaca: tidak ada faktur baru, posting, pembayaran, atau perubahan di Odoo.
+        ->and(array_values(array_diff(panggilanOdoo(), ['res.partner/search_read', 'res.partner/create', 'account.move/search_read', 'res.partner/read'])))->toBe([]);
+})->with([
+    'nominal berbeda' => [['amount_total' => 1400000.0], null, 'nominal'],
+    'nominal beda satu rupiah' => [['amount_total' => 1250001.0], null, 'nominal'],
+    'periode berbeda' => [['invoice_date' => '2026-10-01'], null, 'periode'],
+    'tanggal faktur kosong' => [['invoice_date' => false], null, 'periode'],
+    'partner penghuni lain' => [[], 'PNH-999999', 'penghuni'],
+    'partner tanpa ref' => [[], '', 'penghuni'],
+    'faktur tanpa partner' => [['partner_id' => false], null, 'penghuni'],
+    'semuanya berbeda' => [['amount_total' => 900000.0, 'invoice_date' => '2025-01-01'], 'VDR-1', 'penghuni, periode, nominal'],
+])->with([
+    'draft' => ['draft', 'not_paid'],
+    'posted belum dibayar' => ['posted', 'not_paid'],
+    'posted lunas' => ['posted', 'paid'],
+]);
+
+it('nominal faktur dibandingkan sebagai rupiah bulat', function () {
+    fakeOdooPembayaran([
+        'account.move/search_read' => Http::response(fakturOdoo('paid', timpa: ['amount_total' => 1249999.9999999])),
+        'account.move/read' => Http::response(fakturOdoo('paid')),
+    ]);
+
+    expect(kirimKeOdoo(sinkronPembayaranUji())->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim);
+});
+
+// ---- Kunci per baris ----
+
+it('baris yang kuncinya dipegang proses lain dilewati, lalu terkirim setelah kunci dilepas', function (StatusSinkronisasi $awal) {
+    fakeOdooPembayaran();
+    $baris = sinkronPembayaranUji();
+    $baris->forceFill(['status_sinkronisasi' => $awal])->save();
+    $sebelum = (array) DB::table('sinkronisasi_erp')->find($baris->id);
+    $kunci = Cache::lock("sinkronisasi-erp:{$baris->id}", 330);
+    expect($kunci->get())->toBeTrue();
+
+    kirimKeOdoo($baris);
+
+    Http::assertNothingSent();
+    expect((array) DB::table('sinkronisasi_erp')->find($baris->id))->toBe($sebelum);
+
+    $kunci->release();
+
+    expect(kirimKeOdoo($baris)->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim);
+})->with([StatusSinkronisasi::Menunggu, StatusSinkronisasi::Gagal]);
+
+it('selama pengiriman berjalan, pengiriman kedua untuk baris yang sama tidak memanggil Odoo', function () {
+    $baris = sinkronPembayaranUji();
+    $kunciBebas = null;
+    fakeOdooPembayaran([
+        'res.partner/search_read' => function () use ($baris, &$kunciBebas) {
+            $kunciBebas = Cache::lock("sinkronisasi-erp:{$baris->id}", 1)->get();
+            app(IntegrasiErpService::class)->kirim($baris);
+
+            return Http::response([]);
+        },
+    ]);
+
+    expect(kirimKeOdoo($baris)->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim)
+        ->and($kunciBebas)->toBeFalse()
+        ->and(array_count_values(panggilanOdoo())['res.partner/search_read'])->toBe(1)
+        ->and(array_count_values(panggilanOdoo())['account.move/create'])->toBe(1);
+});
+
+it('kunci dilepas setelah berhasil, gagal, maupun galat tak terduga', function (Closure $balasan) {
+    Http::fake(['*' => $balasan()]);
+    $baris = sinkronPembayaranUji();
+
+    rescue(fn () => app(IntegrasiErpService::class)->kirim($baris), report: false);
+
+    expect(Cache::lock("sinkronisasi-erp:{$baris->id}", 1)->get())->toBeTrue();
+})->with([
+    'galat Odoo' => [fn () => Http::response('Bad Gateway', 502)],
+    'galat tak terduga' => [fn () => Http::response('<html>bukan JSON</html>')],
+]);
+
+it('kunci dilepas setelah baris terkirim', function () {
+    fakeOdooPembayaran();
+    $baris = kirimKeOdoo(sinkronPembayaranUji());
+
+    expect($baris->status_sinkronisasi)->toBe(StatusSinkronisasi::Terkirim)
+        ->and(Cache::lock("sinkronisasi-erp:{$baris->id}", 1)->get())->toBeTrue();
+});
 it('gagal bila jurnal bank tidak ada', function () {
     fakeOdooPembayaran(['account.journal/search_read' => Http::response([])]);
 
@@ -389,8 +490,9 @@ it('pesan_error yang panjang dipotong paling banyak 500 karakter', function () {
 
 it('ID jurnal bank hanya dicari sekali selama satu instance service', function () {
     fakeOdooPembayaran([
-        'account.move/search_read' => Http::response(fakturOdoo('not_paid')),
-        'account.move/read' => Http::response(fakturOdoo('paid')),
+        'account.move/read' => Http::sequence()
+            ->push(fakturOdoo('not_paid'))->push(fakturOdoo('paid'))
+            ->push(fakturOdoo('not_paid'))->push(fakturOdoo('paid')),
     ]);
     $pertama = sinkronPembayaranUji();
     $kedua = buatPembayaranDiterima(buatKontrakUji('ZX8', 'Maya Sari'), '2026-11-01', '2026-11-02', '2026-11-04 09:00', sinkron: 'menunggu')->sinkronisasi;

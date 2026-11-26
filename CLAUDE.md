@@ -8,7 +8,7 @@ Baca hanya bagian yang relevan dengan tugas yang sedang dikerjakan.
 
 - `docs/PRD.md`: fitur F-01 s.d. F-29 beserta kriteria penerimaannya, halaman per peran (Bagian 6), transisi status (Bagian 7), integrasi ERP (Bagian 8). Sebelum mengerjakan fitur, baca bagian F-xx-nya.
 - `docs/BRD.md`: aturan bisnis ATB-xx, matriks hak akses (Bagian 5), kebutuhan nonfungsional NFR-xx.
-- `docs/erd/erd_kost_putri_kirana.sql` dan `docs/erd/erd_aturan_tambahan.sql`: sumber kebenaran skema basis data (tabel, tipe, enum, CHECK, indeks unik parsial).
+- `docs/erd/ERD.sql` dan `docs/erd/ERD2.sql`: sumber kebenaran skema basis data (tabel, tipe, enum, CHECK, indeks unik parsial).
 - `docs/diagram/`: gambar untuk laporan. Jangan dijadikan acuan skema atau nama.
 
 Bila dokumen saling bertentangan, pakai ERD SQL untuk skema, PRD untuk perilaku fitur, dan BRD untuk aturan bisnis. Bila masih ragu, tanyakan dulu sebelum menulis kode.

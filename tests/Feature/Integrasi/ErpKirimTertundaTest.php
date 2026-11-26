@@ -5,7 +5,9 @@ use App\Enums\StatusSinkronisasi;
 use App\Jobs\KirimSinkronisasiErp;
 use App\Models\SinkronisasiErp;
 use App\Models\TiketKeluhan;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
@@ -25,14 +27,25 @@ function barisTanpaJob(string $nomor, string $sinkron = 'menunggu'): Sinkronisas
 }
 
 /**
- * Odoo yang selalu menjawab faktur sudah lunas.
+ * Odoo yang sudah menyimpan faktur lunas dan cocok untuk setiap referensi. ID partner palsunya sama dengan ID
+ * penghuni. $timpa mengganti balasan per "model/method".
+ *
+ * @param  array<string, mixed>  $timpa
  */
-function fakeOdooSudahLunas(): void
+function fakeOdooSudahLunas(array $timpa = []): void
 {
-    fakeOdooPembayaran([
-        'account.move/search_read' => Http::response(fakturOdoo('paid')),
+    fakeOdooPembayaran(array_merge([
+        'account.move/search_read' => function (Request $request) {
+            $tagihan = SinkronisasiErp::query()->where('referensi_unik', $request['domain'][1][2])->sole()->pembayaran->tagihan;
+
+            return Http::response(fakturOdoo('paid', timpa: [
+                'amount_total' => (float) $tagihan->nominal,
+                'partner_id' => [$tagihan->kontrak->penghuni_id, 'Penghuni'],
+            ]));
+        },
+        'res.partner/read' => fn (Request $request) => Http::response([['id' => $request['ids'][0], 'ref' => "PNH-{$request['ids'][0]}"]]),
         'account.move/read' => Http::response(fakturOdoo('paid')),
-    ]);
+    ], $timpa));
 }
 
 it('memasukkan antrean hanya baris pembayaran yang menunggu', function () {
@@ -108,10 +121,8 @@ it('--sekarang melaporkan kegagalan di tabel, exit 1, dan outputnya tidak memuat
 
 it('--sekarang tetap mengirim baris berikutnya setelah galat tak terduga', function () {
     // Balasan pertama bukan JSON (galat tak terduga); baris kedua berjalan normal.
-    fakeOdooPembayaran([
+    fakeOdooSudahLunas([
         'res.partner/search_read' => Http::sequence()->push('<html></html>')->push([['id' => 7]]),
-        'account.move/search_read' => Http::response(fakturOdoo('paid')),
-        'account.move/read' => Http::response(fakturOdoo('paid')),
     ]);
     $satu = barisTanpaJob('01');
     $dua = barisTanpaJob('02');
@@ -122,6 +133,25 @@ it('--sekarang tetap mengirim baris berikutnya setelah galat tak terduga', funct
             [$dua->referensi_unik, 'terkirim', '-'],
         ])
         ->assertExitCode(1);
+});
+
+it('--sekarang melewati baris yang sedang dikirim proses lain dan tetap mengirim sisanya', function () {
+    fakeOdooSudahLunas();
+    $dikunci = barisTanpaJob('01');
+    $bebas = barisTanpaJob('02');
+    $kunci = Cache::lock("sinkronisasi-erp:{$dikunci->id}", 330);
+    $kunci->get();
+
+    $this->artisan('erp:kirim-tertunda --sekarang')
+        ->expectsTable(['referensi', 'status', 'pesan_error'], [
+            [$dikunci->referensi_unik, 'sedang diproses, dilewati', '-'],
+            [$bebas->referensi_unik, 'terkirim', '-'],
+        ])
+        ->assertExitCode(0);
+
+    expect($dikunci->fresh()->status_sinkronisasi)->toBe(StatusSinkronisasi::Menunggu)
+        ->and($dikunci->fresh()->waktu_kirim)->toBeNull();
+    Http::assertNotSent(fn (Request $request) => str_contains($request->body(), $dikunci->referensi_unik));
 });
 
 it('--sekarang tanpa baris menunggu selesai tanpa memanggil Odoo', function () {

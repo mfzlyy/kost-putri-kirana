@@ -6,6 +6,7 @@ use App\Enums\JenisTransaksiErp;
 use App\Enums\StatusSinkronisasi;
 use App\Jobs\KirimSinkronisasiErp;
 use App\Models\SinkronisasiErp;
+use App\Services\Odoo\IntegrasiErpService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Queue\Events\UniqueJobSkipped;
@@ -18,7 +19,7 @@ use Throwable;
  */
 class ErpKirimTertunda extends Command
 {
-    protected $signature = 'erp:kirim-tertunda {--sekarang : Kirim langsung tanpa worker antrean (jangan dipakai saat worker berjalan)}';
+    protected $signature = 'erp:kirim-tertunda {--sekarang : Kirim langsung tanpa worker antrean; baris yang sedang dikirim proses lain dilewati}';
 
     protected $description = 'Kirim pembayaran yang masih menunggu sinkronisasi ke Odoo';
 
@@ -70,6 +71,12 @@ class ErpKirimTertunda extends Command
             return self::SUCCESS;
         }
 
+        // Baris yang kuncinya dipegang proses lain (worker, perintah lain) tidak dikirim di sini.
+        $dilewati = [];
+        Event::listen(IntegrasiErpService::PERISTIWA_DILEWATI, function (int $id) use (&$dilewati) {
+            $dilewati[] = $id;
+        });
+
         foreach ($tertunda as $baris) {
             try {
                 KirimSinkronisasiErp::dispatchSync($baris);
@@ -82,15 +89,15 @@ class ErpKirimTertunda extends Command
 
         $this->table(
             ['referensi', 'status', 'pesan_error'],
-            $hasil->map(fn (SinkronisasiErp $baris) => [
-                $baris->referensi_unik,
-                $baris->status_sinkronisasi->value,
-                $baris->pesan_error ?? '-',
-            ])->all(),
+            $hasil->map(fn (SinkronisasiErp $baris) => in_array($baris->id, $dilewati, true)
+                ? [$baris->referensi_unik, 'sedang diproses, dilewati', '-']
+                : [$baris->referensi_unik, $baris->status_sinkronisasi->value, $baris->pesan_error ?? '-'],
+            )->all(),
         );
 
-        return $hasil->contains(fn (SinkronisasiErp $baris) => $baris->status_sinkronisasi === StatusSinkronisasi::Gagal)
-            ? self::FAILURE
-            : self::SUCCESS;
+        $adaGagal = $hasil->whereNotIn('id', $dilewati)
+            ->contains(fn (SinkronisasiErp $baris) => $baris->status_sinkronisasi === StatusSinkronisasi::Gagal);
+
+        return $adaGagal ? self::FAILURE : self::SUCCESS;
     }
 }

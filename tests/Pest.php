@@ -224,18 +224,29 @@ function konfigurasiOdooUji(): string
 }
 
 /**
- * Balasan account.move/read untuk faktur pada $state dan $paymentState.
+ * Balasan account.move/search_read atau read untuk faktur pada $state dan $paymentState: Rp1.250.000, periode
+ * November 2026, partner id 7. $timpa mengganti field faktur.
  *
+ * @param  array<string, mixed>  $timpa
  * @return list<array<string, mixed>>
  */
-function fakturOdoo(string $paymentState, string $state = 'posted', int $id = 41): array
+function fakturOdoo(string $paymentState, string $state = 'posted', int $id = 41, array $timpa = []): array
 {
-    return [['id' => $id, 'state' => $state, 'payment_state' => $paymentState, 'amount_total' => 1250000.0, 'amount_residual' => $paymentState === 'paid' ? 0.0 : 1250000.0]];
+    return [array_merge([
+        'id' => $id,
+        'state' => $state,
+        'payment_state' => $paymentState,
+        'amount_total' => 1250000.0,
+        'amount_residual' => $paymentState === 'paid' ? 0.0 : 1250000.0,
+        'invoice_date' => '2026-11-01',
+        'partner_id' => [7, 'Penghuni'],
+    ], $timpa)];
 }
 
 /**
  * Odoo palsu untuk alur pembayaran baru: partner dan faktur belum ada, lalu faktur (id 41) lunas setelah dibayar.
- * $timpa mengganti balasan per "model/method".
+ * res.partner/read menjawab partner milik penghuni pertama di basis data tes. $timpa mengganti balasan per
+ * "model/method".
  *
  * @param  array<string, mixed>  $timpa
  */
@@ -244,6 +255,7 @@ function fakeOdooPembayaran(array $timpa = []): void
     $balasan = array_merge([
         'res.partner/search_read' => Http::response([]),
         'res.partner/create' => Http::response([7]),
+        'res.partner/read' => fn () => Http::response([['id' => 7, 'ref' => 'PNH-'.Penghuni::query()->orderBy('id')->value('id')]]),
         'account.move/search_read' => Http::response([]),
         'account.move/create' => Http::response([41]),
         'account.move/action_post' => Http::response('false'),
