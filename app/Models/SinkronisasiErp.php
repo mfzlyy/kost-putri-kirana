@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\JenisTransaksiErp;
 use App\Enums\StatusSinkronisasi;
+use App\Jobs\KirimSinkronisasiErp;
 use Carbon\CarbonImmutable;
 use Database\Factories\SinkronisasiErpFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -38,6 +39,21 @@ class SinkronisasiErp extends Model
         'pembayaran_id',
         'tiket_id',
     ];
+
+    /**
+     * Baris pembayaran baru langsung diantrekan untuk dikirim ke Odoo (F-22). afterCommit: job baru masuk
+     * antrean setelah transaksi pembuatnya berhasil, dan tidak pernah masuk bila transaksinya dibatalkan.
+     * Jenis lain (biaya perbaikan, pemeliharaan) belum dikirim.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (self $sinkronisasi) {
+            if ($sinkronisasi->jenis_transaksi === JenisTransaksiErp::Pembayaran
+                && $sinkronisasi->status_sinkronisasi === StatusSinkronisasi::Menunggu) {
+                KirimSinkronisasiErp::dispatch($sinkronisasi)->afterCommit();
+            }
+        });
+    }
 
     /**
      * @return array<string, string>

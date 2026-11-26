@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportTesting\Testable;
@@ -29,6 +30,8 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    // Tidak ada tes yang boleh memanggil layanan luar (Odoo): permintaan HTTP yang tidak dipalsukan langsung gagal.
+    ->beforeEach(fn () => Http::preventStrayRequests())
     ->in('Feature');
 
 /*
@@ -199,6 +202,68 @@ function buatPembayaranDiterima(
     }
 
     return $pembayaran;
+}
+
+/**
+ * Konfigurasi Odoo fiktif, supaya tes tidak memakai nilai .env. Hasilnya API key uji.
+ */
+function konfigurasiOdooUji(): string
+{
+    $kunci = 'kunci-uji-bukan-rahasia-erp-0123456789';
+
+    config(['services.odoo' => [
+        'url' => 'http://odoo.test:8069',
+        'db' => 'kpk_uji',
+        'api_key' => $kunci,
+        'api_key_expires_at' => now()->addDays(60)->toDateString(),
+        'timeout' => 30,
+        'user_agent' => 'KostPutriKirana/1.0',
+    ]]);
+
+    return $kunci;
+}
+
+/**
+ * Balasan account.move/read untuk faktur pada $state dan $paymentState.
+ *
+ * @return list<array<string, mixed>>
+ */
+function fakturOdoo(string $paymentState, string $state = 'posted', int $id = 41): array
+{
+    return [['id' => $id, 'state' => $state, 'payment_state' => $paymentState, 'amount_total' => 1250000.0, 'amount_residual' => $paymentState === 'paid' ? 0.0 : 1250000.0]];
+}
+
+/**
+ * Odoo palsu untuk alur pembayaran baru: partner dan faktur belum ada, lalu faktur (id 41) lunas setelah dibayar.
+ * $timpa mengganti balasan per "model/method".
+ *
+ * @param  array<string, mixed>  $timpa
+ */
+function fakeOdooPembayaran(array $timpa = []): void
+{
+    $balasan = array_merge([
+        'res.partner/search_read' => Http::response([]),
+        'res.partner/create' => Http::response([7]),
+        'account.move/search_read' => Http::response([]),
+        'account.move/create' => Http::response([41]),
+        'account.move/action_post' => Http::response('false'),
+        'account.move/read' => Http::sequence()->push(fakturOdoo('not_paid'))->push(fakturOdoo('paid')),
+        'account.journal/search_read' => Http::response([['id' => 6]]),
+        'account.payment.register/create' => Http::response([3]),
+        'account.payment.register/action_create_payments' => Http::response('false'),
+    ], $timpa);
+
+    Http::fake(collect($balasan)->mapWithKeys(fn (mixed $isi, string $jalur) => ["*/json/2/{$jalur}" => $isi])->all());
+}
+
+/**
+ * "model/method" setiap panggilan Odoo yang terkirim, berurutan.
+ *
+ * @return list<string>
+ */
+function panggilanOdoo(): array
+{
+    return Http::recorded()->map(fn (array $catatan) => Str::after($catatan[0]->url(), '/json/2/'))->values()->all();
 }
 
 /**

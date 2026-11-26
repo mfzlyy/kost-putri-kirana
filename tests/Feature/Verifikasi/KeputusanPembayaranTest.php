@@ -5,6 +5,7 @@ use App\Enums\StatusSinkronisasi;
 use App\Enums\StatusTagihan;
 use App\Enums\StatusVerifikasi;
 use App\Exceptions\PembayaranSudahDiputuskan;
+use App\Jobs\KirimSinkronisasiErp;
 use App\Models\Pembayaran;
 use App\Models\PengaturanOperasional;
 use App\Models\SinkronisasiErp;
@@ -56,7 +57,7 @@ it('F-13 butir 3 dan 5: terima membuat pembayaran diterima, tagihan lunas, dan s
         ->and($sinkron->odoo_record_id)->toBeNull()
         ->and($sinkron->waktu_kirim)->toBeNull();
 
-    Queue::assertNothingPushed();
+    Queue::assertPushed(KirimSinkronisasiErp::class, 1);
     Http::assertNothingSent();
 });
 
@@ -293,12 +294,12 @@ it('F-13: bukti yang sudah diputuskan pihak lain memunculkan toast peringatan da
     expect($lain->fresh()->status_verifikasi)->toBe(StatusVerifikasi::Menunggu);
 });
 
-it('F-13: halaman tidak menulis kolom status langsung dan tidak memanggil Odoo atau antrean job', function () {
+it('F-13: halaman tidak menulis kolom status langsung dan tidak memanggil Odoo; pengiriman hanya lewat antrean', function () {
     $p = siapkanBuktiMenunggu('02', 'Rina Maharani');
 
     komponenVerifikasi()->call('terima', $p->id);
 
     Http::assertNothingSent();
-    Queue::assertNothingPushed();
+    Queue::assertPushed(KirimSinkronisasiErp::class, 1);
     expect(SinkronisasiErp::query()->menunggu()->count())->toBe(1);
 });

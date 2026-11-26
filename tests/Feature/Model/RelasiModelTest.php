@@ -15,6 +15,10 @@ use App\Models\TiketKeluhan;
 use App\Models\User;
 use App\Models\Vendor;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Queue;
+
+// Baris sinkronisasi menunggu tidak boleh dikirim ke Odoo saat tes.
+beforeEach(fn () => Queue::fake());
 
 it('menghubungkan User ke profil penghuni dan vendor', function () {
     $penghuni = Penghuni::factory()->create();
