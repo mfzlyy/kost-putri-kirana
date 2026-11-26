@@ -254,7 +254,7 @@ new #[Title('Akun')] class extends Component {
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Akun">
         <flux:modal.trigger name="tambah-akun">
-            <flux:button variant="primary" data-test="tambah-akun-button">
+            <flux:button variant="primary" class="tombol-utama" data-test="tambah-akun-button">
                 Tambah
             </flux:button>
         </flux:modal.trigger>
@@ -309,7 +309,7 @@ new #[Title('Akun')] class extends Component {
                                 @if ($akun->isAktif())
                                     <button
                                         type="button"
-                                        class="min-h-10 cursor-pointer px-2 text-danger teks-tombol-kecil"
+                                        class="tautan-bahaya min-h-10 px-2 teks-tombol-kecil"
                                         wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
                                     >
                                         Nonaktifkan
@@ -317,7 +317,7 @@ new #[Title('Akun')] class extends Component {
                                 @else
                                     <button
                                         type="button"
-                                        class="min-h-10 cursor-pointer px-2 text-primary teks-tombol-kecil"
+                                        class="tautan-aksi min-h-10 px-2 teks-tombol-kecil"
                                         wire:click="aktifkan({{ $akun->id }})"
                                     >
                                         Aktifkan
@@ -344,7 +344,7 @@ new #[Title('Akun')] class extends Component {
                             <x-status jenis="ok">{{ $akun->status_akun->label() }}</x-status>
                             <button
                                 type="button"
-                                class="min-h-10 cursor-pointer px-1 text-danger teks-tombol-kecil"
+                                class="tautan-bahaya min-h-10 px-1 teks-tombol-kecil"
                                 wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
                             >
                                 Nonaktifkan
@@ -353,7 +353,7 @@ new #[Title('Akun')] class extends Component {
                             <x-status jenis="belum">{{ $akun->status_akun->label() }}</x-status>
                             <button
                                 type="button"
-                                class="min-h-10 cursor-pointer px-1 text-primary teks-tombol-kecil"
+                                class="tautan-aksi min-h-10 px-1 teks-tombol-kecil"
                                 wire:click="aktifkan({{ $akun->id }})"
                             >
                                 Aktifkan
@@ -383,10 +383,7 @@ new #[Title('Akun')] class extends Component {
             <dd>{{ $akunNonaktif?->peran->label() }}</dd>
         </x-slot:ringkasan>
 
-        <x-slot:akibat>
-            <li>Tidak bisa masuk sampai diaktifkan.</li>
-            <li>Sesi berjalan langsung berakhir.</li>
-        </x-slot:akibat>
+        <x-slot:akibat>Pemilik akun ini langsung keluar dan tidak bisa masuk. Anda bisa mengaktifkannya lagi.</x-slot:akibat>
     </x-dialog-konfirmasi>
 
     <flux:modal
@@ -402,7 +399,7 @@ new #[Title('Akun')] class extends Component {
                     <h2 id="judul-tambah-akun" class="teks-judul-dialog m-0">Tambah Akun</h2>
                 </div>
                 <flux:modal.close>
-                    <button type="button" aria-label="Tutup" class="-me-2 -mt-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink">
+                    <button type="button" aria-label="Tutup" class="tombol-ikon -me-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-ink-muted">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                     </button>
                 </flux:modal.close>
@@ -411,7 +408,7 @@ new #[Title('Akun')] class extends Component {
             {{-- Header ponsel --}}
             <div class="flex h-14 shrink-0 items-center gap-1 border-b border-divider bg-surface px-2 sm:hidden">
                 <flux:modal.close>
-                    <button type="button" aria-label="Tutup" class="flex size-11 cursor-pointer items-center justify-center rounded-lg text-ink">
+                    <button type="button" aria-label="Tutup" class="tombol-ikon flex size-11 items-center justify-center text-ink">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                     </button>
                 </flux:modal.close>
@@ -436,7 +433,7 @@ new #[Title('Akun')] class extends Component {
                                 />
                                 <label
                                     for="peran-{{ $nilai }}"
-                                    class="flex h-11 cursor-pointer items-center justify-center hover:bg-surface-muted peer-checked:bg-chip-active peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-primary teks-tombol"
+                                    class="pilihan flex h-11 cursor-pointer items-center justify-center peer-checked:bg-chip-active peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-primary teks-tombol"
                                 >{{ $label }}</label>
                             </div>
                         @endforeach
@@ -508,10 +505,10 @@ new #[Title('Akun')] class extends Component {
             {{-- Footer menempel --}}
             <div class="flex shrink-0 justify-end gap-2 border-t border-divider px-7 py-[18px] max-sm:px-4">
                 <flux:modal.close>
-                    <flux:button type="button" variant="outline" class="border-border-strong! max-sm:hidden">Batal</flux:button>
+                    <flux:button type="button" variant="outline" class="tombol-sekunder max-sm:hidden">Batal</flux:button>
                 </flux:modal.close>
 
-                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
+                <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
                     Buat
                 </flux:button>
             </div>

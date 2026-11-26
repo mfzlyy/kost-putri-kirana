@@ -189,9 +189,7 @@ it('F-10 butir 2: dialog menampilkan pratinjau jumlah, yang dilewati, jatuh temp
 
     $komponen->assertSee('Terbitkan Tagihan November 2026?')
         ->assertSee('Kontrak Ditagih')
-        ->assertSee('1 tagihan baru, belum dibayar.')
-        ->assertSee('Langsung tampil di Tagihan penghuni.')
-        ->assertSee('Kontrak yang sudah ditagih dilewati.');
+        ->assertSee('1 tagihan baru akan langsung tampil di Tagihan penghuni dan tidak bisa dibatalkan. Kontrak yang sudah ditagih dilewati.');
 
     $komponen->set('periodeTerbit', '2026-12');
     $pratinjau = $komponen->instance()->pratinjau;

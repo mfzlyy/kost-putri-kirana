@@ -68,7 +68,7 @@ new #[Title('Ganti Password')] class extends Component {
         />
 
         <div class="flex flex-col gap-2 sm:flex-row">
-            <flux:button variant="primary" type="submit" class="max-sm:w-full" wire:loading.attr="disabled" data-test="update-password-button">
+            <flux:button variant="primary" type="submit" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" data-test="update-password-button">
                 Simpan
             </flux:button>
             <x-tautan-batal :href="url('/beranda')" />

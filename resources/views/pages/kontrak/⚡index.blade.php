@@ -248,13 +248,13 @@ new #[Title('Kontrak')] class extends Component {
     $kontrakModal = $this->kontrakAkhiri;
     $tanggalId = fn ($tanggal) => $tanggal->locale('id')->translatedFormat('j M Y');
     $tanggalPanjang = fn ($tanggal) => $tanggal->locale('id')->translatedFormat('j F Y');
-    $kelasLinkAksi = 'inline-flex min-h-10 cursor-pointer items-center px-1 no-underline teks-tombol-kecil';
+    $kelasLinkAksi = 'inline-flex min-h-10 items-center px-1 teks-tombol-kecil';
 @endphp
 
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Kontrak">
         @if ($bisaKelola)
-            <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate data-test="buat-kontrak">
+            <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="tombol-utama" data-test="buat-kontrak">
                 Buat
             </flux:button>
         @endif
@@ -302,8 +302,8 @@ new #[Title('Kontrak')] class extends Component {
                             @endif
                             @if ($bisaKelola)
                                 <span class="col-span-3 flex items-center gap-3 md:col-span-1 md:gap-2">
-                                    <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="{{ $kelasLinkAksi }} md:tombol-kecil md:border md:border-border-strong md:bg-surface" data-test="perpanjang-kontrak">Perpanjang</a>
-                                    <button type="button" class="{{ $kelasLinkAksi }} text-danger" wire:click="konfirmasiAkhiri({{ $kontrak->id }})" data-test="akhiri-kontrak">Akhiri</button>
+                                    <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="tautan-aksi sekunder-md {{ $kelasLinkAksi }} md:tombol-kecil md:border md:border-border-strong md:bg-surface" data-test="perpanjang-kontrak">Perpanjang</a>
+                                    <button type="button" class="tautan-bahaya {{ $kelasLinkAksi }}" wire:click="konfirmasiAkhiri({{ $kontrak->id }})" data-test="akhiri-kontrak">Akhiri</button>
                                 </span>
                             @endif
                         </li>
@@ -324,7 +324,7 @@ new #[Title('Kontrak')] class extends Component {
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kontrak.' : 'Tidak ada kontrak yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $bisaKelola)
-                <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate>Buat</flux:button>
+                <flux:button variant="primary" :href="route('kontrak.buat')" wire:navigate class="tombol-utama">Buat</flux:button>
             @endif
         </div>
     @else
@@ -363,8 +363,8 @@ new #[Title('Kontrak')] class extends Component {
                             @if ($bisaKelola)
                                 <td class="px-5 text-end whitespace-nowrap">
                                     @if ($aktif)
-                                        <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="{{ $kelasLinkAksi }} px-2!">Perpanjang</a>
-                                        <button type="button" class="{{ $kelasLinkAksi }} px-2! text-danger" wire:click="konfirmasiAkhiri({{ $kontrak->id }})">Akhiri</button>
+                                        <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="tautan-aksi {{ $kelasLinkAksi }} px-2!">Perpanjang</a>
+                                        <button type="button" class="tautan-bahaya {{ $kelasLinkAksi }} px-2!" wire:click="konfirmasiAkhiri({{ $kontrak->id }})">Akhiri</button>
                                     @endif
                                 </td>
                             @endif
@@ -394,8 +394,8 @@ new #[Title('Kontrak')] class extends Component {
                     </div>
                     @if ($bisaKelola && $aktif)
                         <div class="flex items-center gap-3">
-                            <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="{{ $kelasLinkAksi }}">Perpanjang</a>
-                            <button type="button" class="{{ $kelasLinkAksi }} text-danger" wire:click="konfirmasiAkhiri({{ $kontrak->id }})">Akhiri</button>
+                            <a href="{{ route('kontrak.perpanjang', $kontrak) }}" wire:navigate class="tautan-aksi {{ $kelasLinkAksi }}">Perpanjang</a>
+                            <button type="button" class="tautan-bahaya {{ $kelasLinkAksi }}" wire:click="konfirmasiAkhiri({{ $kontrak->id }})">Akhiri</button>
                         </div>
                     @endif
                 </li>
@@ -424,11 +424,7 @@ new #[Title('Kontrak')] class extends Component {
                 <dd>{{ $kontrakModal ? Format::rupiah($kontrakModal->tarif_bulanan) : '' }}</dd>
             </x-slot:ringkasan>
 
-            <x-slot:akibat>
-                <li>Kamar {{ $nomorModal }} menjadi kosong.</li>
-                <li>Kontrak pindah ke riwayat.</li>
-                <li>Tagihan dan status penghuni tidak berubah.</li>
-            </x-slot:akibat>
+            <x-slot:akibat>Kamar {{ $nomorModal }} akan menjadi kosong, sedangkan tagihan dan status penghuni tetap. Kontrak yang diakhiri tidak bisa diaktifkan lagi.</x-slot:akibat>
 
             @if ($kontrakModal && ! $kontrakModal->sudahBerjalan())
                 <x-slot:catatan>Kontrak belum dimulai, tanggalnya tidak diubah.</x-slot:catatan>

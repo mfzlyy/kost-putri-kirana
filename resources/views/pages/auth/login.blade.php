@@ -59,7 +59,7 @@
             <flux:error name="password" />
         </flux:field>
 
-        <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
+        <flux:button variant="primary" type="submit" class="tombol-utama w-full" data-test="login-button">
             Masuk
         </flux:button>
 

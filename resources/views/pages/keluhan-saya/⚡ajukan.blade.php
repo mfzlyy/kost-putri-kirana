@@ -170,11 +170,11 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
             href="{{ route('keluhan-saya.index') }}"
             wire:navigate
             aria-label="Kembali ke keluhan"
-            class="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink md:hidden"
+            class="tombol-ikon flex size-11 shrink-0 items-center justify-center text-ink md:hidden"
         >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         </a>
-        <a href="{{ route('keluhan-saya.index') }}" wire:navigate class="font-semibold no-underline max-md:hidden">Keluhan</a>
+        <a href="{{ route('keluhan-saya.index') }}" wire:navigate class="tautan-aksi w-fit max-md:hidden">Keluhan</a>
         <h1 class="teks-judul m-0">Ajukan Keluhan</h1>
     </header>
 
@@ -205,7 +205,7 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
                         ['nilai' => 'kamar', 'label' => $adaKontrak ? 'Kamar '.$nomorKamar : 'Kamar', 'nonaktif' => ! $adaKontrak],
                         ['nilai' => 'area_bersama', 'label' => 'Area Bersama', 'nonaktif' => false],
                     ] as $pilihan)
-                        <label class="relative flex h-11 cursor-pointer items-center justify-center bg-surface px-4 font-semibold has-[:checked]:bg-chip-active has-[:checked]:text-white has-[:disabled]:cursor-not-allowed has-[:disabled]:bg-surface-disabled has-[:disabled]:text-ink-muted has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-primary">
+                        <label class="pilihan relative flex h-11 cursor-pointer items-center justify-center bg-surface px-4 font-semibold has-[:checked]:bg-chip-active has-[:checked]:text-white has-[:disabled]:cursor-not-allowed has-[:disabled]:bg-surface-disabled has-[:disabled]:text-ink-muted has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-primary">
                             <input
                                 type="radio"
                                 name="lokasi"
@@ -238,7 +238,7 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
                             <label
                                 wire:key="fasilitas-{{ $lokasi }}-{{ $fasilitas->id }}"
                                 @class([
-                                    'relative inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border bg-surface px-3.5 font-[550] has-[:checked]:border-2 has-[:checked]:border-primary has-[:checked]:bg-primary-container has-[:checked]:font-semibold has-[:checked]:text-on-primary-container has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary',
+                                    'pilihan relative inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border bg-surface px-3.5 font-[550] has-[:checked]:border-2 has-[:checked]:border-primary has-[:checked]:bg-primary-container has-[:checked]:font-semibold has-[:checked]:text-on-primary-container has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary',
                                     'border-border-strong' => ! $errors->has('fasilitas_id'),
                                     'border-red-400' => $errors->has('fasilitas_id'),
                                 ])
@@ -286,7 +286,7 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
                 <button
                     type="submit"
                     @disabled($daftar->isEmpty())
-                    class="tombol w-full bg-primary text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
+                    class="tombol tombol-utama w-full disabled:opacity-60 md:w-auto"
                 >
                     <span wire:loading.remove wire:target="kirim">Kirim</span>
                     <span wire:loading wire:target="kirim">Mengirim…</span>

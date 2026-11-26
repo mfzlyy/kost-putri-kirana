@@ -232,7 +232,7 @@ new #[Title('Tagihan')] class extends Component {
                         <a
                             href="{{ route('tagihan-saya.unggah', $b['id']) }}"
                             wire:navigate
-                            class="tombol bg-primary text-white no-underline hover:bg-primary-hover hover:text-white max-md:w-full"
+                            class="tombol tombol-utama max-md:w-full"
                         >Unggah Bukti</a>
                         @if ($utama['lainnya'] > 0)
                             <p class="m-0 teks-bantuan" data-test="tagihan-lain">{{ $utama['lainnya'] }} tagihan lain belum dibayar.</p>

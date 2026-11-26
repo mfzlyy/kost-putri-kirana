@@ -205,11 +205,11 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
             href="{{ route('tagihan-saya.index') }}"
             wire:navigate
             aria-label="Kembali"
-            class="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink md:hidden"
+            class="tombol-ikon flex size-11 shrink-0 items-center justify-center text-ink md:hidden"
         >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         </a>
-        <a href="{{ route('tagihan-saya.index') }}" wire:navigate class="font-semibold no-underline max-md:hidden">Tagihan</a>
+        <a href="{{ route('tagihan-saya.index') }}" wire:navigate class="tautan-aksi w-fit max-md:hidden">Tagihan</a>
         <h1 class="teks-judul m-0">Unggah Bukti</h1>
     </header>
 
@@ -233,7 +233,7 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
                 <label
                     for="bukti"
                     aria-labelledby="label-bukti"
-                    class="flex cursor-pointer items-center gap-3.5 rounded-xl border border-border bg-surface p-3.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary"
+                    class="kartu-klik flex items-center gap-3.5 rounded-xl border border-border bg-surface p-3.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary"
                 >
                     <span aria-hidden="true" class="flex h-16 w-[52px] shrink-0 items-center justify-center rounded-md border border-divider bg-surface-disabled text-ink-muted">
                         <flux:icon.document class="size-[22px]" />
@@ -287,7 +287,7 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
                     type="submit"
                     wire:loading.attr="disabled"
                     wire:target="bukti,kirim"
-                    class="tombol w-full bg-primary text-white hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60 md:w-auto"
+                    class="tombol tombol-utama w-full disabled:opacity-60 md:w-auto"
                 >
                     <span wire:loading.remove wire:target="bukti,kirim">Kirim</span>
                     <span wire:loading wire:target="bukti">Mengunggah…</span>

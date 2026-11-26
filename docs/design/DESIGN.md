@@ -319,16 +319,74 @@ Gerak hanya menjadi umpan balik atas aksi pengguna, bukan hiasan. Semua gerak di
 - **Durasi dan kurva**: 150 ms ease-out untuk perubahan warna, latar, garis, dan cincin fokus. 200 ms ease-out untuk
   elemen yang muncul atau hilang (dialog, menu geser, toast); ketiganya memakai transisi bawaan Flux.
 - **Yang bergerak**:
-  - Tombol, tautan, item menu, chip filter, tombol tanggal, dan segmented control: warna dan latar saat hover dan fokus.
+  - Tombol, tautan, item menu, chip filter, tombol tanggal, segmented control, dan kartu pilihan: warna, latar, dan
+    garis saat hover dan fokus.
   - Input, select, dan textarea: warna garis dan cincin fokus.
-  - Baris tabel: latar berubah ke #FBFAF7 saat disorot, hanya di perangkat dengan hover.
-  - Tombol yang ditekan: scale 0,98, kembali normal saat dilepas.
+  - Tombol yang ditekan: scale 0,98, kembali normal saat dilepas. Hover tidak menggeser atau mengubah ukuran apa pun.
   - Daftar yang dimuat ulang karena filter: memudar ke opacity 0,6 selama memuat.
+  - Panel detail daftar–detail: lihat bagian Interaksi.
   - Perpindahan halaman (`wire:navigate`): bilah progres tipis berwarna Primary di atas layar.
 - **Yang tidak boleh**: animasi saat halaman dibuka, elemen muncul bertahap saat digulir, animasi berulang, angka yang
   berjalan, dan efek parallax.
-- **Reduced motion**: bila pengguna memilih `prefers-reduced-motion: reduce`, semua transisi buatan sendiri dimatikan
-  (durasi 0, tanpa scale).
+- **Reduced motion**: bila pengguna memilih `prefers-reduced-motion: reduce`, semua transisi dan animasi buatan sendiri
+  dimatikan (tanpa scale dan tanpa geser; warna langsung berganti). Karena itu gerak hanya dideklarasikan di dalam
+  `@media (prefers-reduced-motion: no-preference)`.
+
+## Interaksi
+
+Semua yang bisa diklik terasa bisa diklik, sama di semua peran. Setiap jenis elemen punya satu kelas di
+`resources/css/app.css`; halaman memakai kelas itu dan tidak menulis warna hover sendiri.
+
+**Kursor.** Telunjuk untuk tombol, tautan, `label[for]`, `summary`, select, checkbox, radio, tombol pemilih berkas, dan
+label yang membungkus radio. `not-allowed` untuk `:disabled` dan `aria-disabled="true"`. Teks, status, baris tabel,
+dan kartu yang tidak bisa diklik memakai kursor biasa. Elemen klik harus `<button>`, `<a>`, atau label sebuah input,
+supaya bisa difokus keyboard.
+
+**Hover, tekan, fokus.** Hover hanya di perangkat dengan pointer (`@media (hover: hover)`); tekan (`:active`) di semua
+perangkat. Elemen nonaktif tidak berubah saat hover. Warna campuran memakai token `--color-*-active`,
+`--color-segmen-hover`, dan `--color-sidebar-hover` / `--color-sidebar-active`.
+
+| Jenis elemen | Kelas | Kursor | Hover | Tekan | Fokus |
+| --- | --- | --- | --- | --- | --- |
+| Tombol utama | `tombol-utama` | telunjuk | latar primary-hover | primary-hover 90% + ink 10% | cincin |
+| Tombol sekunder | `tombol-sekunder` | telunjuk | latar surface-muted, garis ink-muted | surface-muted 92% + ink 8% | cincin |
+| Tombol bahaya bergaris | `tombol-bahaya` | telunjuk | latar danger-container, garis danger, teks danger | danger-container 92% + danger 8% | cincin |
+| Tombol bahaya penuh (konfirmasi) | `tombol-bahaya-penuh` | telunjuk | latar on-danger-container | on-danger-container 90% + ink 10% | cincin |
+| Tautan aksi (Ubah, Buka, Aktifkan, Batal, tautan kembali) | `tautan-aksi` | telunjuk | primary-hover, garis bawah | primary-active | cincin |
+| Aksi bahaya berupa teks (Hapus, Akhiri, Nonaktifkan, Keluar) | `tautan-bahaya` | telunjuk | latar danger-container, garis dalam danger | danger-container 92% + danger 8% | cincin |
+| Tautan teks di konten (sumber di Sinkronisasi, tautan di callout) | otomatis di area konten | telunjuk | primary-hover, garis bawah |  | cincin |
+| Tautan berisi status ("Gagal" di Riwayat) | `tautan-status` | telunjuk | teks primary-hover, garis bawah |  | cincin |
+| Tombol ikon (Tutup, panah kembali) | `tombol-ikon` | telunjuk | latar surface-muted, primary-hover | surface-muted 92% + ink 8% | cincin |
+| Tombol ikon dan logo di latar gelap | `sorot-gelap` | telunjuk | latar putih 8%, teks putih | latar putih 14% | cincin on-sidebar |
+| Chip filter tidak aktif | `chip` (`x-chip-filter`) | telunjuk | latar surface-muted, garis border-strong | surface-muted 92% + ink 8% | cincin |
+| Segmen periode tidak aktif | `segmen` | telunjuk | latar putih 60%, teks ink (ponsel: surface-muted) | surface-muted 92% + ink 8% | cincin |
+| Pilihan radio (vendor, lokasi, fasilitas, kamar, tanggal, peran) | `pilihan` | telunjuk | latar surface-muted, garis border-strong | surface-muted 92% + ink 8% | cincin |
+| Kartu klik (pekerjaan vendor, area unggah) | `kartu-klik` | telunjuk | latar surface-muted, garis border-strong | surface-muted 92% + ink 8% | cincin |
+| Baris daftar klik (antrean, tiket, selesai bulan ini) | `baris-pilih` / `baris-klik` dalam `daftar-klik` | telunjuk | latar surface-muted, garis dalam border-strong | surface-muted 92% + ink 8% | cincin ke dalam |
+| Baris tabel yang bisa diklik (belum ada) |  | telunjuk | latar background |  | cincin |
+| Item menu sidebar tidak aktif | `menu-sidebar` | telunjuk | latar putih 8%, teks on-sidebar-strong | latar putih 14% | cincin on-sidebar |
+| Tab bawah penghuni | `tab-penghuni` | telunjuk | teks primary | teks primary | cincin |
+| Ganti Password dan Keluar di sidebar | `tautan-sidebar` | telunjuk | teks on-sidebar-strong | teks on-sidebar | cincin on-sidebar |
+| Isian (input, select, textarea, date) | otomatis | teks | garis ink-muted | fokus tetap seperti biasa | cincin Primary (tetap) |
+
+Keadaan aktif atau terpilih tidak berubah saat hover. Pilihan terpilih berlatar primary-container dengan garis primary
+1 px; pengecualian: tanggal jatuh tempo dan segmen peran atau lokasi tetap berlatar gelap, fasilitas dan gantungan kunci
+bergaris 2 px.
+
+Fokus keyboard: `:focus-visible` berupa cincin primary 2 px berjarak 2 px. Di latar gelap cincinnya on-sidebar (primary
+di atas sidebar hanya 1,75:1). Di baris daftar yang wadahnya memotong tepi, cincin digambar ke dalam
+(`outline-offset: -2px`). Hover tidak memakai `outline`, jadi tidak menghapus cincin.
+
+Teks peran di blok pengguna sidebar dan top bar: teks-bantuan berat 500, warna on-sidebar-muted (6,95:1 di atas
+sidebar), sama untuk semua peran.
+
+**Teks dialog konfirmasi.** Kotak ringkasan data, lalu satu atau dua kalimat biasa: apa yang terjadi dan apakah bisa
+dibatalkan. Tanpa daftar butir. Tidak memakai kata "Odoo", "antrean", "sinkronisasi", "diantrekan", "job", atau "ERP".
+
+**Panel detail (Verifikasi, Keluhan kantor, ≥ 1024 px).** Item teratas otomatis terpilih. Item terpilih berlatar
+primary-container dengan garis primary 1 px ditambah garis kiri 3 px. Saat pengguna mengganti pilihan, isi panel baru
+masuk dengan opacity 0 → 1 dan geser 8 px → 0 dalam 180 ms ease-out (`panel-masuk`, pembungkus ber-`wire:key` ID item).
+Selama memuat, panel memudar ke opacity 0,6. Tidak ada animasi saat halaman dibuka. Keluhan penghuni tidak memakai panel.
 
 ## Shapes
 
@@ -374,8 +432,8 @@ mengikuti status ATB-07: diajukan 1, ditugaskan 2, dikerjakan 3, selesai 4. Sela
 - **Tombol**: Primary, Secondary (putih, garis Border-strong), Danger (putih, teks merah) untuk tolak, hapus, dan
   nonaktifkan. Tombol konfirmasi tolak di dialog berlatar status-late. Tinggi 44 px di semua ukuran layar; di ponsel
   tombol form dan dialog selebar layar.
-- **Tautan aksi di baris tabel**: teks Primary berat 600 tanpa garis bawah ("Ubah", "Aktifkan"); aksi berbahaya
-  berwarna Danger ("Nonaktifkan", "Hapus", "Akhiri").
+- **Tautan aksi di baris tabel**: teks Primary berat 600 tanpa garis bawah saat diam ("Ubah", "Aktifkan"); aksi
+  berbahaya berwarna Danger ("Nonaktifkan", "Hapus", "Akhiri"). Hover mengikuti bagian Interaksi.
 - **Input**: tinggi 44 px, huruf 16 px, label di atas, bantuan atau error 13 px di bawah. Error: garis #B3261E, `aria-invalid`, pesan
   menyebut cara memperbaiki ("NIK harus 16 angka. Baru 8 angka."). Bila ada lebih dari satu error, tampilkan
   ringkasan Danger-container di atas form.

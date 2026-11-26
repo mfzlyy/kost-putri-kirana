@@ -131,7 +131,7 @@ new #[Title('Kamar')] class extends Component {
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Kamar">
         @if ($this->bisaKelola)
-            <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate data-test="tambah-kamar">
+            <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="tombol-utama" data-test="tambah-kamar">
                 Tambah
             </flux:button>
         @endif
@@ -154,7 +154,7 @@ new #[Title('Kamar')] class extends Component {
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kamar.' : 'Tidak ada kamar yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate>Tambah</flux:button>
+                <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="tombol-utama">Tambah</flux:button>
             @endif
         </div>
     @else
@@ -190,9 +190,9 @@ new #[Title('Kamar')] class extends Component {
                             </td>
                             @if ($this->bisaKelola)
                                 <td class="px-5 text-end whitespace-nowrap">
-                                    <a href="{{ route('kamar.ubah', $kamar) }}" wire:navigate class="inline-flex min-h-10 items-center px-2 no-underline teks-tombol-kecil">Ubah</a>
+                                    <a href="{{ route('kamar.ubah', $kamar) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 items-center px-2 teks-tombol-kecil">Ubah</a>
                                     @can('delete', $kamar)
-                                        <button type="button" class="min-h-10 cursor-pointer px-2 text-danger teks-tombol-kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</button>
+                                        <button type="button" class="tautan-bahaya min-h-10 px-2 teks-tombol-kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</button>
                                     @endcan
                                 </td>
                             @endif
@@ -224,9 +224,9 @@ new #[Title('Kamar')] class extends Component {
                     </div>
                     @if ($this->bisaKelola)
                         <div class="mt-0.5 flex gap-2">
-                            <a href="{{ route('kamar.ubah', $kamar) }}" wire:navigate class="inline-flex min-h-10 items-center px-1 no-underline teks-tombol-kecil">Ubah</a>
+                            <a href="{{ route('kamar.ubah', $kamar) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 items-center px-1 teks-tombol-kecil">Ubah</a>
                             @can('delete', $kamar)
-                                <button type="button" class="min-h-10 cursor-pointer px-1 text-danger teks-tombol-kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</button>
+                                <button type="button" class="tautan-bahaya min-h-10 px-1 teks-tombol-kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</button>
                             @endcan
                         </div>
                     @endif
@@ -252,9 +252,7 @@ new #[Title('Kamar')] class extends Component {
                 <dd>{{ filled($kamarHapus?->keterangan) ? $kamarHapus->keterangan : '-' }}</dd>
             </x-slot:ringkasan>
 
-            <x-slot:akibat>
-                <li>Kamar dihapus permanen.</li>
-            </x-slot:akibat>
+            <x-slot:akibat>Kamar ini akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</x-slot:akibat>
         </x-dialog-konfirmasi>
     @endif
 </section>

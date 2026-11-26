@@ -301,10 +301,11 @@ new #[Title('Keluhan')] class extends Component {
             {{ $hitungan['semua'] === 0 ? 'Belum ada keluhan.' : 'Tidak ada tiket yang sesuai filter.' }}
         </p>
     @else
-        <div wire:loading.class="opacity-60" wire:target="pilihStatus,gotoPage,nextPage,previousPage" class="transisi-opasitas flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(0,1.5fr)] lg:items-start lg:gap-6">
+        {{-- siap = false saat halaman dibuka, jadi isi panel pertama tidak beranimasi. --}}
+        <div x-data="{ siap: false }" x-init="$nextTick(() => siap = true)" wire:loading.class="opacity-60" wire:target="pilihStatus,gotoPage,nextPage,previousPage" class="transisi-opasitas flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(0,1.5fr)] lg:items-start lg:gap-6">
             {{-- Daftar --}}
             <div @class(['flex min-w-0 flex-col gap-4', 'max-lg:hidden' => $adaPilihan])>
-                <section aria-label="Daftar tiket keluhan" class="overflow-hidden rounded-2xl border border-border bg-surface" data-test="daftar-tiket">
+                <section aria-label="Daftar tiket keluhan" class="daftar-klik overflow-hidden rounded-2xl border border-border bg-surface" data-test="daftar-tiket">
                     @foreach ($halaman as $item)
                         @php
                             $terpilih = $item->id === $panel->id;
@@ -314,11 +315,7 @@ new #[Title('Keluhan')] class extends Component {
                             href="{{ route('tiket-keluhan.index', ['tiket' => $item->id]) }}"
                             wire:click.prevent="pilih({{ $item->id }})"
                             @if ($terpilih) aria-current="true" @endif
-                            @class([
-                                'grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 text-ink no-underline first:border-t-0 hover:text-ink',
-                                'lg:bg-primary-container' => $terpilih,
-                                'hover:bg-surface-muted' => ! $terpilih,
-                            ])
+                            class="baris-pilih grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 text-ink no-underline first:border-t-0 hover:text-ink"
                             data-test="item-tiket"
                         >
                             <span class="min-w-0">
@@ -344,170 +341,173 @@ new #[Title('Keluhan')] class extends Component {
             @endphp
             <section
                 aria-labelledby="judul-panel"
-                wire:key="panel-{{ $panel->id }}"
-                @class(['flex min-w-0 flex-col gap-5 rounded-2xl border border-border bg-surface p-4 lg:p-6', 'max-lg:hidden' => ! $adaPilihan])
+                wire:loading.class="opacity-60"
+                wire:target="pilih"
+                @class(['transisi-opasitas min-w-0 rounded-2xl border border-border bg-surface p-4 lg:p-6', 'max-lg:hidden' => ! $adaPilihan])
                 data-test="panel-tiket"
             >
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div class="flex min-w-0 items-start gap-1">
-                        <a
-                            href="{{ route('tiket-keluhan.index') }}"
-                            wire:click.prevent="kembali"
-                            aria-label="Kembali ke daftar tiket"
-                            class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-ink lg:hidden"
-                        >
-                            <flux:icon.arrow-left class="size-5" />
-                        </a>
-                        <div class="min-w-0">
-                            <p class="num m-0 teks-bantuan" data-test="nomor-panel">{{ $panel->nomor_tiket }}</p>
-                            <h2 id="judul-panel" class="m-0 mt-0.5 teks-bagian">{{ $judulTiket }}</h2>
+                <div wire:key="panel-{{ $panel->id }}" x-init="siap && $el.classList.add('panel-masuk')" class="flex flex-col gap-5" data-test="isi-panel">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="flex min-w-0 items-start gap-1">
+                            <a
+                                href="{{ route('tiket-keluhan.index') }}"
+                                wire:click.prevent="kembali"
+                                aria-label="Kembali ke daftar tiket"
+                                class="tombol-ikon -ms-2 inline-flex size-11 shrink-0 items-center justify-center text-ink lg:hidden"
+                            >
+                                <flux:icon.arrow-left class="size-5" />
+                            </a>
+                            <div class="min-w-0">
+                                <p class="num m-0 teks-bantuan" data-test="nomor-panel">{{ $panel->nomor_tiket }}</p>
+                                <h2 id="judul-panel" class="m-0 mt-0.5 teks-bagian">{{ $judulTiket }}</h2>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <x-meter-tiket :status="$panel->status_tiket" />
+                            <x-status :jenis="$this->jenisStatus($panel->status_tiket)">{{ $panel->status_tiket->label() }}</x-status>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2.5">
-                        <x-meter-tiket :status="$panel->status_tiket" />
-                        <x-status :jenis="$this->jenisStatus($panel->status_tiket)">{{ $panel->status_tiket->label() }}</x-status>
-                    </div>
-                </div>
 
-                <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5" data-test="data-tiket">
-                    <dt class="text-ink-muted">Pelapor</dt>
-                    <dd class="m-0">{{ $panel->penghuni?->user?->nama }}</dd>
+                    <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5" data-test="data-tiket">
+                        <dt class="text-ink-muted">Pelapor</dt>
+                        <dd class="m-0">{{ $panel->penghuni?->user?->nama }}</dd>
 
-                    <dt class="text-ink-muted">Diajukan</dt>
-                    <dd class="m-0">{{ $tanggal($panel->tanggal_lapor, 'j M Y') }}, {{ $panel->tanggal_lapor->setTimezone($zona)->format('H.i') }}</dd>
+                        <dt class="text-ink-muted">Diajukan</dt>
+                        <dd class="m-0">{{ $tanggal($panel->tanggal_lapor, 'j M Y') }}, {{ $panel->tanggal_lapor->setTimezone($zona)->format('H.i') }}</dd>
 
-                    <dt class="text-ink-muted">Deskripsi</dt>
-                    <dd class="m-0 whitespace-pre-line break-words" data-test="deskripsi-tiket">{{ $panel->deskripsi }}</dd>
+                        <dt class="text-ink-muted">Deskripsi</dt>
+                        <dd class="m-0 whitespace-pre-line break-words" data-test="deskripsi-tiket">{{ $panel->deskripsi }}</dd>
 
-                    @if ($sudahDitugaskan)
-                        <dt class="text-ink-muted">Vendor</dt>
-                        <dd class="m-0" data-test="vendor-tiket">{{ $panel->vendor?->nama_vendor }}, {{ $panel->vendor?->jenis_layanan }}</dd>
+                        @if ($sudahDitugaskan)
+                            <dt class="text-ink-muted">Vendor</dt>
+                            <dd class="m-0" data-test="vendor-tiket">{{ $panel->vendor?->nama_vendor }}, {{ $panel->vendor?->jenis_layanan }}</dd>
 
-                        <dt class="text-ink-muted">Jenis Kerusakan</dt>
-                        <dd class="m-0 break-words" data-test="jenis-kerusakan">{{ $panel->jenis_kerusakan }}</dd>
+                            <dt class="text-ink-muted">Jenis Kerusakan</dt>
+                            <dd class="m-0 break-words" data-test="jenis-kerusakan">{{ $panel->jenis_kerusakan }}</dd>
 
-                        <dt class="text-ink-muted">Instruksi</dt>
-                        <dd class="m-0 whitespace-pre-line break-words" data-test="instruksi-tiket">{{ $panel->catatan_instruksi }}</dd>
-                    @endif
-
-                    @if ($panel->status_tiket === StatusTiket::Selesai)
-                        <dt class="text-ink-muted">Biaya Perbaikan</dt>
-                        <dd class="num m-0" data-test="biaya-perbaikan">{{ App\Support\Format::rupiah($panel->biaya_perbaikan) }}</dd>
-
-                        @if ($durasi !== null)
-                            <dt class="text-ink-muted">Durasi</dt>
-                            <dd class="m-0" data-test="durasi-tiket">{{ App\Support\Format::durasi($durasi) }}</dd>
+                            <dt class="text-ink-muted">Instruksi</dt>
+                            <dd class="m-0 whitespace-pre-line break-words" data-test="instruksi-tiket">{{ $panel->catatan_instruksi }}</dd>
                         @endif
-                    @endif
-                </dl>
 
-                <div class="border-t border-divider pt-5">
-                    <h3 class="m-0 mb-3 teks-label">Riwayat Status</h3>
-                    <ol class="m-0 flex list-none flex-col gap-2.5 p-0" data-test="riwayat-status">
-                        @foreach ($riwayat as $baris)
-                            <li wire:key="riwayat-{{ $baris->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 teks-badan">
-                                <span class="font-[650]">{{ $baris->status_sesudah->label() }}</span>
-                                <span class="num teks-bantuan">{{ App\Support\Format::tanggalJam($baris->waktu_perubahan) }}</span>
-                                <span class="teks-bantuan">{{ $baris->diubahOleh?->nama }}</span>
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
+                        @if ($panel->status_tiket === StatusTiket::Selesai)
+                            <dt class="text-ink-muted">Biaya Perbaikan</dt>
+                            <dd class="num m-0" data-test="biaya-perbaikan">{{ App\Support\Format::rupiah($panel->biaya_perbaikan) }}</dd>
 
-                {{-- Form hanya dirender untuk pengelola dan tiket diajukan; pemilik tidak mendapat form sama sekali. --}}
-                @if ($bisaTugaskan)
-                    @php
-                        $vendorAktif = $this->vendorAktif;
-                    @endphp
-                    <form wire:submit="tugaskan({{ $panel->id }})" novalidate class="flex flex-col gap-[18px] border-t border-divider pt-5" data-test="form-tugaskan">
-                        <h3 class="m-0 teks-bagian">Tugaskan Vendor</h3>
-
-                        <fieldset class="m-0 min-w-0 border-0 p-0" @error('vendorId') aria-describedby="galat-vendor" @enderror>
-                            <legend class="mb-1.5 p-0 teks-label">Vendor</legend>
-                            @if ($vendorAktif->isEmpty())
-                                <p class="m-0 text-ink-muted teks-badan" data-test="vendor-kosong">Belum ada vendor aktif. Tambah di <a href="{{ route('akun.index') }}" wire:navigate class="font-semibold">Akun</a>.</p>
-                            @else
-                                <div class="flex flex-col gap-2" data-test="daftar-vendor">
-                                    @foreach ($vendorAktif as $vendor)
-                                        <label
-                                            wire:key="vendor-{{ $vendor->id }}"
-                                            @class([
-                                                'relative flex min-h-12 cursor-pointer flex-col justify-center rounded-lg border bg-surface px-3.5 py-2.5 has-[:checked]:border-2 has-[:checked]:border-primary has-[:checked]:bg-primary-container has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary',
-                                                'border-border-strong' => ! $errors->has('vendorId'),
-                                                'border-red-400' => $errors->has('vendorId'),
-                                            ])
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="vendor_id"
-                                                value="{{ $vendor->id }}"
-                                                wire:model="vendorId"
-                                                class="sr-only"
-                                                @error('vendorId') aria-invalid="true" @enderror
-                                            >
-                                            <span class="font-semibold">{{ $vendor->nama_vendor }}</span>
-                                            <span class="teks-bantuan">{{ $vendor->jenis_layanan }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
+                            @if ($durasi !== null)
+                                <dt class="text-ink-muted">Durasi</dt>
+                                <dd class="m-0" data-test="durasi-tiket">{{ App\Support\Format::durasi($durasi) }}</dd>
                             @endif
-                            @error('vendorId')
-                                <p id="galat-vendor" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-vendor">{{ $message }}</p>
-                            @enderror
-                        </fieldset>
+                        @endif
+                    </dl>
 
-                        <div>
-                            <label for="jenis-kerusakan" class="mb-1.5 block teks-label">Jenis Kerusakan</label>
-                            <input
-                                id="jenis-kerusakan"
-                                type="text"
-                                wire:model="jenisKerusakan"
-                                placeholder="Contoh: Freon habis"
-                                autocomplete="off"
-                                @error('jenisKerusakan') aria-invalid="true" aria-describedby="galat-jenis" @enderror
-                                @class([
-                                    'h-11 w-full rounded-lg border bg-surface px-3 text-ink teks-isian',
-                                    'border-border-strong' => ! $errors->has('jenisKerusakan'),
-                                    'border-red-400' => $errors->has('jenisKerusakan'),
-                                ])
-                            >
-                            @error('jenisKerusakan')
-                                <p id="galat-jenis" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-jenis-kerusakan">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <div class="border-t border-divider pt-5">
+                        <h3 class="m-0 mb-3 teks-label">Riwayat Status</h3>
+                        <ol class="m-0 flex list-none flex-col gap-2.5 p-0" data-test="riwayat-status">
+                            @foreach ($riwayat as $baris)
+                                <li wire:key="riwayat-{{ $baris->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 teks-badan">
+                                    <span class="font-[650]">{{ $baris->status_sesudah->label() }}</span>
+                                    <span class="num teks-bantuan">{{ App\Support\Format::tanggalJam($baris->waktu_perubahan) }}</span>
+                                    <span class="teks-bantuan">{{ $baris->diubahOleh?->nama }}</span>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
 
-                        <div>
-                            <label for="instruksi" class="mb-1.5 block teks-label">Instruksi</label>
-                            <textarea
-                                id="instruksi"
-                                wire:model="instruksi"
-                                rows="4"
-                                placeholder="Contoh: Cek freon dan bersihkan filter"
-                                @error('instruksi') aria-invalid="true" aria-describedby="galat-instruksi" @enderror
-                                @class([
-                                    'min-h-[96px] w-full resize-y rounded-lg border bg-surface px-3 py-2.5 text-ink teks-isian',
-                                    'border-border-strong' => ! $errors->has('instruksi'),
-                                    'border-red-400' => $errors->has('instruksi'),
-                                ])
-                            ></textarea>
-                            @error('instruksi')
-                                <p id="galat-instruksi" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-instruksi">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    {{-- Form hanya dirender untuk pengelola dan tiket diajukan; pemilik tidak mendapat form sama sekali. --}}
+                    @if ($bisaTugaskan)
+                        @php
+                            $vendorAktif = $this->vendorAktif;
+                        @endphp
+                        <form wire:submit="tugaskan({{ $panel->id }})" novalidate class="flex flex-col gap-[18px] border-t border-divider pt-5" data-test="form-tugaskan">
+                            <h3 class="m-0 teks-bagian">Tugaskan Vendor</h3>
 
-                        <div class="flex flex-col lg:flex-row">
-                            <button
-                                type="submit"
-                                @disabled($vendorAktif->isEmpty())
-                                class="tombol w-full bg-primary text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 lg:w-auto"
-                                data-test="tombol-tugaskan"
-                            >
-                                <span wire:loading.remove wire:target="tugaskan">Tugaskan</span>
-                                <span wire:loading wire:target="tugaskan">Menugaskan…</span>
-                            </button>
-                        </div>
-                    </form>
-                @endif
+                            <fieldset class="m-0 min-w-0 border-0 p-0" @error('vendorId') aria-describedby="galat-vendor" @enderror>
+                                <legend class="mb-1.5 p-0 teks-label">Vendor</legend>
+                                @if ($vendorAktif->isEmpty())
+                                    <p class="m-0 text-ink-muted teks-badan" data-test="vendor-kosong">Belum ada vendor aktif. Tambah di <a href="{{ route('akun.index') }}" wire:navigate class="font-semibold">Akun</a>.</p>
+                                @else
+                                    <div class="flex flex-col gap-2" data-test="daftar-vendor">
+                                        @foreach ($vendorAktif as $vendor)
+                                            <label
+                                                wire:key="vendor-{{ $vendor->id }}"
+                                                @class([
+                                                    'pilihan relative flex min-h-12 cursor-pointer flex-col justify-center rounded-lg border bg-surface px-3.5 py-2.5 has-[:checked]:border-primary has-[:checked]:bg-primary-container has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary',
+                                                    'border-border-strong' => ! $errors->has('vendorId'),
+                                                    'border-red-400' => $errors->has('vendorId'),
+                                                ])
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="vendor_id"
+                                                    value="{{ $vendor->id }}"
+                                                    wire:model="vendorId"
+                                                    class="sr-only"
+                                                    @error('vendorId') aria-invalid="true" @enderror
+                                                >
+                                                <span class="font-semibold">{{ $vendor->nama_vendor }}</span>
+                                                <span class="teks-bantuan">{{ $vendor->jenis_layanan }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                @error('vendorId')
+                                    <p id="galat-vendor" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-vendor">{{ $message }}</p>
+                                @enderror
+                            </fieldset>
+
+                            <div>
+                                <label for="jenis-kerusakan" class="mb-1.5 block teks-label">Jenis Kerusakan</label>
+                                <input
+                                    id="jenis-kerusakan"
+                                    type="text"
+                                    wire:model="jenisKerusakan"
+                                    placeholder="Contoh: Freon habis"
+                                    autocomplete="off"
+                                    @error('jenisKerusakan') aria-invalid="true" aria-describedby="galat-jenis" @enderror
+                                    @class([
+                                        'h-11 w-full rounded-lg border bg-surface px-3 text-ink teks-isian',
+                                        'border-border-strong' => ! $errors->has('jenisKerusakan'),
+                                        'border-red-400' => $errors->has('jenisKerusakan'),
+                                    ])
+                                >
+                                @error('jenisKerusakan')
+                                    <p id="galat-jenis" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-jenis-kerusakan">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="instruksi" class="mb-1.5 block teks-label">Instruksi</label>
+                                <textarea
+                                    id="instruksi"
+                                    wire:model="instruksi"
+                                    rows="4"
+                                    placeholder="Contoh: Cek freon dan bersihkan filter"
+                                    @error('instruksi') aria-invalid="true" aria-describedby="galat-instruksi" @enderror
+                                    @class([
+                                        'min-h-[96px] w-full resize-y rounded-lg border bg-surface px-3 py-2.5 text-ink teks-isian',
+                                        'border-border-strong' => ! $errors->has('instruksi'),
+                                        'border-red-400' => $errors->has('instruksi'),
+                                    ])
+                                ></textarea>
+                                @error('instruksi')
+                                    <p id="galat-instruksi" role="alert" class="m-0 mt-1.5 teks-galat" data-test="galat-instruksi">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="flex flex-col lg:flex-row">
+                                <button
+                                    type="submit"
+                                    @disabled($vendorAktif->isEmpty())
+                                    class="tombol tombol-utama w-full disabled:opacity-60 lg:w-auto"
+                                    data-test="tombol-tugaskan"
+                                >
+                                    <span wire:loading.remove wire:target="tugaskan">Tugaskan</span>
+                                    <span wire:loading wire:target="tugaskan">Menugaskan…</span>
+                                </button>
+                            </div>
+                        </form>
+                    @endif
+                </div>
             </section>
         </div>
     @endif

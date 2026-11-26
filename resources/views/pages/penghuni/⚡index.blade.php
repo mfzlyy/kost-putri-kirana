@@ -84,7 +84,7 @@ new #[Title('Penghuni')] class extends Component {
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Penghuni">
         @if ($this->bisaKelola)
-            <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate data-test="tambah-penghuni">
+            <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="tombol-utama" data-test="tambah-penghuni">
                 Tambah
             </flux:button>
         @endif
@@ -101,7 +101,7 @@ new #[Title('Penghuni')] class extends Component {
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada data penghuni.' : 'Tidak ada penghuni yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate>Tambah</flux:button>
+                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="tombol-utama">Tambah</flux:button>
             @endif
         </div>
     @else
@@ -139,7 +139,7 @@ new #[Title('Penghuni')] class extends Component {
                             </td>
                             @if ($this->bisaKelola)
                                 <td class="px-5 text-end whitespace-nowrap">
-                                    <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="inline-flex min-h-10 items-center px-2 no-underline teks-tombol-kecil">Ubah</a>
+                                    <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 items-center px-2 teks-tombol-kecil">Ubah</a>
                                 </td>
                             @endif
                         </tr>
@@ -173,7 +173,7 @@ new #[Title('Penghuni')] class extends Component {
                         <span class="num tracking-[0.02em]">{{ $penghuni->no_identitas_tersamar }}</span>
                     </div>
                     @if ($this->bisaKelola)
-                        <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="inline-flex min-h-10 w-fit items-center px-1 no-underline teks-tombol-kecil">Ubah</a>
+                        <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 w-fit items-center px-1 teks-tombol-kecil">Ubah</a>
                     @endif
                 </li>
             @endforeach

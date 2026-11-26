@@ -15,7 +15,7 @@
             <a
                 href="{{ route('tagihan-saya.unggah', $baris['id']) }}"
                 wire:navigate
-                class="-my-1.5 inline-flex min-h-11 items-center text-primary teks-tombol-kecil"
+                class="tautan-aksi -my-1.5 inline-flex min-h-11 items-center teks-tombol-kecil"
             >Unggah<span class="sr-only"> {{ $baris['periode']->locale('id')->translatedFormat('F Y') }}</span></a>
         </div>
         @if ($baris['alasanDitolak'] !== null)

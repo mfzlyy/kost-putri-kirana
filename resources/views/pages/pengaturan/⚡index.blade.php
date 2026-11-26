@@ -96,7 +96,7 @@ new #[Title('Pengaturan')] class extends Component {
                             />
                             <label
                                 for="hari-{{ $hari }}"
-                                class="num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-tombol-kecil"
+                                class="pilihan num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-tombol-kecil"
                             >{{ $hari }}</label>
                         </div>
                     @endforeach
@@ -130,7 +130,7 @@ new #[Title('Pengaturan')] class extends Component {
             </div>
 
             <div class="flex flex-col gap-3 border-t border-divider pt-[18px] sm:flex-row sm:items-center sm:gap-4">
-                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
+                <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
                     <span wire:loading.remove wire:target="simpan">Simpan</span>
                     <span wire:loading wire:target="simpan">Menyimpan</span>
                 </flux:button>

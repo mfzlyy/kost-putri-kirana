@@ -326,9 +326,9 @@ new #[Title('Kontrak')] class extends Component {
 
 <section class="flex w-full flex-col gap-6">
     <div class="flex flex-col gap-2">
-        <a href="{{ route('kontrak.index') }}" wire:navigate class="hidden w-fit lg:inline">Kontrak</a>
+        <a href="{{ route('kontrak.index') }}" wire:navigate class="tautan-aksi hidden w-fit lg:inline">Kontrak</a>
         <div class="flex items-start gap-1">
-            <a href="{{ route('kontrak.index') }}" wire:navigate aria-label="Kembali ke kontrak" class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg lg:hidden">
+            <a href="{{ route('kontrak.index') }}" wire:navigate aria-label="Kembali ke kontrak" class="tombol-ikon -ms-2 inline-flex size-11 shrink-0 items-center justify-center lg:hidden">
                 <flux:icon.arrow-left class="size-5" />
             </a>
             <x-judul-halaman class="min-w-0 flex-1" :judul="$judul" />
@@ -435,7 +435,7 @@ new #[Title('Kontrak')] class extends Component {
                             <label
                                 for="kamar-{{ $kamar->id }}"
                                 @class([
-                                    'relative flex min-h-[84px] flex-col justify-between rounded-[10px] border px-2.5 pt-[22px] pb-2.5 before:absolute before:top-[7px] before:left-1/2 before:-ml-1 before:size-2 before:rounded-full before:border before:border-border before:bg-background',
+                                    'pilihan relative flex min-h-[84px] flex-col justify-between rounded-[10px] border px-2.5 pt-[22px] pb-2.5 before:absolute before:top-[7px] before:left-1/2 before:-ml-1 before:size-2 before:rounded-full before:border before:border-border before:bg-background',
                                     'cursor-pointer border-border bg-surface peer-checked:border-primary peer-checked:bg-primary-container peer-checked:shadow-[inset_0_0_0_1px_var(--color-primary)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary' => ! $terisi,
                                     'cursor-not-allowed border-border bg-surface-disabled text-[#8A918F]' => $terisi,
                                 ])
@@ -486,7 +486,7 @@ new #[Title('Kontrak')] class extends Component {
         @endif
 
         <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-            <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
+            <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
                 Simpan
             </flux:button>
             <x-tautan-batal :href="route('kontrak.index')" />

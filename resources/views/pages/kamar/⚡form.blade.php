@@ -139,7 +139,7 @@ new #[Title('Kamar')] class extends Component {
 
 <section class="flex w-full flex-col gap-6">
     <div class="flex flex-col gap-2">
-        <a href="{{ route('kamar.index') }}" wire:navigate class="w-fit">Kamar</a>
+        <a href="{{ route('kamar.index') }}" wire:navigate class="tautan-aksi w-fit">Kamar</a>
         <x-judul-halaman :judul="$this->kamar ? 'Ubah Kamar '.$this->kamar->nomor_kamar : 'Tambah Kamar'" />
     </div>
 
@@ -187,7 +187,7 @@ new #[Title('Kamar')] class extends Component {
             @endif
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
+                <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
                     Simpan
                 </flux:button>
                 <x-tautan-batal :href="route('kamar.index')" />
@@ -203,7 +203,7 @@ new #[Title('Kamar')] class extends Component {
                     <button type="button" disabled title="{{ str_contains($this->izinHapus->message(), 'fasilitas') ? 'Masih punya fasilitas' : 'Masih punya kontrak' }}" class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-[#8A918F] teks-tombol-kecil">Hapus</button>
                 @else
                     <flux:modal.trigger name="hapus-kamar">
-                        <button type="button" class="h-10 w-fit cursor-pointer rounded-lg border border-[#E3B4AD] bg-surface px-3.5 text-danger teks-tombol-kecil" data-test="buka-hapus-kamar">Hapus</button>
+                        <button type="button" class="tombol-bahaya h-10 w-fit rounded-lg px-3.5 teks-tombol-kecil" data-test="buka-hapus-kamar">Hapus</button>
                     </flux:modal.trigger>
                 @endif
             </aside>
@@ -222,9 +222,7 @@ new #[Title('Kamar')] class extends Component {
                     <dd>{{ filled($this->kamar->keterangan) ? $this->kamar->keterangan : '-' }}</dd>
                 </x-slot:ringkasan>
 
-                <x-slot:akibat>
-                    <li>Kamar dihapus permanen.</li>
-                </x-slot:akibat>
+                <x-slot:akibat>Kamar ini akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</x-slot:akibat>
             </x-dialog-konfirmasi>
         @endif
     </div>

@@ -269,14 +269,11 @@ it('dialog terima dan tolak memuat ringkasan, akibat, dan field alasan sesuai sp
 
     halamanVerifikasi()
         ->assertSee('Terima Pembayaran Kamar 02?')
-        ->assertSee('Tagihan jadi lunas.')
-        ->assertSee('Masuk riwayat.')
-        ->assertSee('Diantrekan ke Odoo.')
+        ->assertSee('Tagihan ini akan ditandai lunas dan dicatat ke pembukuan. Keputusan ini tidak bisa dibatalkan.')
         ->assertSee('Tolak Bukti Kamar 02?')
         ->assertSee('Alasan')
         ->assertSee('Tampil ke penghuni. Contoh: Nominal kurang Rp100.000.')
-        ->assertSee('Tagihan kembali belum dibayar.')
-        ->assertSee('Penghuni bisa unggah ulang.');
+        ->assertSee('Penghuni akan melihat alasan ini dan bisa mengunggah bukti baru.');
 });
 
 it('F-13: pemilik, penghuni, dan vendor mendapat 403 di /verifikasi-pembayaran', function (string $peran) {

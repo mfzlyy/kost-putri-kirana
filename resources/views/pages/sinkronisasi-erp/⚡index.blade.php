@@ -243,7 +243,7 @@ new #[Title('Sinkronisasi')] class extends Component {
         'menunggu' => ['label' => 'Menunggu', 'kosong' => 'Tidak ada transaksi yang menunggu.'],
         'terkirim' => ['label' => 'Terkirim', 'kosong' => 'Belum ada transaksi yang terkirim.'],
     ];
-    $kelasTombol = 'tombol-kecil border border-border-strong bg-surface text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60';
+    $kelasTombol = 'tombol-kecil tombol-sekunder disabled:opacity-60';
 @endphp
 
 <section class="flex w-full flex-col gap-6">

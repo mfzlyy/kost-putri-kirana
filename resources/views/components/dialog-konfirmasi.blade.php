@@ -4,7 +4,7 @@
     Atribut yang diteruskan (wire:click, data-test) dipasang pada tombol aksi.
     Slot bernama, semuanya opsional:
       - ringkasan : pasangan <dt>/<dd> tentang objek yang dikenai aksi
-      - akibat    : butir <li> berisi akibat aksi
+      - akibat    : satu atau dua kalimat biasa: apa yang terjadi dan apakah bisa dibatalkan (tanpa istilah teknis)
       - catatan   : satu kalimat Catatan info
       - isi       : field isian (label, bantuan, galat)
 
@@ -40,7 +40,7 @@
         <div class="flex items-start justify-between gap-4">
             <h2 id="{{ $idJudul }}" class="teks-judul-dialog m-0 min-w-0 break-words text-ink">{{ $judul }}</h2>
             <flux:modal.close>
-                <button type="button" aria-label="Tutup" class="-me-2 -mt-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink">
+                <button type="button" aria-label="Tutup" class="tombol-ikon -me-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-ink-muted">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                 </button>
             </flux:modal.close>
@@ -55,9 +55,7 @@
 
         {{-- Akibat --}}
         @if ($akibat && ! $akibat->isEmpty())
-            <ul class="m-0 flex list-disc flex-col gap-1.5 ps-5 text-ink marker:text-ink-muted teks-badan" data-test="akibat-dialog">
-                {{ $akibat }}
-            </ul>
+            <p class="m-0 text-ink teks-badan" data-test="akibat-dialog">{{ $akibat }}</p>
         @endif
 
         {{-- Catatan info --}}
@@ -75,7 +73,7 @@
         {{-- Kaki --}}
         <div class="flex justify-end gap-2 border-t border-divider pt-[18px] max-sm:flex-col-reverse">
             <flux:modal.close>
-                <flux:button type="button" variant="outline" autofocus class="max-sm:w-full border-border-strong! bg-surface! text-ink!">Batal</flux:button>
+                <flux:button type="button" variant="outline" autofocus class="tombol-sekunder max-sm:w-full">Batal</flux:button>
             </flux:modal.close>
 
             <flux:button
@@ -83,7 +81,8 @@
                 :variant="$variant === 'bahaya' ? 'danger' : 'primary'"
                 {{ $attributes->class([
                     'max-sm:w-full',
-                    'bg-status-late! text-white! hover:bg-on-danger-container!' => $variant === 'bahaya',
+                    'tombol-bahaya-penuh' => $variant === 'bahaya',
+                    'tombol-utama' => $variant !== 'bahaya',
                 ])->merge($targetAksi !== '' ? ['wire:target' => $targetAksi] : []) }}
                 wire:loading.attr="disabled"
             >{{ $labelAksi }}</flux:button>

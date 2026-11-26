@@ -308,7 +308,7 @@ new #[Title('Riwayat')] class extends Component {
                         wire:click="tampilkanLagi"
                         wire:loading.attr="disabled"
                         wire:target="tampilkanLagi"
-                        class="tombol w-full border border-border-strong bg-surface text-ink hover:bg-surface-muted md:w-fit"
+                        class="tombol tombol-sekunder w-full md:w-fit"
                         data-test="tampilkan-lagi"
                     >Lainnya</button>
                 @endif
@@ -405,7 +405,7 @@ new #[Title('Riwayat')] class extends Component {
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                             <x-status jenis="tunggu">Menunggu</x-status>
                                         @elseif ($this->bisaLihatSinkronisasi)
-                                            <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
+                                            <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="tautan-status no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
                                         @else
                                             <x-status jenis="gagal">Gagal</x-status>
                                         @endif
@@ -438,7 +438,7 @@ new #[Title('Riwayat')] class extends Component {
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                     <x-status jenis="tunggu">Menunggu</x-status>
                                 @elseif ($this->bisaLihatSinkronisasi)
-                                    <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
+                                    <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="tautan-status no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
                                 @else
                                     <x-status jenis="gagal">Gagal</x-status>
                                 @endif

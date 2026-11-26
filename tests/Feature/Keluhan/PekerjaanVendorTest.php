@@ -259,8 +259,7 @@ it('F-20: Mulai di halaman detail, lalu Selesai dengan konfirmasi, mengarah ke d
         ->assertDispatched('modal-show', name: 'selesaikan-tiket')
         ->assertSeeText('Selesaikan KLH-0010?')
         ->assertSeeText('Rp150.000')
-        ->assertSeeText('Status tidak bisa dikembalikan.')
-        ->assertSeeText('Biaya dicatat untuk dikirim ke Odoo.');
+        ->assertSeeText('Pekerjaan akan ditandai selesai dan biaya dicatat. Setelah ini tidak bisa diubah.');
 
     // Dialog hanya dibuka: belum ada yang disimpan sampai dikonfirmasi.
     expect($tiket->fresh()->status_tiket)->toBe(StatusTiket::Dikerjakan);

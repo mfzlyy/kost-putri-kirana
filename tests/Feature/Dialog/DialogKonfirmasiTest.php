@@ -31,7 +31,7 @@ function periksaBentukDialog($komponen, string $name): void
         ->and($html)->toMatch('/Batal\s*<\/button>/')
         ->and($html)->toContain('autofocus')
         ->and($html)->toContain('max-sm:flex-col-reverse')
-        ->and($html)->toContain('bg-status-late!');
+        ->and($html)->toContain('tombol-bahaya-penuh');
 }
 
 it('dialog Akhiri kontrak memakai komponen seragam dengan catatan atau field sesuai kontrak', function () {
@@ -53,7 +53,7 @@ it('dialog Hapus kamar di daftar dan di form memakai komponen seragam', function
     periksaBentukDialog($daftar, 'hapus-kamar');
     $daftar->assertSee('Hapus Kamar 08?')
         ->assertSeeInOrder(['Tarif', 'Rp1.250.000', 'Keterangan', 'Lantai 2'])
-        ->assertSee('Kamar dihapus permanen.')
+        ->assertSee('Kamar ini akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.')
         ->assertSee('Hapus');
 
     $form = Livewire::actingAs($pengelola)->test('pages::kamar.form', ['kamar' => $kamar]);
@@ -73,7 +73,7 @@ it('dialog Tandai Keluar memakai komponen seragam', function () {
     periksaBentukDialog($komponen, 'tandai-keluar');
     $komponen->assertSee('Tandai Maya Sari Keluar?')
         ->assertSeeInOrder(['Email', 'maya@contoh.test', 'Telepon', '0812 3456 7801'])
-        ->assertSeeInOrder(['Status menjadi nonaktif.', 'Riwayat tetap tersimpan.', 'Akun login tidak berubah.']);
+        ->assertSee('Penghuni ini akan ditandai sudah keluar tanpa menghapus riwayat dan akun loginnya. Anda bisa mengaktifkannya lagi.');
 });
 
 it('F-02: Nonaktifkan akun memakai dialog seragam, bukan confirm bawaan browser', function () {
@@ -89,8 +89,7 @@ it('F-02: Nonaktifkan akun memakai dialog seragam, bukan confirm bawaan browser'
     periksaBentukDialog($komponen, 'nonaktifkan-akun');
     $komponen->assertSee('Nonaktifkan Akun Rina Maharani?')
         ->assertSeeInOrder(['Email', 'rina@contoh.test', 'Peran', 'Penghuni'])
-        ->assertSee('Tidak bisa masuk sampai diaktifkan.')
-        ->assertSee('Sesi berjalan langsung berakhir.')
+        ->assertSee('Pemilik akun ini langsung keluar dan tidak bisa masuk. Anda bisa mengaktifkannya lagi.')
         ->assertSee('Nonaktifkan')
         ->call('nonaktifkan', $akun->id)
         ->assertSet('idNonaktif', null);

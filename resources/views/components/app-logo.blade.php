@@ -11,7 +11,7 @@
 
 <a
     href="{{ $href }}"
-    {{ $attributes->class(['flex items-center gap-2.5 rounded-lg no-underline']) }}
+    {{ $attributes->class(['flex items-center gap-2.5 rounded-lg no-underline', 'sorot-gelap' => $sidebar]) }}
 >
     <x-app-logo-icon
         :varian="$sidebar ? 'gelap' : 'terang'"

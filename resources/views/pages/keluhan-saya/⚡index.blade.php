@@ -77,7 +77,7 @@ new #[Title('Keluhan')] class extends Component {
     @else
         <x-judul-halaman judul="Keluhan">
             @can('create', App\Models\TiketKeluhan::class)
-                <a href="{{ route('keluhan-saya.ajukan') }}" wire:navigate class="tombol bg-primary text-white no-underline hover:bg-primary-hover hover:text-white max-sm:w-full">Ajukan</a>
+                <a href="{{ route('keluhan-saya.ajukan') }}" wire:navigate class="tombol tombol-utama max-sm:w-full">Ajukan</a>
             @endcan
         </x-judul-halaman>
 

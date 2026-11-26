@@ -21,9 +21,9 @@
     wire:navigate
     @if ($aktif) aria-current="page" @endif
     {{ $attributes->class([
-        'flex min-h-11 pendek:min-h-10 items-center justify-between gap-2 rounded-lg px-3 no-underline',
+        'menu-sidebar flex min-h-11 pendek:min-h-10 items-center justify-between gap-2 rounded-lg px-3 no-underline',
         'teks-menu-aktif bg-primary-container text-on-primary-container' => $aktif,
-        'teks-menu text-on-sidebar hover:bg-white/[.08] hover:text-white' => ! $aktif,
+        'teks-menu text-on-sidebar' => ! $aktif,
     ]) }}
 >
     {{-- Label satu baris; bila tetap tidak muat dipotong dengan elipsis dan title berisi teks lengkap. --}}

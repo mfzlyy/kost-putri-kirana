@@ -8,7 +8,7 @@
         <div class="flex min-h-svh flex-col lg:flex-row">
             {{-- Panel desktop --}}
             <section class="hidden flex-1 basis-[460px] flex-col justify-between gap-12 bg-sidebar p-14 text-primary-container lg:flex">
-                <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-3 no-underline">
+                <a href="{{ route('home') }}" wire:navigate class="sorot-gelap flex items-center gap-3 self-start no-underline">
                     <x-app-logo-icon varian="gelap" aria-hidden="true" class="h-[38px] w-8" />
                     <span class="sr-only">Kost Putri Kirana</span>
                     <span class="flex flex-col leading-[1.1]" aria-hidden="true">
@@ -39,7 +39,7 @@
 
             {{-- Pita ponsel --}}
             <div class="flex flex-col gap-7 bg-sidebar px-5 pt-7 pb-14 lg:hidden">
-                <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-2.5 no-underline">
+                <a href="{{ route('home') }}" wire:navigate class="sorot-gelap flex items-center gap-2.5 self-start no-underline">
                     <x-app-logo-icon varian="gelap" aria-hidden="true" class="h-[34px] w-7" />
                     <span class="sr-only">Kost Putri Kirana</span>
                     <span class="flex flex-col leading-[1.1]" aria-hidden="true">

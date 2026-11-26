@@ -461,16 +461,16 @@ new #[Title('Tagihan')] class extends Component {
                     wire:click.prevent="pilihPeriode('{{ $pilihan['tanggal']->format('Y-m') }}')"
                     @if ($pilihan['aktif']) aria-current="true" @endif
                     @class([
-                        'flex items-center justify-center border-s border-border-strong no-underline first:border-s-0 sm:h-8 sm:rounded-[7px] sm:border-0 sm:px-3.5 teks-chip',
+                        'segmen flex items-center justify-center border-s border-border-strong no-underline first:border-s-0 sm:h-8 sm:rounded-[7px] sm:border-0 sm:px-3.5 teks-chip',
                         'bg-chip-active text-white sm:bg-surface sm:text-ink sm:shadow-[0_1px_0_#dedbd3]' => $pilihan['aktif'],
-                        'bg-surface text-ink hover:bg-surface-muted sm:bg-transparent sm:text-[#33403d]' => ! $pilihan['aktif'],
+                        'bg-surface text-ink sm:bg-transparent sm:text-[#33403d]' => ! $pilihan['aktif'],
                     ])
                 >{{ $bulan($pilihan['tanggal']) }}</a>
             @endforeach
         </nav>
 
         @if ($bisaKelola && $periodeTombol)
-            <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="max-sm:w-full" data-test="terbitkan-tagihan">
+            <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="tombol-utama max-sm:w-full" data-test="terbitkan-tagihan">
                 Terbitkan
             </flux:button>
         @endif
@@ -513,7 +513,7 @@ new #[Title('Tagihan')] class extends Component {
                 @if ($belumAdaApaPun)
                     <p class="m-0 text-ink-muted">Tagihan {{ $labelPeriode }} belum diterbitkan.</p>
                     @if ($bisaKelola && $periodeTombol)
-                        <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" data-test="terbitkan-tagihan-kosong">Terbitkan</flux:button>
+                        <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="tombol-utama" data-test="terbitkan-tagihan-kosong">Terbitkan</flux:button>
                     @endif
                 @else
                     <p class="m-0 text-ink-muted">Tidak ada tagihan yang sesuai filter.</p>
@@ -629,11 +629,7 @@ new #[Title('Tagihan')] class extends Component {
                 @endif
             </x-slot:ringkasan>
 
-            <x-slot:akibat>
-                <li>{{ $pr?->dibuat ?? 0 }} tagihan baru, belum dibayar.</li>
-                <li>Langsung tampil di Tagihan penghuni.</li>
-                <li>Kontrak yang sudah ditagih dilewati.</li>
-            </x-slot:akibat>
+            <x-slot:akibat>{{ $pr?->dibuat ?? 0 }} tagihan baru akan langsung tampil di Tagihan penghuni dan tidak bisa dibatalkan. Kontrak yang sudah ditagih dilewati.</x-slot:akibat>
 
             @if ($pr?->jatuhTempo && $pr->jatuhTempo->lt($hariIni))
                 <x-slot:catatan>Jatuh tempo {{ $tanggalPendek($pr->jatuhTempo) }} sudah lewat, langsung terhitung tunggakan.</x-slot:catatan>

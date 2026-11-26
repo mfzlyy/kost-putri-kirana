@@ -95,9 +95,9 @@ new #[Title('Profil')] class extends Component {
                     <dd class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                         <span class="num tracking-[0.02em]" aria-live="polite" data-test="nik">{{ $this->identitasTerbuka ? $this->identitasUtuh : $penghuni->no_identitas_tersamar }}</span>
                         @if ($this->identitasTerbuka)
-                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="sembunyikan-identitas">Sembunyikan</button>
+                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="tautan-aksi -my-2.5 py-2.5 teks-tombol-kecil" data-test="sembunyikan-identitas">Sembunyikan</button>
                         @else
-                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="tampilkan-identitas">Tampilkan</button>
+                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="tautan-aksi -my-2.5 py-2.5 teks-tombol-kecil" data-test="tampilkan-identitas">Tampilkan</button>
                         @endif
                     </dd>
                 </dl>
@@ -125,14 +125,14 @@ new #[Title('Profil')] class extends Component {
     @endif
 
     {{-- Ponsel penghuni tidak punya menu pengguna sidebar, jadi Ganti password dan Keluar ada di sini. --}}
-    <section class="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface md:hidden" aria-label="Akun" data-test="kotak-akun">
-        <a href="{{ route('security.edit') }}" wire:navigate class="flex min-h-11 items-center justify-between gap-2 border-b border-row-divider px-4 font-semibold text-ink no-underline hover:text-ink">
+    <section class="daftar-klik flex flex-col overflow-hidden rounded-2xl border border-border bg-surface md:hidden" aria-label="Akun" data-test="kotak-akun">
+        <a href="{{ route('security.edit') }}" wire:navigate class="baris-klik flex min-h-11 items-center justify-between gap-2 border-b border-row-divider px-4 font-semibold text-ink no-underline hover:text-ink">
             Ganti Password
             <flux:icon.chevron-right class="size-[18px] text-ink-muted" />
         </a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="flex min-h-11 w-full cursor-pointer items-center px-4 text-left font-semibold text-danger" data-test="keluar-ponsel">Keluar</button>
+            <button type="submit" class="tautan-bahaya flex min-h-11 w-full items-center px-4 text-left font-semibold" data-test="keluar-ponsel">Keluar</button>
         </form>
     </section>
 </section>

@@ -257,9 +257,10 @@ new #[Title('Verifikasi')] class extends Component {
     @endif
 
     @if ($panel)
-        <div class="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(0,1.5fr)] lg:items-start lg:gap-6">
+        {{-- siap = false saat halaman dibuka, jadi isi panel pertama tidak beranimasi. --}}
+        <div x-data="{ siap: false }" x-init="$nextTick(() => siap = true)" class="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(0,1.5fr)] lg:items-start lg:gap-6">
             {{-- Antrean --}}
-            <section aria-label="Antrean bukti bayar" @class(['overflow-hidden rounded-2xl border border-border bg-surface', 'max-lg:hidden' => $adaPilihan])>
+            <section aria-label="Antrean bukti bayar" @class(['daftar-klik overflow-hidden rounded-2xl border border-border bg-surface', 'max-lg:hidden' => $adaPilihan])>
                 @foreach ($antrean as $item)
                     @php
                         $tagihanItem = $item->tagihan;
@@ -272,11 +273,7 @@ new #[Title('Verifikasi')] class extends Component {
                         href="{{ route('verifikasi-pembayaran.index', ['bukti' => $item->id]) }}"
                         wire:click.prevent="pilih({{ $item->id }})"
                         @if ($terpilih) aria-current="true" @endif
-                        @class([
-                            'grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 text-ink no-underline first:border-t-0 hover:text-ink',
-                            'lg:bg-primary-container' => $terpilih,
-                            'hover:bg-surface-muted' => ! $terpilih,
-                        ])
+                        class="baris-pilih grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 text-ink no-underline first:border-t-0 hover:text-ink"
                         data-test="item-antrean"
                     >
                         <span class="font-[650]">Kamar {{ $kontrakItem->kamar?->nomor_kamar }}, {{ $namaDepan($kontrakItem->penghuni?->user?->nama) }}</span>
@@ -304,81 +301,85 @@ new #[Title('Verifikasi')] class extends Component {
             @endphp
             <section
                 aria-labelledby="judul-panel"
-                @class(['flex flex-col gap-5 rounded-2xl border border-border bg-surface p-4 lg:p-6', 'max-lg:hidden' => ! $adaPilihan])
+                wire:loading.class="opacity-60"
+                wire:target="pilih"
+                @class(['transisi-opasitas rounded-2xl border border-border bg-surface p-4 lg:p-6', 'max-lg:hidden' => ! $adaPilihan])
                 data-test="panel-periksa"
             >
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div class="flex min-w-0 items-start gap-1">
-                        <a
-                            href="{{ route('verifikasi-pembayaran.index') }}"
-                            wire:click.prevent="kembali"
-                            aria-label="Kembali"
-                            class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-ink lg:hidden"
-                        >
-                            <flux:icon.arrow-left class="size-5" />
-                        </a>
-                        <div class="min-w-0">
-                            <h2 id="judul-panel" class="m-0 teks-bagian">Kamar {{ $nomorKamar }}, Tagihan {{ $bulan }}</h2>
-                            <p class="m-0 mt-1 text-ink-muted">{{ $kontrak->penghuni?->user?->nama }}</p>
+                <div wire:key="panel-{{ $panel->id }}" x-init="siap && $el.classList.add('panel-masuk')" class="flex flex-col gap-5" data-test="isi-panel">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="flex min-w-0 items-start gap-1">
+                            <a
+                                href="{{ route('verifikasi-pembayaran.index') }}"
+                                wire:click.prevent="kembali"
+                                aria-label="Kembali"
+                                class="tombol-ikon -ms-2 inline-flex size-11 shrink-0 items-center justify-center text-ink lg:hidden"
+                            >
+                                <flux:icon.arrow-left class="size-5" />
+                            </a>
+                            <div class="min-w-0">
+                                <h2 id="judul-panel" class="m-0 teks-bagian">Kamar {{ $nomorKamar }}, Tagihan {{ $bulan }}</h2>
+                                <p class="m-0 mt-1 text-ink-muted">{{ $kontrak->penghuni?->user?->nama }}</p>
+                            </div>
                         </div>
+                        <x-status jenis="tunggu">Menunggu</x-status>
                     </div>
-                    <x-status jenis="tunggu">Menunggu</x-status>
-                </div>
 
-                <div class="flex flex-col gap-5 lg:flex-row lg:flex-wrap lg:items-stretch">
-                    <figure class="m-0 flex min-h-[200px] flex-col items-center justify-center gap-2.5 rounded-xl border border-divider bg-surface-disabled p-4 text-center text-ink-muted lg:min-h-[280px] lg:flex-[1_1_220px]" data-test="pratinjau">
-                        @if ($berkas === null)
-                            <flux:icon.document class="size-10" />
-                            <figcaption class="teks-badan" data-test="bukti-tidak-tersedia">Bukti tidak tersedia.</figcaption>
-                        @else
-                            @if ($berkas['ekstensi'] === 'pdf')
-                                <flux:icon.document-text class="size-10" />
-                                <span class="teks-tombol-kecil">Berkas PDF</span>
+                    <div class="flex flex-col gap-5 lg:flex-row lg:flex-wrap lg:items-stretch">
+                        <figure class="m-0 flex min-h-[200px] flex-col items-center justify-center gap-2.5 rounded-xl border border-divider bg-surface-disabled p-4 text-center text-ink-muted lg:min-h-[280px] lg:flex-[1_1_220px]" data-test="pratinjau">
+                            @if ($berkas === null)
+                                <flux:icon.document class="size-10" />
+                                <figcaption class="teks-badan" data-test="bukti-tidak-tersedia">Bukti tidak tersedia.</figcaption>
                             @else
-                                <img
-                                    src="{{ $urlBukti }}"
-                                    alt="Bukti transfer Kamar {{ $nomorKamar }} {{ $bulan }}"
-                                    class="max-h-[420px] w-full rounded-lg object-contain"
-                                >
-                            @endif
-                            <figcaption class="teks-badan">{{ strtoupper($berkas['ekstensi']) }}, {{ Format::ukuranBerkas($berkas['ukuran']) }}</figcaption>
-                            <a href="{{ $urlBukti }}" target="_blank" rel="noopener" class="teks-tombol-kecil">Buka</a>
-                        @endif
-                    </figure>
-
-                    <div class="flex min-w-0 flex-col gap-[18px] lg:flex-[1_1_240px]">
-                        <div class="@container">
-                            <p class="m-0 text-ink-muted">Nominal</p>
-                            <p class="num m-0 mt-0.5 teks-angka-utama" data-test="nominal-tagihan">{{ Format::rupiah($tagihan->nominal) }}</p>
-                        </div>
-                        <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
-                            <dt class="text-ink-muted">Tanggal Bayar</dt>
-                            <dd class="m-0">{{ $panel->tanggal_bayar->locale('id')->translatedFormat('j F Y') }}</dd>
-
-                            <dt class="text-ink-muted">Diunggah</dt>
-                            <dd class="m-0">{{ $diunggah->translatedFormat('j F') }}, {{ $diunggah->format('H.i') }}</dd>
-
-                            <dt class="text-ink-muted">Jatuh Tempo</dt>
-                            <dd class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                <span>{{ $tagihan->jatuh_tempo->locale('id')->translatedFormat('j F') }}</span>
-                                @if ($telatPanel)
-                                    <x-status jenis="telat">Telat {{ (int) $tagihan->jatuh_tempo->diffInDays($this->hariIni) }} Hari</x-status>
+                                @if ($berkas['ekstensi'] === 'pdf')
+                                    <flux:icon.document-text class="size-10" />
+                                    <span class="teks-tombol-kecil">Berkas PDF</span>
+                                @else
+                                    <img
+                                        src="{{ $urlBukti }}"
+                                        alt="Bukti transfer Kamar {{ $nomorKamar }} {{ $bulan }}"
+                                        class="max-h-[420px] w-full rounded-lg object-contain"
+                                    >
                                 @endif
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
+                                <figcaption class="teks-badan">{{ strtoupper($berkas['ekstensi']) }}, {{ Format::ukuranBerkas($berkas['ukuran']) }}</figcaption>
+                                <a href="{{ $urlBukti }}" target="_blank" rel="noopener" class="tautan-aksi teks-tombol-kecil">Buka</a>
+                            @endif
+                        </figure>
 
-                <div class="flex flex-col gap-3 border-t border-divider pt-5 lg:flex-row lg:flex-wrap">
-                    <flux:modal.trigger name="terima-pembayaran">
-                        <button type="button" class="tombol w-full bg-primary text-white hover:bg-primary-hover lg:w-auto" data-test="buka-terima">Terima</button>
-                    </flux:modal.trigger>
-                    <button
-                        type="button"
-                        wire:click="bukaTolak({{ $panel->id }})"
-                        class="tombol w-full border border-[#E3B4AD] bg-surface text-danger lg:w-auto"
-                        data-test="buka-tolak"
-                    >Tolak</button>
+                        <div class="flex min-w-0 flex-col gap-[18px] lg:flex-[1_1_240px]">
+                            <div class="@container">
+                                <p class="m-0 text-ink-muted">Nominal</p>
+                                <p class="num m-0 mt-0.5 teks-angka-utama" data-test="nominal-tagihan">{{ Format::rupiah($tagihan->nominal) }}</p>
+                            </div>
+                            <dl class="m-0 grid grid-cols-[110px_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-2.5">
+                                <dt class="text-ink-muted">Tanggal Bayar</dt>
+                                <dd class="m-0">{{ $panel->tanggal_bayar->locale('id')->translatedFormat('j F Y') }}</dd>
+
+                                <dt class="text-ink-muted">Diunggah</dt>
+                                <dd class="m-0">{{ $diunggah->translatedFormat('j F') }}, {{ $diunggah->format('H.i') }}</dd>
+
+                                <dt class="text-ink-muted">Jatuh Tempo</dt>
+                                <dd class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span>{{ $tagihan->jatuh_tempo->locale('id')->translatedFormat('j F') }}</span>
+                                    @if ($telatPanel)
+                                        <x-status jenis="telat">Telat {{ (int) $tagihan->jatuh_tempo->diffInDays($this->hariIni) }} Hari</x-status>
+                                    @endif
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-divider pt-5 lg:flex-row lg:flex-wrap">
+                        <flux:modal.trigger name="terima-pembayaran">
+                            <button type="button" class="tombol tombol-utama w-full lg:w-auto" data-test="buka-terima">Terima</button>
+                        </flux:modal.trigger>
+                        <button
+                            type="button"
+                            wire:click="bukaTolak({{ $panel->id }})"
+                            class="tombol tombol-bahaya w-full lg:w-auto"
+                            data-test="buka-tolak"
+                        >Tolak</button>
+                    </div>
                 </div>
             </section>
         </div>
@@ -400,11 +401,7 @@ new #[Title('Verifikasi')] class extends Component {
                 <dd>{{ $panel->tanggal_bayar->locale('id')->translatedFormat('j F Y') }}</dd>
             </x-slot:ringkasan>
 
-            <x-slot:akibat>
-                <li>Tagihan jadi lunas.</li>
-                <li>Masuk riwayat.</li>
-                <li>Diantrekan ke Odoo.</li>
-            </x-slot:akibat>
+            <x-slot:akibat>Tagihan ini akan ditandai lunas dan dicatat ke pembukuan. Keputusan ini tidak bisa dibatalkan.</x-slot:akibat>
         </x-dialog-konfirmasi>
 
         <x-dialog-konfirmasi
@@ -422,10 +419,7 @@ new #[Title('Verifikasi')] class extends Component {
                 <dd class="num">{{ Format::rupiah($tagihan->nominal) }}</dd>
             </x-slot:ringkasan>
 
-            <x-slot:akibat>
-                <li>Tagihan kembali belum dibayar.</li>
-                <li>Penghuni bisa unggah ulang.</li>
-            </x-slot:akibat>
+            <x-slot:akibat>Penghuni akan melihat alasan ini dan bisa mengunggah bukti baru.</x-slot:akibat>
 
             <x-slot:isi>
                 <div>

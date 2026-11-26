@@ -16,7 +16,7 @@
                 <h1 class="teks-judul m-0">Akses ditolak</h1>
                 <p class="teks-badan m-0 text-ink-muted">Anda tidak memiliki akses ke halaman ini.</p>
 
-                <a href="{{ url('/beranda') }}" class="tombol bg-primary text-white no-underline hover:bg-primary-hover">
+                <a href="{{ url('/beranda') }}" class="tombol tombol-utama">
                     Beranda
                 </a>
 
