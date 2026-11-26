@@ -2,8 +2,11 @@
 
 use App\Enums\PeranPengguna;
 use App\Models\PengaturanOperasional;
+use App\Models\SinkronisasiErp;
 use App\Models\User;
 use App\Support\MenuNavigasi;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 dataset('semua_peran', ['pemilik', 'pengelola', 'penghuni', 'vendor']);
@@ -77,6 +80,55 @@ it('F-03: contoh menu terlarang tidak muncul (penghuni tanpa Akun pengguna, vend
     $this->actingAs(User::factory()->pemilik()->create())
         ->get('/dashboard')->assertOk()->assertDontSee('>Akun<', false)->assertDontSee('>Verifikasi<', false);
 });
+
+it('F-25: menu Sinkronisasi pengelola berangka jumlah transaksi gagal, dengan satu query', function () {
+    Queue::fake();
+    SinkronisasiErp::factory()->gagal()->count(2)->create();
+    SinkronisasiErp::factory()->terkirim()->create();
+    SinkronisasiErp::factory()->create();
+
+    $item = collect(MenuNavigasi::denganAngka(MenuNavigasi::untuk(PeranPengguna::Pengelola), PeranPengguna::Pengelola))
+        ->firstWhere('route', 'sinkronisasi-erp.index');
+
+    expect($item['jumlah'])->toBe(2)
+        ->and($item['antrean'])->toBe('sinkronisasi')
+        ->and($item['satuan'])->toBe('sinkronisasi gagal');
+
+    $pengelola = User::factory()->pengelola()->create();
+    DB::enableQueryLog();
+    $this->actingAs($pengelola)->get('/kamar')->assertOk()
+        ->assertSee('x-on:antrean-sinkronisasi.window="n = $event.detail.jumlah"', false)
+        ->assertSee('2 sinkronisasi gagal');
+    $query = collect(DB::getQueryLog())->filter(fn (array $q) => str_contains($q['query'], 'sinkronisasi_erp'));
+    DB::disableQueryLog();
+
+    expect($query)->toHaveCount(1);
+});
+
+it('F-25: angka menu Sinkronisasi tidak tampil saat tidak ada yang gagal', function () {
+    Queue::fake();
+    SinkronisasiErp::factory()->terkirim()->create();
+
+    $html = $this->actingAs(User::factory()->pengelola()->create())->get('/kamar')->assertOk()->getContent();
+
+    preg_match('#<span\s+x-data="\{ n: (\d+) \}"\s+x-on:antrean-sinkronisasi.*?style="display: none"#s', $html, $cocok);
+
+    expect($cocok)->not->toBeEmpty()->and($cocok[1])->toBe('0');
+});
+
+it('F-25: angka dan menu Sinkronisasi tidak ada untuk peran lain', function (string $peran, string $url) {
+    Queue::fake();
+    SinkronisasiErp::factory()->gagal()->create();
+
+    $this->actingAs(User::factory()->{$peran}()->create())->get($url)->assertOk()
+        ->assertDontSee('antrean-sinkronisasi', false)
+        ->assertDontSee('sinkronisasi gagal')
+        ->assertDontSee('href="'.route('sinkronisasi-erp.index').'"', false);
+})->with([
+    ['pemilik', '/kamar'],
+    ['penghuni', '/tagihan-saya'],
+    ['vendor', '/permintaan-kerja'],
+]);
 
 it('F-03: menu pengguna menampilkan nama, peran, Ganti password, dan Keluar', function () {
     $user = User::factory()->pengelola()->create(['nama' => 'Dewi Pengelola Uji']);

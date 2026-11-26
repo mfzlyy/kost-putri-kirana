@@ -34,7 +34,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
     });
 
     // Pengelola
-    Route::middleware('peran:pengelola')->group(function () use ($disiapkan) {
+    Route::middleware('peran:pengelola')->group(function () {
         Route::livewire('akun', 'pages::akun.index')->name('akun.index');
         Route::livewire('kamar/tambah', 'pages::kamar.form')->name('kamar.tambah');
         Route::livewire('kamar/{kamar}/ubah', 'pages::kamar.form')->name('kamar.ubah');
@@ -43,7 +43,7 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () use ($peranDashboar
         Route::livewire('kontrak/buat', 'pages::kontrak.form')->name('kontrak.buat');
         Route::livewire('kontrak/{kontrak}/perpanjang', 'pages::kontrak.form')->name('kontrak.perpanjang');
         Route::livewire('verifikasi-pembayaran', 'pages::verifikasi-pembayaran.index')->name('verifikasi-pembayaran.index');
-        $disiapkan('sinkronisasi-erp', 'sinkronisasi-erp.index', 'Sinkronisasi', 'F-25');
+        Route::livewire('sinkronisasi-erp', 'pages::sinkronisasi-erp.index')->name('sinkronisasi-erp.index');
     });
 
     // Pengelola dan pemilik

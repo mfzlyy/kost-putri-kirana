@@ -405,7 +405,7 @@ new #[Title('Riwayat')] class extends Component {
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                             <x-status jenis="tunggu">Menunggu</x-status>
                                         @elseif ($this->bisaLihatSinkronisasi)
-                                            <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal</x-status></a>
+                                            <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
                                         @else
                                             <x-status jenis="gagal">Gagal</x-status>
                                         @endif
@@ -438,7 +438,7 @@ new #[Title('Riwayat')] class extends Component {
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                     <x-status jenis="tunggu">Menunggu</x-status>
                                 @elseif ($this->bisaLihatSinkronisasi)
-                                    <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal</x-status></a>
+                                    <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
                                 @else
                                     <x-status jenis="gagal">Gagal</x-status>
                                 @endif

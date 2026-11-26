@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\PeranPengguna;
 use App\Enums\StatusTiket;
 use App\Models\Pembayaran;
+use App\Models\SinkronisasiErp;
 use App\Models\TiketKeluhan;
 
 /**
@@ -54,8 +55,9 @@ class MenuNavigasi
     }
 
     /**
-     * Menambah angka antrean pada item menu: bukti bayar yang menunggu di "Verifikasi" (pengelola) dan tiket
-     * berstatus diajukan di "Keluhan" (pengelola dan pemilik). Satu query per angka, per permintaan.
+     * Menambah angka antrean pada item menu: bukti bayar yang menunggu di "Verifikasi" (pengelola), transaksi
+     * gagal di "Sinkronisasi" (pengelola), dan tiket berstatus diajukan di "Keluhan" (pengelola dan pemilik).
+     * Satu query per angka, per permintaan.
      *
      * @param  list<array{label: string, route: string, ikon: string}>  $menu
      * @return list<array{label: string, route: string, ikon: string, jumlah?: int, antrean?: string, satuan?: string}>
@@ -73,6 +75,12 @@ class MenuNavigasi
                 'jumlah' => Pembayaran::query()->menunggu()->count(),
                 'antrean' => 'verifikasi',
                 'satuan' => 'bukti menunggu',
+            ];
+
+            $angka['sinkronisasi-erp.index'] = [
+                'jumlah' => SinkronisasiErp::query()->gagal()->count(),
+                'antrean' => 'sinkronisasi',
+                'satuan' => 'sinkronisasi gagal',
             ];
         }
 

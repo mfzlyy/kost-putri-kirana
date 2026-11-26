@@ -177,7 +177,7 @@ it('angka antrean disembunyikan saat kosong, dan tidak ada untuk pemilik', funct
         ->assertDontSee('Verifikasi pembayaran');
 });
 
-it('menghitung angka antrean memakai satu query per angka (verifikasi dan keluhan)', function () {
+it('menghitung angka antrean memakai satu query per angka (verifikasi, sinkronisasi, dan keluhan)', function () {
     siapkanBuktiMenunggu('01', 'Anisa Putri');
     $pengelola = User::factory()->pengelola()->create();
 
@@ -186,7 +186,7 @@ it('menghitung angka antrean memakai satu query per angka (verifikasi dan keluha
     $jumlahQuery = count(DB::getQueryLog());
     DB::disableQueryLog();
 
-    expect($jumlahQuery)->toBe(2)
+    expect($jumlahQuery)->toBe(3)
         ->and(collect($menu)->firstWhere('route', 'verifikasi-pembayaran.index')['jumlah'])->toBe(1);
 });
 

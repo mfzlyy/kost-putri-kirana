@@ -548,3 +548,54 @@ Format nama [ASUMSI, menunggu daftar fasilitas acuan DEP-P01]: `<nama_fasilitas>
 - Peralatan yang diarsipkan tidak ikut dicocokkan.
 - Nama fasilitas dalam satu lokasi sebaiknya unik; dua fasilitas bernama sama akan tertaut ke peralatan yang sama.
 - Baris pemeliharaan dibuat saat tiket diselesaikan. Fasilitas yang ditautkan **setelah** tiketnya selesai tidak membuat baris pemeliharaan baru untuk tiket itu.
+
+## 10. Implementasi F-25
+
+Halaman **Sinkronisasi** (`/sinkronisasi-erp`) hanya untuk pengelola berakun aktif (`SinkronisasiErpPolicy`: `viewAny` dan `kirimUlang`). Pemilik, penghuni, dan vendor mendapat 403. Pemilik tetap melihat status di Riwayat tanpa tautan.
+
+### 10.1 Isi halaman
+
+- Chip status berangka: Semua, Gagal (bawaan), Menunggu, Terkirim (`?status=`).
+- Urutan: `waktu_kirim` terbaru di atas, yang belum pernah dicoba di bawah, lalu ID terbaru. 20 baris per halaman.
+- Setiap baris: referensi, jenis, sumber beserta tautannya (pembayaran ke Riwayat, tiket ke Keluhan), status, waktu percobaan terakhir (Asia/Jakarta), dan `pesan_error` untuk baris gagal.
+- Tautan "Gagal" di Riwayat membuka `?status=gagal&ref=<referensi_unik>`. Barisnya disorot dan digulir ke tampilan; chip dan halaman paginasi disesuaikan bila barisnya sudah pindah. Referensi tidak dikenal diabaikan.
+- Menu Sinkronisasi menampilkan jumlah baris gagal.
+
+### 10.2 Alur kirim ulang
+
+```
+Tombol "Kirim Ulang" (hanya baris gagal)
+  └─ SinkronisasiErp::kirimUlang()  (DB::transaction, lockForUpdate pada baris itu)
+       ├─ status bukan gagal → SinkronisasiTidakBisaDikirimUlang (toast peringatan, daftar dimuat ulang)
+       └─ status menunggu, pesan_error kosong (waktu_kirim tetap)
+            └─ setelah commit: KirimSinkronisasiErp → antrean → IntegrasiErpService::kirim()
+```
+
+- Request halaman tidak memanggil Odoo. Pengiriman berjalan di worker yang sama dengan pengiriman pertama, dengan pemeriksaan referensi, kecocokan, dan pemulihan yang sama (bagian 8 dan 9), sehingga kirim ulang tidak menggandakan catatan.
+- Kiriman ganda dicegah berlapis: baris dikunci dan statusnya dibaca ulang (klik kedua menemukan `menunggu`), job unik per baris, dan kunci per baris di service (bagian 8.6).
+- Satu baris per klik. Tidak ada "kirim ulang semua", hapus, atau ubah data sinkronisasi. `[ASUMSI]` satu per satu cukup untuk volume kos.
+- Log `info`: `Sinkronisasi ERP dikirim ulang.` dengan `referensi_unik` dan ID pengelola.
+
+### 10.3 Pembaruan otomatis
+
+Selama halaman yang tampil memuat baris `menunggu`, halaman memuat ulang daftar, angka chip, dan angka menu tiap 5 detik (`wire:poll.5s.visible`). Tanpa baris `menunggu` tidak ada polling, jadi di chip Gagal hasil kirim ulang terlihat setelah membuka chip Menunggu atau Semua, atau setelah memuat ulang halaman.
+
+Baris yang tetap `menunggu` berarti job-nya belum diproses: pastikan worker antrean berjalan. Bila worker berjalan tetapi barisnya tidak berubah (kunci masih dipegang proses lain, atau job sebelumnya hilang), tunggu paling lama 10 menit lalu jalankan `php artisan erp:kirim-tertunda` (bagian 8.5). Halaman tidak menawarkan kirim ulang untuk baris `menunggu`.
+
+### 10.4 Pesan yang tampil dan tindakannya
+
+Daftar lengkap `pesan_error` ada di bagian 8.4 dan 9.5. Setelah penyebabnya diperbaiki, tekan Kirim Ulang.
+
+| Pesan | Tindakan pengelola |
+|---|---|
+| `Odoo tidak dapat dihubungi. ...` | Nyalakan Odoo atau periksa jaringan, lalu kirim ulang |
+| `API key Odoo ditolak. ...` | Minta pengurus server mengganti `ODOO_API_KEY` dan memulai ulang worker antrean, lalu kirim ulang |
+| `Konfigurasi Odoo belum lengkap.` | Minta pengurus server melengkapi variabel `ODOO_*` dan memulai ulang worker antrean |
+| `Odoo menolak: {name}: {message}` | Baca `{message}`; perbaiki penyebabnya di Odoo (data, hak akses, periode terkunci), lalu kirim ulang |
+| `Faktur / Tagihan vendor / Permintaan perawatan {REF} ... Periksa manual.` | Cari `{REF}` di Odoo. Bereskan catatan ganda, dibatalkan, dibayar sebagian, atau yang tidak cocok, lalu kirim ulang. Kirim ulang tanpa perbaikan akan gagal lagi |
+| `Ada lebih dari satu partner VDR-{id} di Odoo. Periksa manual.` | Gabungkan atau ubah `ref` partner ganda di Odoo, lalu kirim ulang |
+| `... sudah dibuat tetapi belum lunas / belum posted / belum di tahap selesai ...` | Periksa catatan `{REF}` di Odoo, lalu kirim ulang; pengiriman melanjutkan dari keadaan terakhir |
+| `Fasilitas belum ditautkan ke peralatan Odoo. ...`, `Peralatan Odoo #{id} ... tidak ditemukan. ...` | Buat atau tautkan peralatan (bagian 9.6), lalu kirim ulang |
+| `Jurnal bank tidak ditemukan di Odoo.`, `Tahap perawatan selesai tidak ditemukan di Odoo.` | Lengkapi jurnal bank atau tahap perawatan di Odoo, lalu kirim ulang |
+| `Pembayaran tidak berstatus diterima.`, `Nominal pembayaran berbeda ...`, `Tiket belum berstatus selesai.`, `Tiket tidak punya vendor.` | Data web tidak memenuhi syarat kirim; laporkan ke pengurus sistem |
+| `Kesalahan tak terduga saat mengirim ke Odoo.` | Kirim ulang sekali; bila terulang, laporkan ke pengurus sistem untuk memeriksa log |

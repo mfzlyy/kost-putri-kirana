@@ -180,7 +180,7 @@ it('F-14: kolom kamar memakai kamar kontrak tagihan itu, walau penghuni sudah pi
 });
 
 it('F-14 butir 3: status Odoo terkirim, menunggu, gagal, dan data migrasi', function () {
-    dataRiwayatKantor();
+    $data = dataRiwayatKantor();
 
     $komponen = halamanRiwayatKantor()
         ->assertSee('Terkirim')
@@ -192,7 +192,15 @@ it('F-14 butir 3: status Odoo terkirim, menunggu, gagal, dan data migrasi', func
         ->assertDontSee('Terkirim ke Odoo')
         ->assertDontSee('Odoo gagal');
 
-    expect($komponen->html())->toContain('href="'.route('sinkronisasi-erp.index').'"');
+    // F-25: tautan membawa pengelola ke baris yang gagal, di tabel desktop dan kartu ponsel.
+    $tautan = 'href="'.e(route('sinkronisasi-erp.index', [
+        'status' => 'gagal',
+        'ref' => $data['anisa_nov']->sinkronisasi->referensi_unik,
+    ])).'"';
+
+    expect(substr_count($komponen->html(), $tautan))->toBe(2)
+        ->and($tautan)->toContain('status=gagal&amp;ref=KPK-PAY-')
+        ->and(substr_count($komponen->html(), 'data-test="tautan-gagal"'))->toBe(2);
 });
 
 it('F-14 butir 3: pemilik melihat Gagal tanpa tautan ke Sinkronisasi ERP', function () {

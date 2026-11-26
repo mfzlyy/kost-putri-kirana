@@ -75,6 +75,7 @@ Sebelum menyatakan pekerjaan selesai, `php artisan test` harus lulus dan `vendor
 - Format referensi unik: `KPK-PAY-000123` (pembayaran), `KPK-TKT-0001-B` (biaya perbaikan), `KPK-TKT-0001-M` (pemeliharaan).
 - Sebelum `create`, selalu `search_read` berdasarkan referensi. Bila catatan sudah ada, lanjutkan dari keadaannya (draft → post, belum dibayar → bayar) tanpa membuat catatan baru, lalu tandai `terkirim`. Keadaan yang tidak bisa dilanjutkan otomatis (cancel, partial, ganda) ditandai `gagal` untuk diperiksa manual.
 - Pemicu: `SinkronisasiErp` created (semua jenis) men-dispatch `KirimSinkronisasiErp` setelah commit. Baris lama atau yang tertinggal dikirim dengan `php artisan erp:kirim-tertunda`.
+- Kirim ulang dari halaman Sinkronisasi (pengelola) hanya untuk status gagal; lewat antrean, tanpa HTTP di request halaman.
 - Fasilitas ditautkan ke `maintenance.equipment` lewat `php artisan erp:cocokkan-peralatan` (nama = `Fasilitas::namaPeralatanErp()`).
 - Model Odoo yang dipakai:
   - `account.move`: faktur pelanggan `out_invoice` dan tagihan vendor `in_invoice`, dengan field `ref`. Baris faktur selalu diberi `tax_ids` kosong (`[[6, 0, []]]`) karena Odoo memasang pajak bawaan 12%;
