@@ -578,7 +578,7 @@ Tombol "Kirim Ulang" (hanya baris gagal)
 
 ### 10.3 Pembaruan otomatis
 
-Selama halaman yang tampil memuat baris `menunggu`, halaman memuat ulang daftar, angka chip, dan angka menu tiap 5 detik (`wire:poll.5s.visible`). Tanpa baris `menunggu` tidak ada polling, jadi di chip Gagal hasil kirim ulang terlihat setelah membuka chip Menunggu atau Semua, atau setelah memuat ulang halaman.
+Selama ada baris `menunggu` di tabel `sinkronisasi_erp`, di chip atau halaman mana pun, halaman memuat ulang daftar, angka chip, dan angka menu tiap 5 detik (`wire:poll.5s.visible`). Baris yang kembali gagal muncul lagi di chip Gagal tanpa muat ulang. Penentunya angka chip Menunggu, jadi tidak ada query tambahan. Tanpa baris `menunggu` tidak ada polling.
 
 Baris yang tetap `menunggu` berarti job-nya belum diproses: pastikan worker antrean berjalan. Bila worker berjalan tetapi barisnya tidak berubah (kunci masih dipegang proses lain, atau job sebelumnya hilang), tunggu paling lama 10 menit lalu jalankan `php artisan erp:kirim-tertunda` (bagian 8.5). Halaman tidak menawarkan kirim ulang untuk baris `menunggu`.
 

@@ -152,7 +152,7 @@ new #[Title('Sinkronisasi')] class extends Component {
         $this->segarkan();
     }
 
-    /** Dipanggil wire:poll selama ada baris menunggu di halaman yang tampil. */
+    /** Dipanggil wire:poll selama ada baris menunggu, di chip atau halaman mana pun. */
     public function muatUlang(): void
     {
         $this->authorize('viewAny', SinkronisasiErp::class);
@@ -231,7 +231,7 @@ new #[Title('Sinkronisasi')] class extends Component {
 @php
     $halaman = $this->halaman;
     $hitungan = $this->hitungan;
-    $adaMenunggu = $halaman->getCollection()->contains(fn ($baris) => $baris->status_sinkronisasi === StatusSinkronisasi::Menunggu);
+    $adaMenunggu = $hitungan['menunggu'] > 0;
     $jenisStatus = [
         StatusSinkronisasi::Gagal->value => 'gagal',
         StatusSinkronisasi::Menunggu->value => 'tunggu',

@@ -427,29 +427,77 @@ it('F-25: ganti chip melepas sorotan', function () {
 
 // ---- Pembaruan otomatis ----
 
-it('F-25: wire:poll hanya ada bila halaman yang tampil memuat baris menunggu', function () {
-    barisHalamanBayar('01', 'gagal');
-    $komponen = halamanSinkronisasi()->assertDontSee('wire:poll', false);
-
+it('F-25: wire:poll ada di chip mana pun selama ada baris menunggu', function (string $chip) {
     barisHalamanBayar('02', 'menunggu', null);
 
-    // Chip Gagal tidak memuat baris menunggu, jadi tetap tanpa polling.
-    $komponen->call('muatUlang')->assertDontSee('wire:poll', false);
-    $komponen->call('pilihStatus', 'menunggu')->assertSee('wire:poll.5s.visible="muatUlang"', false);
-    $komponen->call('pilihStatus', 'terkirim')->assertDontSee('wire:poll', false);
-    $komponen->call('pilihStatus', 'semua')->assertSee('wire:poll.5s.visible="muatUlang"', false);
+    halamanSinkronisasi(['status' => $chip])->assertSee('wire:poll.5s.visible="muatUlang"', false);
+})->with(['semua', 'gagal', 'menunggu', 'terkirim']);
+
+it('F-25: tanpa baris menunggu tidak ada wire:poll di chip mana pun', function (string $chip) {
+    barisHalamanBayar('01', 'gagal');
+    barisHalamanBayar('02', 'terkirim');
+
+    halamanSinkronisasi(['status' => $chip])->assertDontSee('wire:poll', false);
+})->with(['semua', 'gagal', 'menunggu', 'terkirim']);
+
+it('F-25: chip Gagal yang kosong tetap memantau baris menunggu', function () {
+    barisHalamanBayar('01', 'menunggu', null);
+
+    halamanSinkronisasi()
+        ->assertSet('status', 'gagal')
+        ->assertSee('Tidak ada transaksi yang gagal.')
+        ->assertSee('wire:poll.5s.visible="muatUlang"', false);
 });
 
-it('F-25: baris menunggu di halaman lain tidak menyalakan polling', function () {
+it('F-25: baris menunggu di halaman lain tetap menyalakan polling', function () {
     barisHalamanBayar('21', 'menunggu', null);
     foreach (range(1, 20) as $n) {
         barisHalamanBayar(sprintf('%02d', $n), 'gagal');
     }
 
-    halamanSinkronisasi(['status' => 'semua'])
+    $komponen = halamanSinkronisasi(['status' => 'semua'])->assertSee('wire:poll', false);
+
+    expect($komponen->instance()->halaman->pluck('status_sinkronisasi.value'))->not->toContain('menunggu');
+});
+
+it('F-25: baris yang kembali gagal muncul lagi di chip Gagal tanpa muat ulang halaman', function () {
+    $baris = barisHalamanBayar('01', 'gagal');
+
+    $komponen = halamanSinkronisasi()
+        ->call('kirimUlang', $baris->id)
+        ->assertSee('Tidak ada transaksi yang gagal.')
+        ->assertSee('wire:poll.5s.visible="muatUlang"', false);
+
+    // Worker gagal lagi di luar halaman.
+    $baris->refresh()->forceFill(['status_sinkronisasi' => 'gagal', 'pesan_error' => 'Odoo tidak dapat dihubungi.'])->save();
+
+    $komponen->call('muatUlang')
+        ->assertSet('status', 'gagal')
+        ->assertSee($baris->referensi_unik)
+        ->assertSee('data-test="kirim-ulang"', false)
         ->assertDontSee('wire:poll', false)
-        ->call('gotoPage', 2)
-        ->assertSee('wire:poll', false);
+        ->assertDispatched('antrean-sinkronisasi', jumlah: 1);
+
+    expect(chipSinkronisasi($komponen->html()))->toBe(['Semua 1', 'Gagal 1', 'Menunggu 0', 'Terkirim 0']);
+});
+
+it('F-25: halaman dengan lebih dari 20 baris memakai teks paginasi berbahasa Indonesia', function () {
+    foreach (range(1, 21) as $n) {
+        barisHalamanBayar(sprintf('%02d', $n), 'gagal');
+    }
+
+    $html = $this->actingAs(User::factory()->pengelola()->create())
+        ->get('/sinkronisasi-erp')
+        ->assertOk()
+        ->assertSeeTextInOrder(['Menampilkan', '1', '–', '20', 'dari', '21'])
+        ->assertSee('aria-label="Sebelumnya"', false)
+        ->assertSee('aria-label="Berikutnya"', false)
+        ->assertDontSee('Showing')
+        ->assertDontSee('results')
+        ->assertDontSee('laquo')
+        ->getContent();
+
+    expect($html)->toContain('data-flux-pagination');
 });
 
 it('F-25: muat ulang saat polling menampilkan status baru, memperbarui angka, dan menghentikan polling', function (string $akhir, int $angkaGagal) {

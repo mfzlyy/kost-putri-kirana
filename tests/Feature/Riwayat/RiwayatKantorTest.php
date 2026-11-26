@@ -302,6 +302,24 @@ it('F-14: vendor mendapat 403 dan tamu diarahkan ke login', function () {
     $this->get('/riwayat-transaksi')->assertRedirect(route('login'));
 });
 
+it('F-14: halaman dengan lebih dari 20 baris memakai teks paginasi berbahasa Indonesia', function () {
+    foreach (range(1, 21) as $n) {
+        $kontrak = buatKontrakUji(sprintf('%02d', $n), 'Penghuni '.$n);
+        buatPembayaranDiterima($kontrak, '2026-10-01', '2026-10-08', '2026-10-09 10:00');
+    }
+
+    $this->actingAs(User::factory()->pengelola()->create())
+        ->get('/riwayat-transaksi')
+        ->assertOk()
+        ->assertSee('data-flux-pagination', false)
+        ->assertSeeTextInOrder(['Menampilkan', '1', '–', '20', 'dari', '21'])
+        ->assertSee('aria-label="Sebelumnya"', false)
+        ->assertSee('aria-label="Berikutnya"', false)
+        ->assertDontSee('Showing')
+        ->assertDontSee('results')
+        ->assertDontSee('laquo');
+});
+
 it('F-14: halaman kantor tidak memuat aksi ubah', function () {
     dataRiwayatKantor();
 
