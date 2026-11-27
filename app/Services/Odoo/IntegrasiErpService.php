@@ -603,9 +603,7 @@ class IntegrasiErpService
             ]);
         } catch (OdooException $e) {
             if ($this->peralatanSudahTidakAda($e, $idPeralatan)) {
-                throw new PengirimanErpGagal(
-                    "Peralatan Odoo #{$idPeralatan} untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan."
-                );
+                throw new PengirimanErpGagal('Peralatan Odoo untuk fasilitas ini tidak ditemukan.');
             }
 
             throw $e;

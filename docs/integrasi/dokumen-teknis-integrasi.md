@@ -521,7 +521,7 @@ Pesan umum di bagian 8.4 (konfigurasi, koneksi, 401, `Odoo menolak: ...`, galat 
 | Tagihan tidak cocok | `Tagihan vendor {REF} di Odoo tidak cocok dengan data web ({beda}). Periksa manual di Odoo.` dengan `{beda}` = satu atau lebih dari `vendor, tanggal, nominal` |
 | Tagihan belum posted | `Tagihan vendor {REF} sudah dibuat tetapi belum posted di Odoo.` |
 | Fasilitas belum tertaut | `Fasilitas belum ditautkan ke peralatan Odoo.` |
-| Peralatan sudah dihapus | `Peralatan Odoo #{id} untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan.` |
+| Peralatan sudah dihapus | `Peralatan Odoo untuk fasilitas ini tidak ditemukan.` |
 | Permintaan ganda | `Ada lebih dari satu permintaan perawatan {REF} di Odoo. Periksa manual.` |
 | Permintaan tidak cocok | `Permintaan perawatan {REF} di Odoo tidak cocok dengan data web ({beda}). Periksa manual di Odoo.` dengan `{beda}` = `peralatan`, `tanggal`, atau keduanya |
 | Tidak ada tahap selesai | `Tahap perawatan selesai tidak ditemukan di Odoo.` |

@@ -205,7 +205,7 @@ it('gagal tanpa memanggil Odoo bila tiket tidak selesai', function () {
     Http::assertNothingSent();
 });
 
-it('peralatan yang sudah dihapus di Odoo menghasilkan pesan yang menyarankan pencocokan ulang', function () {
+it('peralatan yang sudah dihapus di Odoo menghasilkan pesan tanpa nomor internal dan tanpa perintah', function () {
     fakeOdooPemeliharaan([
         'maintenance.request/create' => Http::response([
             'name' => 'odoo.exceptions.MissingError', 'message' => 'Record does not exist or has been deleted.',
@@ -216,7 +216,7 @@ it('peralatan yang sudah dihapus di Odoo menghasilkan pesan yang menyarankan pen
     $baris = kirimKeOdoo(barisRawat());
 
     expect($baris->status_sinkronisasi)->toBe(StatusSinkronisasi::Gagal)
-        ->and($baris->pesan_error)->toBe('Peralatan Odoo #42 untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan.')
+        ->and($baris->pesan_error)->toBe('Peralatan Odoo untuk fasilitas ini tidak ditemukan.')
         ->and(bodyOdoo('maintenance.equipment/search_read'))->toBe([
             'domain' => [['id', '=', 42]], 'fields' => ['id'], 'limit' => 1, 'context' => ['active_test' => false],
         ]);

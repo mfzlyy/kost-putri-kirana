@@ -23,8 +23,8 @@ Aturan keputusan ada di `docs/design/DESIGN.md`, bagian Penulisan.
 | Penghuni | 109 | 0 | 0 | 109 |
 | Vendor | 41 | 0 | 0 | 41 |
 | Tamu/Masuk | 16 | 0 | 2 | 18 |
-| Semua | 302 | 2 | 0 | 304 |
-| **Jumlah** | **895** | **10** | **11** | **916** |
+| Semua | 301 | 3 | 0 | 304 |
+| **Jumlah** | **894** | **11** | **11** | **916** |
 
 ## Pemilik
 
@@ -970,7 +970,7 @@ Aturan keputusan ada di `docs/design/DESIGN.md`, bagian Penulisan.
 | 913 | Validasi: nama isian | `lang/id/validation.php:205` | pesan galat | tarif per bulan (tarif_bulanan) | TETAP |  | Nama isian di pesan galat |
 | 914 | Validasi: nama isian | `lang/id/validation.php:206` | pesan galat | berkas bukti (bukti) | TETAP |  | Nama isian di pesan galat |
 | 915 | Validasi: nama isian | `lang/id/validation.php:207` | pesan galat | tanggal transfer (tanggal_bayar) | TETAP |  | Nama isian di pesan galat |
-| 916 | Sinkronisasi (pesan galat tersimpan) | `app/Services/Odoo/IntegrasiErpService.php:607` | pesan galat | Peralatan Odoo #{id} untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan. | TETAP |  | Pesan galat (tampil di Sinkronisasi) |
+| 916 | Sinkronisasi (pesan galat tersimpan) | `app/Services/Odoo/IntegrasiErpService.php:607` | pesan galat | Peralatan Odoo #{id} untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan. | PERSINGKAT | Peralatan Odoo untuk fasilitas ini tidak ditemukan. | Nomor internal dan perintah teknis dibuang, keputusan tim |
 
 ## Teks Baru dari Prompt 20D
 
