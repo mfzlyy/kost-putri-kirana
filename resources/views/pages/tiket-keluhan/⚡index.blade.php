@@ -38,6 +38,9 @@ new #[Title('Keluhan')] class extends Component {
 
     public string $instruksi = '';
 
+    /** Diisi browser: layar >= 1024px, tempat daftar dan panel detail tampil berdampingan. */
+    public bool $layarLebar = false;
+
     private const FILTER = ['semua', 'perlu', 'diajukan', 'ditugaskan', 'dikerjakan', 'selesai'];
 
     private const STATUS_PERLU = ['diajukan', 'ditugaskan', 'dikerjakan'];
@@ -121,21 +124,6 @@ new #[Title('Keluhan')] class extends Component {
     }
 
     /**
-     * Tiket yang ditampilkan di panel: pilihan eksplisit, atau tiket teratas di daftar (bawaan desktop).
-     */
-    #[Computed]
-    public function panel(): ?TiketKeluhan
-    {
-        if ($this->dipilih !== null) {
-            return $this->dipilih;
-        }
-
-        $teratas = $this->halaman->first();
-
-        return $teratas === null ? null : $this->muatTiket($teratas->id);
-    }
-
-    /**
      * Vendor aktif untuk form penugasan.
      *
      * @return Collection<int, Vendor>
@@ -203,9 +191,31 @@ new #[Title('Keluhan')] class extends Component {
      */
     private function segarkan(): void
     {
-        unset($this->hitungan, $this->halaman, $this->dipilih, $this->panel, $this->vendorAktif);
+        unset($this->hitungan, $this->halaman, $this->dipilih, $this->vendorAktif);
 
         $this->dispatch('antrean-keluhan', jumlah: $this->hitungan['diajukan']);
+    }
+
+    /**
+     * Setelah penugasan. Desktop: panel tetap terbuka pada tiket teratas berikutnya di daftar yang sedang disaring, dan
+     * tertutup bila tidak ada lagi. Ponsel: tetap di tiket yang baru ditugaskan.
+     */
+    private function lanjutSetelahTugaskan(int $id): void
+    {
+        $berikutnya = $id;
+
+        if ($this->layarLebar) {
+            // Halaman terakhir bisa kosong setelah tiketnya keluar dari filter.
+            if ($this->halaman->isEmpty() && $this->halaman->currentPage() > 1) {
+                $this->setPage($this->halaman->lastPage());
+                unset($this->halaman);
+            }
+
+            $berikutnya = $this->halaman->getCollection()->first(fn (TiketKeluhan $tiket) => $tiket->id !== $id)?->id;
+        }
+
+        $this->tiket = $berikutnya === null ? '' : (string) $berikutnya;
+        unset($this->dipilih);
     }
 
     /**
@@ -257,17 +267,18 @@ new #[Title('Keluhan')] class extends Component {
 
         Flux::toast(variant: 'success', text: $tiket->nomor_tiket.' ditugaskan ke '.$vendor->nama_vendor.'.');
 
-        $this->tiket = (string) $tiket->id;
         $this->kosongkanForm();
         $this->segarkan();
+        $this->lanjutSetelahTugaskan($tiket->id);
     }
 }; ?>
 
 @php
     $halaman = $this->halaman;
     $hitungan = $this->hitungan;
-    $panel = $this->panel;
-    $adaPilihan = $this->dipilih !== null;
+    // Panel hanya ada bila pengguna memilih tiket (klik atau ?tiket=).
+    $panel = $this->dipilih;
+    $adaPilihan = $panel !== null;
     $zona = config('app.timezone');
     $tanggal = fn ($waktu, string $format) => $waktu->setTimezone($zona)->locale('id')->translatedFormat($format);
     $bisaTugaskan = $panel !== null && $panel->status_tiket === StatusTiket::Diajukan && auth()->user()->can('tugaskan', $panel);
@@ -281,7 +292,7 @@ new #[Title('Keluhan')] class extends Component {
     ];
 @endphp
 
-<section class="flex w-full flex-col gap-6">
+<section class="flex w-full flex-col gap-6" x-data="daftarPanel('tiket')" x-on:keydown.escape.window="tekanEsc($event)">
     {{-- Ponsel yang sedang membuka satu tiket tidak memakai kepala halaman, chip, dan daftar; judulnya ada di panel detail. --}}
     <x-judul-halaman :class="$adaPilihan ? 'max-lg:hidden' : ''" judul="Keluhan" />
 
@@ -296,24 +307,25 @@ new #[Title('Keluhan')] class extends Component {
         @endforeach
     </x-chip-filter.baris>
 
-    @if ($panel === null)
-        <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">
-            {{ $hitungan['semua'] === 0 ? 'Belum ada keluhan.' : 'Tidak ada tiket yang sesuai filter.' }}
-        </p>
-    @else
-        {{-- siap = false saat halaman dibuka, jadi isi panel pertama tidak beranimasi. --}}
-        <div x-data="{ siap: false }" x-init="$nextTick(() => siap = true)" wire:loading.class="opacity-60" wire:target="pilihStatus,gotoPage,nextPage,previousPage" class="transisi-opasitas flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(0,1.5fr)] lg:items-start lg:gap-6">
-            {{-- Daftar --}}
-            <div @class(['flex min-w-0 flex-col gap-4', 'max-lg:hidden' => $adaPilihan])>
+    {{-- Tanpa pilihan: daftar selebar konten. Dengan pilihan (desktop): daftar 40%, panel 60%. --}}
+    <div wire:loading.class="opacity-60" wire:target="pilihStatus,gotoPage,nextPage,previousPage" @class(['transisi-opasitas flex flex-col gap-4', 'lg:grid lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)] lg:items-start lg:gap-6' => $adaPilihan])>
+        {{-- Daftar --}}
+        <div @class(['flex min-w-0 flex-col gap-4', 'max-lg:hidden' => $adaPilihan])>
+            @if ($halaman->isEmpty())
+                <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">
+                    {{ $hitungan['semua'] === 0 ? 'Belum ada keluhan.' : 'Tidak ada tiket yang sesuai filter.' }}
+                </p>
+            @else
                 <section aria-label="Daftar tiket keluhan" class="daftar-klik overflow-hidden rounded-2xl border border-border bg-surface" data-test="daftar-tiket">
                     @foreach ($halaman as $item)
                         @php
-                            $terpilih = $item->id === $panel->id;
+                            $terpilih = $item->id === $panel?->id;
                         @endphp
                         <a
                             wire:key="tiket-{{ $item->id }}"
                             href="{{ route('tiket-keluhan.index', ['tiket' => $item->id]) }}"
-                            wire:click.prevent="pilih({{ $item->id }})"
+                            x-on:click.prevent="buka({{ $item->id }})"
+                            data-item="{{ $item->id }}"
                             @if ($terpilih) aria-current="true" @endif
                             class="baris-pilih grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 text-ink no-underline first:border-t-0 hover:text-ink"
                             data-test="item-tiket"
@@ -328,25 +340,32 @@ new #[Title('Keluhan')] class extends Component {
                         </a>
                     @endforeach
                 </section>
+            @endif
 
-                {{ $halaman->links() }}
-            </div>
+            {{ $halaman->links() }}
+        </div>
 
-            {{-- Panel detail --}}
+        {{-- Panel detail --}}
+        @if ($adaPilihan)
             @php
                 $riwayat = $panel->riwayatStatus;
                 $sudahDitugaskan = $panel->status_tiket !== StatusTiket::Diajukan;
                 $durasi = $panel->durasiPenanganan();
                 $judulTiket = $panel->fasilitas->nama_fasilitas.', '.$this->lokasiTiket($panel);
             @endphp
+            {{-- Panel masuk dari kanan saat baru dibuka; saat pilihan diganti hanya isinya yang beranimasi. --}}
             <section
+                wire:key="panel-detail"
                 aria-labelledby="judul-panel"
                 wire:loading.class="opacity-60"
                 wire:target="pilih"
-                @class(['transisi-opasitas min-w-0 rounded-2xl border border-border bg-surface p-4 lg:p-6', 'max-lg:hidden' => ! $adaPilihan])
+                x-init="siap && $el.classList.add('panel-geser')"
+                x-on:animationend.self="$el.classList.remove('panel-geser')"
+                class="transisi-opasitas min-w-0 rounded-2xl border border-border bg-surface p-4 lg:p-6"
+                data-panel
                 data-test="panel-tiket"
             >
-                <div wire:key="panel-{{ $panel->id }}" x-init="siap && $el.classList.add('panel-masuk')" class="flex flex-col gap-5" data-test="isi-panel">
+                <div wire:key="panel-{{ $panel->id }}" x-init="siap && ! $el.parentElement.classList.contains('panel-geser') && $el.classList.add('panel-masuk')" class="flex flex-col gap-5" data-test="isi-panel">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="flex min-w-0 items-start gap-1">
                             <a
@@ -359,12 +378,15 @@ new #[Title('Keluhan')] class extends Component {
                             </a>
                             <div class="min-w-0">
                                 <p class="num m-0 teks-bantuan" data-test="nomor-panel">{{ $panel->nomor_tiket }}</p>
-                                <h2 id="judul-panel" class="m-0 mt-0.5 teks-bagian">{{ $judulTiket }}</h2>
+                                <h2 id="judul-panel" tabindex="-1" class="m-0 mt-0.5 teks-bagian">{{ $judulTiket }}</h2>
                             </div>
                         </div>
                         <div class="flex items-center gap-2.5">
                             <x-meter-tiket :status="$panel->status_tiket" />
                             <x-status :jenis="$this->jenisStatus($panel->status_tiket)">{{ $panel->status_tiket->label() }}</x-status>
+                            <button type="button" x-on:click="tutup()" aria-label="Tutup detail" class="tombol-ikon -my-2 -me-2 flex size-10 shrink-0 items-center justify-center text-ink-muted max-lg:hidden" data-test="tutup-panel">
+                                <flux:icon.x-mark class="size-5" />
+                            </button>
                         </div>
                     </div>
 
@@ -509,6 +531,6 @@ new #[Title('Keluhan')] class extends Component {
                     @endif
                 </div>
             </section>
-        </div>
-    @endif
+        @endif
+    </div>
 </section>

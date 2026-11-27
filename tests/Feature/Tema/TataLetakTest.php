@@ -1,8 +1,11 @@
 <?php
 
 use App\Models\PengaturanOperasional;
+use App\Models\SinkronisasiErp;
+use App\Models\Tagihan;
 use App\Models\User;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\File;
 
 /*
 | Kepala halaman seragam, ringkasan angka, dan token tipografi (docs/design/DESIGN.md, Typography dan Layout).
@@ -23,7 +26,7 @@ function kepalaHalaman(string $html): string
 it('x-ringkasan-angka merender satu sel per item, item bahaya di akhir dengan penanda gaya bahaya', function () {
     $html = Blade::render('<x-ringkasan-angka label="Ringkasan" :items="$items" />', ['items' => [
         ['kunci' => 'a', 'label' => 'Total', 'nilai' => 'Rp1.000.000'],
-        ['kunci' => 'b', 'label' => 'Tunggakan', 'nilai' => 'Rp500.000', 'keterangan' => '2 tagihan, semua periode', 'nada' => 'bahaya'],
+        ['kunci' => 'b', 'label' => 'Tunggakan', 'nilai' => 'Rp500.000', 'keterangan' => '2 tagihan', 'nada' => 'bahaya'],
         ['kunci' => 'c', 'label' => 'Lunas', 'nilai' => 'Rp400.000'],
     ]]);
 
@@ -32,7 +35,7 @@ it('x-ringkasan-angka merender satu sel per item, item bahaya di akhir dengan pe
         ->and(substr_count($html, 'data-test="ringkasan-c"'))->toBe(1)
         ->and(substr_count($html, 'data-nada="bahaya"'))->toBe(1)
         ->and($html)->toContain('--kolom: 3;')
-        ->and($html)->toContain('2 tagihan, semua periode')
+        ->and($html)->toContain('2 tagihan')
         ->and($html)->toContain('aria-label="Ringkasan"')
         ->and($html)->toContain('ringkasan-nilai')
         ->and($html)->toContain('teks-kolom')
@@ -90,7 +93,7 @@ it('tombol Tambah dan Buat ada di kepala halaman, bukan di baris filter', functi
     'Kontrak' => ['/kontrak', 'data-test="buat-kontrak"'],
 ]);
 
-it('Tagihan: segmen periode dan tombol Terbitkan ada di kepala halaman', function () {
+it('Tagihan: pemilih periode dan tombol Terbitkan ada di kepala halaman', function () {
     $html = $this->actingAs(User::factory()->pengelola()->create())->get('/tagihan')->assertOk()->getContent();
     $kepala = kepalaHalaman($html);
 
@@ -169,6 +172,52 @@ it('tabel Penghuni dan Kontrak tidak menggulirkan halaman: teks sr-only tertahan
         ->and($sel[1])->not->toContain('whitespace-nowrap');
 })->with(['/penghuni', '/kontrak']);
 
+it('20D: setiap tabel data memakai table-fixed dengan colgroup selebar jumlah kolomnya', function (string $peran, string $url) {
+    $kontrak = buatKontrakUji('01', 'Anisa Putri');
+    buatPembayaranDiterima($kontrak, '2026-10-01', '2026-10-05', '2026-10-06 10:00');
+    Tagihan::factory()->create(['kontrak_id' => $kontrak->id, 'periode' => now()->startOfMonth()->toDateString()]);
+    $user = $peran === 'penghuni' ? $kontrak->penghuni->user : User::factory()->{$peran}()->create();
+    SinkronisasiErp::factory()->create();
+
+    $html = $this->actingAs($user)->get($url)->assertOk()->getContent();
+
+    preg_match_all('#<table\b.*?</table>#s', $html, $tabel);
+    expect($tabel[0])->not->toBeEmpty("Tidak ada tabel di {$url}");
+
+    foreach ($tabel[0] as $satu) {
+        preg_match('#^<table\b[^>]*class="([^"]*)"#', $satu, $kelas);
+        preg_match('#<colgroup>(.*?)</colgroup>#s', $satu, $kolom);
+        preg_match('#<thead>(.*?)</thead>#s', $satu, $kepala);
+
+        expect($kelas[1] ?? '')->toContain('table-fixed')
+            ->and($kolom)->not->toBeEmpty("Tanpa colgroup di {$url}")
+            ->and(preg_match_all('#<col[\s>]#', $kolom[1]))->toBe(preg_match_all('#<th[\s>]#', $kepala[1]));
+    }
+})->with([
+    ['pengelola', '/tagihan'],
+    ['pemilik', '/tagihan'],
+    ['pengelola', '/riwayat-transaksi'],
+    ['penghuni', '/riwayat-transaksi'],
+    ['pengelola', '/kontrak'],
+    ['pemilik', '/kontrak'],
+    ['pengelola', '/penghuni'],
+    ['pemilik', '/penghuni'],
+    ['pengelola', '/kamar'],
+    ['pemilik', '/kamar'],
+    ['pengelola', '/akun'],
+    ['pengelola', '/sinkronisasi-erp?status=semua'],
+    ['penghuni', '/tagihan-saya'],
+]);
+
+it('20D: tidak ada tabel di view yang luput dari table-fixed', function () {
+    foreach (File::allFiles(resource_path('views/pages')) as $berkas) {
+        $isi = $berkas->getContents();
+
+        expect(substr_count($isi, '<colgroup>'))->toBe(substr_count($isi, '<table '), $berkas->getRelativePathname())
+            ->and(substr_count($isi, 'table-fixed'))->toBeGreaterThanOrEqual(substr_count($isi, '<table '), $berkas->getRelativePathname());
+    }
+});
+
 it('x-ringkasan-angka adalah container dengan tata letak berbasis lebar kartu', function () {
     $html = Blade::render('<x-ringkasan-angka :items="$items" />', ['items' => [
         ['label' => 'A', 'nilai' => '1'], ['label' => 'B', 'nilai' => '2'], ['label' => 'C', 'nilai' => '3'],
@@ -188,8 +237,11 @@ it('x-ringkasan-angka adalah container dengan tata letak berbasis lebar kartu', 
     expect($css)->toMatch('/\.ringkasan \{\s*container-type: inline-size;/')
         ->and($css)->toContain('@container (min-width: 600px)')
         ->and($css)->toContain('@container (min-width: 1000px)')
-        ->and($css)->toContain('repeat(var(--kolom), minmax(max-content, 1fr))')
-        ->and($css)->toContain('repeat(var(--kolom-md), minmax(max-content, 1fr))')
+        // Kolom sama lebar dan tetap: posisi sel tidak mengikuti panjang nilai.
+        ->and($css)->toContain('repeat(var(--kolom), minmax(0, 1fr))')
+        ->and($css)->toContain('repeat(var(--kolom-md), minmax(0, 1fr))')
+        ->and($css)->not->toContain('minmax(max-content')
+        ->and($html)->toContain('.ringkasan-nilai')
         ->and($css)->toContain('clamp(18px, 2.1cqi, 24px)');
 });
 

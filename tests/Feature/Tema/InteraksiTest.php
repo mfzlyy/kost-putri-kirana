@@ -125,7 +125,6 @@ it('setiap jenis elemen klik punya aturan hover di dalam media hover', function 
     '.tombol-ikon:not(:disabled):hover',
     '.sorot-gelap:hover',
     ".chip[aria-pressed='false']:not(:disabled):hover",
-    "a.segmen:not([aria-current='true']):hover",
     'label.pilihan:not(:has(input:checked, input:disabled)):hover',
     '.kartu-klik:hover',
     '.baris-pilih:hover',
@@ -146,6 +145,32 @@ it('status tekan berlaku di semua perangkat dan baris tabel yang tidak bisa dikl
 
     expect($css)->not->toContain('tbody tr:hover')
         ->and($css)->toMatch('/:focus-visible \{\s*outline: 2px solid var\(--color-primary\);\s*outline-offset: 2px;/');
+});
+
+it('20D: panel masuk dari kanan 200ms dan keluar kebalikannya, hanya bila gerak tidak dikurangi', function () {
+    $css = cssAplikasi();
+    $bergerak = blokCss($css, '@media (prefers-reduced-motion: no-preference)');
+
+    expect($bergerak)->toContain('animation: panel-geser 200ms ease-out')
+        ->toContain('animation: panel-keluar 200ms ease-in forwards')
+        ->and($css)->toMatch('/@keyframes panel-geser \{\s*from \{\s*opacity: 0;\s*transform: translateX\(16px\);/')
+        ->and($css)->toMatch('/@keyframes panel-keluar \{\s*from \{\s*opacity: 1;\s*transform: translateX\(0\);/');
+});
+
+it('20D: pengendali panel menutup lewat Esc di desktop, mengembalikan fokus, dan menghormati gerak dikurangi', function () {
+    $js = file_get_contents(resource_path('js/daftar-panel.js'));
+
+    expect(file_get_contents(resource_path('js/app.js')))->toContain("import './daftar-panel';")
+        ->and($js)->toContain("window.matchMedia('(min-width: 64rem)')")
+        ->toContain("window.matchMedia('(prefers-reduced-motion: reduce)')")
+        ->toContain("document.querySelector('dialog[open]')")
+        ->toContain("querySelector('#judul-panel')?.focus()")
+        ->toContain('data-item="${id}"');
+
+    foreach (['verifikasi-pembayaran', 'tiket-keluhan'] as $halaman) {
+        expect(file_get_contents(resource_path("views/pages/{$halaman}/⚡index.blade.php")))
+            ->toContain('x-on:keydown.escape.window="tekanEsc($event)"');
+    }
 });
 
 it('animasi panel dan transisi hanya aktif bila gerak tidak dikurangi', function () {
@@ -198,15 +223,15 @@ it('chip, menu sidebar, tab penghuni, dan tombol Batal merender kelas interaksin
         ->and($html)->toContain('sorot-gelap');
 });
 
-it('Tagihan merender segmen periode dan tombol utama; Sinkronisasi dan Akun merender kelas aksinya', function () {
+it('Tagihan merender pemilih periode dan tombol utama; Sinkronisasi dan Akun merender kelas aksinya', function () {
     $pengelola = User::factory()->pengelola()->create();
     User::factory()->penghuni()->create();
     User::factory()->vendor()->nonaktif()->create();
 
     $tagihan = $this->actingAs($pengelola)->get('/tagihan')->assertOk()->getContent();
-    preg_match('#<nav aria-label="Periode".*?</nav>#s', $tagihan, $periode);
-
-    expect(substr_count($periode[0], 'segmen '))->toBe(3)
+    expect(kelasElemen($tagihan, 'data-test="periode-sebelumnya"'))->toContain('tombol-persegi')->toContain('tombol-sekunder')
+        ->and(kelasElemen($tagihan, 'data-test="periode-berikutnya"'))->toContain('tombol-persegi')->toContain('tombol-sekunder')
+        ->and(kelasElemen($tagihan, 'data-test="periode-label"'))->toContain('tombol-sedang')->toContain('pemilih-periode-label')
         ->and(kelasElemen($tagihan, 'data-test="terbitkan-tagihan"'))->toContain('tombol-utama');
 
     $akun = $this->actingAs($pengelola)->get('/akun')->assertOk()->getContent();
@@ -223,11 +248,12 @@ it('halaman tidak menulis hover latar sendiri pada tombol, chip, dan kartu', fun
 });
 
 it('kartu antrean Verifikasi dirender sebagai tautan dengan kelas baris-pilih', function () {
-    siapkanBuktiMenunggu('01', 'Anisa Putri', '2026-11-02 08:00');
+    $pertama = siapkanBuktiMenunggu('01', 'Anisa Putri', '2026-11-02 08:00');
     siapkanBuktiMenunggu('02', 'Rina Maharani', '2026-11-03 08:00');
 
     $html = Livewire::actingAs(User::factory()->pengelola()->create())
         ->test('pages::verifikasi-pembayaran.index')
+        ->call('pilih', $pertama->id)
         ->html();
 
     expect(preg_match_all('#<a\s[^>]*href="[^"]*"[^>]*class="baris-pilih [^"]*"\s+data-test="item-antrean"#s', $html))->toBe(2)
@@ -238,11 +264,12 @@ it('kartu antrean Verifikasi dirender sebagai tautan dengan kelas baris-pilih', 
 
 it('kartu tiket Keluhan dirender sebagai tautan dan pilihan vendor memakai kelas pilihan', function () {
     Vendor::factory()->create();
-    tiketInteraksi('KLH-0001');
+    $pertama = tiketInteraksi('KLH-0001');
     tiketInteraksi('KLH-0002');
 
     $html = Livewire::actingAs(User::factory()->pengelola()->create())
         ->test('pages::tiket-keluhan.index')
+        ->call('pilih', $pertama->id)
         ->html();
 
     expect(preg_match_all('#<a\s[^>]*href="[^"]*"[^>]*class="baris-pilih [^"]*"\s+data-test="item-tiket"#s', $html))->toBe(2)
@@ -270,9 +297,13 @@ it('panel Verifikasi memakai wire:key berisi id item terpilih', function () {
 
     $komponen = Livewire::actingAs(User::factory()->pengelola()->create())
         ->test('pages::verifikasi-pembayaran.index')
+        ->assertDontSeeHtml('wire:key="panel-')
+        ->call('pilih', $pertama->id)
         ->assertSeeHtml('wire:key="panel-'.$pertama->id.'"')
-        ->assertSeeHtml('x-data="{ siap: false }"')
-        ->assertSeeHtml('siap && $el.classList.add(\'panel-masuk\')')
+        ->assertSeeHtml('wire:key="panel-detail"')
+        ->assertSeeHtml('x-data="daftarPanel(\'bukti\')"')
+        ->assertSeeHtml('siap && $el.classList.add(\'panel-geser\')')
+        ->assertSeeHtml('siap && ! $el.parentElement.classList.contains(\'panel-geser\') && $el.classList.add(\'panel-masuk\')')
         ->assertDontSeeHtml('class="panel-masuk');
 
     expect($komponen->html())->toMatch('#wire:loading\.class="opacity-60"\s+wire:target="pilih"[^>]*data-test="panel-periksa"#s');
@@ -288,9 +319,12 @@ it('panel Keluhan memakai wire:key berisi id tiket terpilih', function () {
 
     $komponen = Livewire::actingAs(User::factory()->pengelola()->create())
         ->test('pages::tiket-keluhan.index')
+        ->assertDontSeeHtml('wire:key="panel-')
+        ->call('pilih', $lama->id)
         ->assertSeeHtml('wire:key="panel-'.$lama->id.'"')
-        ->assertSeeHtml('x-data="{ siap: false }"')
-        ->assertSeeHtml('siap && $el.classList.add(\'panel-masuk\')');
+        ->assertSeeHtml('wire:key="panel-detail"')
+        ->assertSeeHtml('x-data="daftarPanel(\'tiket\')"')
+        ->assertSeeHtml('siap && $el.classList.add(\'panel-geser\')');
 
     expect($komponen->html())->toMatch('#wire:loading\.class="opacity-60"\s+wire:target="pilih"[^>]*data-test="panel-tiket"#s');
 
@@ -300,10 +334,11 @@ it('panel Keluhan memakai wire:key berisi id tiket terpilih', function () {
 });
 
 it('dialog Terima dan Tolak memakai bahasa pengguna tanpa istilah teknis', function () {
-    siapkanBuktiMenunggu('02', 'Rina Maharani');
+    $p = siapkanBuktiMenunggu('02', 'Rina Maharani');
 
     $html = Livewire::actingAs(User::factory()->pengelola()->create())
         ->test('pages::verifikasi-pembayaran.index')
+        ->call('pilih', $p->id)
         ->html();
 
     $terima = teksDialog($html, 'terima-pembayaran');

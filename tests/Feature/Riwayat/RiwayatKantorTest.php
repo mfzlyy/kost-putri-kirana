@@ -179,18 +179,21 @@ it('F-14: kolom kamar memakai kamar kontrak tagihan itu, walau penghuni sudah pi
     $komponen->assertSee('Sep 2026, Kamar 05,')->assertSee('Okt 2026, Kamar 06,');
 });
 
-it('F-14 butir 3: status Odoo terkirim, menunggu, gagal, dan data migrasi', function () {
+it('F-14 butir 3: kolom Pembukuan menampilkan terkirim, menunggu, gagal, dan data lama', function () {
     $data = dataRiwayatKantor();
 
     $komponen = halamanRiwayatKantor()
         ->assertSee('Terkirim')
         ->assertSee('Menunggu')
         ->assertSee('Gagal')
-        ->assertSee('Data Migrasi')
-        ->assertSee('title="Riwayat lama, tidak dikirim ke Odoo"', false)
-        ->assertSee('Odoo')
-        ->assertDontSee('Terkirim ke Odoo')
-        ->assertDontSee('Odoo gagal');
+        ->assertSee('Data Lama')
+        ->assertDontSee('Data Migrasi')
+        ->assertSeeInOrder(['Diterima', 'Pembukuan'])
+        // Istilah Odoo tidak tampil di luar halaman Sinkronisasi.
+        ->assertDontSee('Odoo');
+
+    // Label yang sama di kartu ponsel.
+    expect(substr_count($komponen->html(), '<span class="teks-bantuan">Pembukuan</span>'))->toBe(5);
 
     // F-25: tautan membawa pengelola ke baris yang gagal, di tabel desktop dan kartu ponsel.
     $tautan = 'href="'.e(route('sinkronisasi-erp.index', [
@@ -211,11 +214,11 @@ it('F-14 butir 3: pemilik melihat Gagal tanpa tautan ke Sinkronisasi ERP', funct
     expect($html)->not->toContain(route('sinkronisasi-erp.index'));
 });
 
-it('F-14: tanpa data migrasi pembayaran dengan sinkronisasi tidak diberi label Data migrasi', function () {
+it('F-14: tanpa data migrasi pembayaran dengan sinkronisasi tidak diberi label Data Lama', function () {
     $kontrak = buatKontrakUji('01', 'Anisa Putri');
     buatPembayaranDiterima($kontrak, '2026-10-01', '2026-10-08', '2026-10-09 10:00', sinkron: 'terkirim');
 
-    halamanRiwayatKantor()->assertDontSee('Data Migrasi');
+    halamanRiwayatKantor()->assertDontSee('Data Lama');
 });
 
 it('F-14: paginasi 20 per halaman, ringkasan dari seluruh hasil filter, dan halaman kembali ke 1 saat filter berubah', function () {

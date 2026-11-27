@@ -4,6 +4,7 @@
 
       varian : utama | sekunder | positif | bahaya | bahaya-penuh (hanya tombol konfirmasi di dialog)
       ukuran : normal (44px: aksi halaman, form, dialog) | kecil (36px: baris tabel dan kartu daftar)
+               sedang dan persegi (40px, persegi = tombol ikon 40x40): hanya x-pemilih-periode
       href   : bila diisi, dirender sebagai <a> bergaya tombol (aksi yang membuka halaman lain, misalnya Ubah)
       elemen : "span" untuk tampilan tombol di dalam <label> (pemilih berkas)
 
@@ -23,7 +24,9 @@
         throw new \InvalidArgumentException("Varian tombol tidak dikenal: {$varian}");
     }
 
-    if (! in_array($ukuran, ['normal', 'kecil'], true)) {
+    $kelasUkuran = ['normal' => 'tombol', 'sedang' => 'tombol-sedang', 'kecil' => 'tombol-kecil', 'persegi' => 'tombol-persegi'];
+
+    if (! array_key_exists($ukuran, $kelasUkuran)) {
         throw new \InvalidArgumentException("Ukuran tombol tidak dikenal: {$ukuran}");
     }
 
@@ -38,4 +41,4 @@
     @if ($tag === 'a') href="{{ $href }}" @elseif ($tag === 'button') type="{{ $type }}" @endif
     data-varian="{{ $varian }}"
     data-ukuran="{{ $ukuran }}"
-    {{ $attributes->class([$ukuran === 'kecil' ? 'tombol-kecil' : 'tombol', 'tombol-'.$varian])->merge($sibuk) }}>{{ $slot }}</{{ $tag }}>
+    {{ $attributes->class([$kelasUkuran[$ukuran], 'tombol-'.$varian])->merge($sibuk) }}>{{ $slot }}</{{ $tag }}>

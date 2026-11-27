@@ -238,7 +238,7 @@ new #[Title('Kontrak')] class extends Component {
                     } elseif ($this->tanggalValid($this->tanggal_mulai) && $nilai <= $this->tanggal_mulai) {
                         $gagal('Harus setelah tanggal mulai.');
                     } elseif ($nilai < $hariIni) {
-                        $gagal('Tanggal berakhir sudah lewat. Kontrak yang sudah selesai dicatat lewat migrasi data.');
+                        $gagal('Tanggal berakhir sudah lewat.');
                     }
                 },
             ],
@@ -359,10 +359,6 @@ new #[Title('Kontrak')] class extends Component {
                 </div>
             </dl>
 
-            <p class="m-0 rounded-xl bg-primary-container px-3.5 py-3 text-on-primary-container teks-badan" data-test="catatan-perpanjang">
-                Kontrak lama ({{ $tanggalPanjang($kontrakLama->tanggal_mulai) }} sampai {{ $tanggalPanjang($kontrakLama->tanggal_berakhir) }}) ditutup dan tersimpan di riwayat.
-            </p>
-
             <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                 <flux:field>
                     <flux:label>Berakhir</flux:label>
@@ -477,9 +473,6 @@ new #[Title('Kontrak')] class extends Component {
                             data-test="input-tarif"
                         />
                     </flux:input.group>
-                    <flux:description>
-                        {{ $this->kamarTerpilih ? 'Diisi dari tarif Kamar '.$this->kamarTerpilih->nomor_kamar.'.' : 'Pilih kamar untuk mengisi tarif.' }}
-                    </flux:description>
                     <flux:error name="tarif_bulanan" />
                 </flux:field>
             </div>

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 /*
-| Satu sistem tombol, ukuran huruf, chip filter, dan segmen periode (docs/design/DESIGN.md, Typography dan Components).
+| Satu sistem tombol, ukuran huruf, chip filter, dan pemilih periode (docs/design/DESIGN.md, Typography dan Components).
 */
 
 beforeEach(function () {
@@ -215,10 +215,10 @@ it('Kamar dan Penghuni: Ubah sekunder kecil, Hapus bahaya kecil', function () {
 });
 
 it('Verifikasi, Sinkronisasi, dan Pekerjaan vendor memakai varian yang ditetapkan', function () {
-    siapkanBuktiMenunggu('02', 'Rina Maharani');
+    $bukti = siapkanBuktiMenunggu('02', 'Rina Maharani');
     $pengelola = User::factory()->pengelola()->create();
 
-    $verifikasi = Livewire::actingAs($pengelola)->test('pages::verifikasi-pembayaran.index')->html();
+    $verifikasi = Livewire::actingAs($pengelola)->test('pages::verifikasi-pembayaran.index')->call('pilih', $bukti->id)->html();
     preg_match('#<section\b[^>]*data-test="panel-periksa".*?</section>#s', $verifikasi, $panel);
 
     expect(gayaTombol($panel[0], 'Terima'))->toBe(['utama normal'])
@@ -289,33 +289,27 @@ it('CSS baris chip: scrollbar disembunyikan, melebar sampai tepi, pudar hanya sa
         ->and($ponsel)->toMatch('/\.baris-chip\[data-pudar-kanan\] \{\s*--pudar-kanan: 32px;/');
 });
 
-it('segmen periode: aktif berteks putih di atas chip-active, label pendek di ponsel dengan aria-label lengkap', function () {
+it('20D pemilih periode: dua tombol persegi 40px dan label selebar tetap, dirender x-tombol', function () {
     $html = $this->actingAs(User::factory()->pengelola()->create())->get('/tagihan')->assertOk()->getContent();
-    preg_match('#<nav aria-label="Periode"\s+class="([^"]*)".*?</nav>#s', $html, $nav);
-    preg_match_all('#<a\s([^>]*)>(.*?)</a>#s', $nav[0], $segmen, PREG_SET_ORDER);
+    $css = cssAplikasi();
 
-    // Barisnya sendiri di ponsel, tiga bagian sama lebar, tinggi 40px.
-    expect($nav[1])->toContain('max-sm:basis-full!')->toContain('grid-cols-3')->toContain('h-10')->toContain('w-full')
-        ->and($segmen)->toHaveCount(3);
+    expect($html)->toContain('role="group" aria-label="Periode"')
+        ->and(kelasElemen($html, 'data-test="pemilih-periode"'))->toContain('max-sm:w-full')
+        ->and(gayaTombol($html, 'November 2026'))->toBe(['sekunder sedang'])
+        ->and(collect(daftarTombol($html))->where('ukuran', 'persegi')->pluck('varian')->all())->toBe(['sekunder', 'sekunder'])
+        ->and(blokCss($css, '@utility tombol-sedang'))->toContain('height: 40px')->toContain('font-size: 14px')->toContain('font-weight: 600')
+        ->and(blokCss($css, '@utility tombol-persegi'))->toContain('width: 40px')->toContain('height: 40px')
+        ->and(blokCss($css, '.pemilih-periode-label'))->toContain('width: 10rem')->toContain('font-variant-numeric: tabular-nums')
+        ->and(blokCss($css, '@media (max-width: 39.999rem)'))->toMatch('/\.pemilih-periode-label \{\s*width: 100%;/')
+        ->and($css)->toContain('.tombol-persegi:disabled')
+        ->and($css)->toContain('scrollbar-gutter: stable');
+});
 
-    foreach ([['Okt', 'Oktober', 'Oktober 2026'], ['Nov', 'November', 'November 2026'], ['Des', 'Desember', 'Desember 2026']] as $i => [$pendek, $penuh, $lengkap]) {
-        expect($segmen[$i][1])->toContain('aria-label="'.$lengkap.'"')
-            ->and($segmen[$i][2])->toContain('<span class="sm:hidden">'.$pendek.'</span>')
-            ->and($segmen[$i][2])->toContain('<span class="max-sm:hidden">'.$penuh.'</span>');
+it('20D: komponen segmen periode lama sudah tidak ada', function () {
+    expect(File::exists(resource_path('views/components/segmen-periode.blade.php')))->toBeFalse()
+        ->and(cssAplikasi())->not->toContain('segmen');
+
+    foreach (viewAplikasi() as $nama => $isi) {
+        expect($isi)->not->toContain('x-segmen-periode', $nama);
     }
-
-    expect($segmen[1][1])->toContain('aria-current="true"')
-        ->and(kelasElemen($nav[0], 'aria-current="true"'))->toContain('text-white')->toContain('bg-chip-active')->toContain('teks-chip')->not->toContain('text-ink')
-        ->and(kelasElemen($nav[0], 'aria-label="Oktober 2026"'))->toContain('text-ink')->not->toContain('text-white');
-
-    // Teks putih di atas chip-active minimal 4,5:1.
-    preg_match('/--color-chip-active: #([0-9a-f]{6});/i', cssAplikasi(), $warna);
-    $kanal = array_map(function (string $heks): float {
-        $nilai = hexdec($heks) / 255;
-
-        return $nilai <= 0.04045 ? $nilai / 12.92 : (($nilai + 0.055) / 1.055) ** 2.4;
-    }, str_split($warna[1], 2));
-    $terang = 0.2126 * $kanal[0] + 0.7152 * $kanal[1] + 0.0722 * $kanal[2];
-
-    expect(1.05 / ($terang + 0.05))->toBeGreaterThanOrEqual(4.5);
 });

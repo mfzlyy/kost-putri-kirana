@@ -271,12 +271,20 @@ new #[Title('Sinkronisasi')] class extends Component {
             @else
                 {{-- Desktop: tabel kartu. relative menahan teks sr-only di kepala tabel tetap di dalam area gulir. --}}
                 <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface lg:block">
-                    <table class="w-full min-w-[820px] border-collapse" data-test="tabel-sinkronisasi">
+                    <table class="w-full min-w-[900px] table-fixed border-collapse" data-test="tabel-sinkronisasi">
+                        {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat chip atau halaman diganti. Sumber memakai sisanya. --}}
+                        <colgroup>
+                            <col class="w-44">
+                            <col class="w-38">
+                            <col>
+                            <col class="w-32">
+                            <col class="w-36">
+                            <col class="w-38">
+                        </colgroup>
                         <thead>
                             <tr>
                                 @foreach (['Referensi', 'Jenis', 'Sumber', 'Status', 'Waktu'] as $judul)
-                                    {{-- Sumber memakai sisa lebar tabel; kolom lain selebar isinya. --}}
-                                    <th scope="col" @class(['border-b border-border text-left whitespace-nowrap teks-kolom', 'w-full' => $judul === 'Sumber'])>{{ $judul }}</th>
+                                    <th scope="col" class="border-b border-border text-left whitespace-nowrap teks-kolom">{{ $judul }}</th>
                                 @endforeach
                                 <th scope="col" class="border-b border-border"><span class="sr-only">Aksi</span></th>
                             </tr>
@@ -293,9 +301,9 @@ new #[Title('Sinkronisasi')] class extends Component {
                                     @if ($disorot) aria-current="true" x-data x-init="$nextTick(() => $el.scrollIntoView({ block: 'center' }))" @endif
                                     data-test="baris-sinkronisasi"
                                 >
-                                    <td class="num whitespace-nowrap teks-badan-kuat" data-test="referensi">{{ $baris->referensi_unik }}</td>
+                                    <td class="num truncate teks-badan-kuat" title="{{ $baris->referensi_unik }}" data-test="referensi">{{ $baris->referensi_unik }}</td>
                                     <td class="whitespace-nowrap">{{ $baris->labelJenis() }}</td>
-                                    <td data-test="sumber">
+                                    <td class="[overflow-wrap:anywhere]" data-test="sumber">
                                         <a href="{{ $sumber['url'] }}" wire:navigate>{{ $sumber['teks'] }}</a>
                                         @if ($sumber['nominal'] !== null)
                                             <span class="num block teks-bantuan">{{ $sumber['nominal'] }}</span>

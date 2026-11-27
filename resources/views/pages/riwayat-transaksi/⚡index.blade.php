@@ -266,7 +266,14 @@ new #[Title('Riwayat')] class extends Component {
             @else
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-                    <table class="w-full min-w-[640px] border-collapse">
+                    <table class="w-full min-w-[640px] table-fixed border-collapse">
+                        <colgroup>
+                            <col class="w-[24%]">
+                            <col class="w-[18%]">
+                            <col class="w-[18%]">
+                            <col class="w-[22%]">
+                            <col class="w-[18%]">
+                        </colgroup>
                         <thead>
                             <tr>
                                 @foreach (['Periode' => 'left', 'Dibayar' => 'left', 'Diterima' => 'left', 'Nominal' => 'right', 'Status' => 'left'] as $judul => $rata)
@@ -371,10 +378,20 @@ new #[Title('Riwayat')] class extends Component {
             @else
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface lg:block">
-                    <table class="w-full min-w-[900px] border-collapse">
+                    <table class="w-full min-w-[920px] table-fixed border-collapse">
+                        {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat filter diganti. Penghuni memakai sisanya. --}}
+                        <colgroup>
+                            <col class="w-30">
+                            <col>
+                            <col class="w-22">
+                            <col class="w-36">
+                            <col class="w-26">
+                            <col class="w-40">
+                            <col class="w-38">
+                        </colgroup>
                         <thead>
                             <tr>
-                                @foreach (['Periode' => 'left', 'Penghuni' => 'left', 'Kamar' => 'left', 'Nominal' => 'right', 'Dibayar' => 'left', 'Diterima' => 'left', 'Odoo' => 'left'] as $judul => $rata)
+                                @foreach (['Periode' => 'left', 'Penghuni' => 'left', 'Kamar' => 'left', 'Nominal' => 'right', 'Dibayar' => 'left', 'Diterima' => 'left', 'Pembukuan' => 'left'] as $judul => $rata)
                                     <th scope="col" @class(['border-b border-border px-5 py-3.5 whitespace-nowrap teks-kolom', 'text-left' => $rata === 'left', 'text-right' => $rata === 'right'])>{{ $judul }}</th>
                                 @endforeach
                             </tr>
@@ -387,19 +404,19 @@ new #[Title('Riwayat')] class extends Component {
                                 @endphp
                                 <tr wire:key="tabel-{{ $b->id }}" class="border-t border-row-divider first:border-t-0">
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}</td>
-                                    <td class="px-5 py-3 teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="text-ink-muted teks-badan">(sudah keluar)</span>@endif</td>
+                                    <td class="px-5 py-3 [overflow-wrap:anywhere] teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="text-ink-muted teks-badan">(sudah keluar)</span>@endif</td>
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $kontrak->kamar?->nomor_kamar }}</td>
                                     <td class="num px-5 py-3 text-right whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $tanggal($b->tanggal_bayar) }}</td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-ink-muted">
-                                        {{ $waktu($b->diverifikasi_pada) }}
+                                    <td class="px-5 py-3 text-ink-muted">
+                                        <span class="whitespace-nowrap">{{ $waktu($b->diverifikasi_pada) }}</span>
                                         @if ($b->diverifikasiOleh)
-                                            <span class="block teks-bantuan">oleh {{ $b->diverifikasiOleh->nama }}</span>
+                                            <span class="block [overflow-wrap:anywhere] teks-bantuan">oleh {{ $b->diverifikasiOleh->nama }}</span>
                                         @endif
                                     </td>
                                     <td class="px-5 py-3 whitespace-nowrap" data-test="status-odoo">
                                         @if ($sinkron === null)
-                                            <span class="teks-bantuan" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
+                                            <span class="teks-bantuan">Data Lama</span>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                             <x-status jenis="ok">Terkirim</x-status>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
@@ -430,9 +447,9 @@ new #[Title('Riwayat')] class extends Component {
                             </div>
                             <span class="teks-bantuan">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, Diterima {{ $waktu($b->diverifikasi_pada) }}</span>
                             <div class="flex items-center gap-2" data-test="status-odoo">
-                                <span class="teks-bantuan">Odoo</span>
+                                <span class="teks-bantuan">Pembukuan</span>
                                 @if ($sinkron === null)
-                                    <span class="teks-bantuan" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
+                                    <span class="teks-bantuan">Data Lama</span>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                     <x-status jenis="ok">Terkirim</x-status>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)

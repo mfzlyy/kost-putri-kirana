@@ -108,7 +108,19 @@ new #[Title('Penghuni')] class extends Component {
         {{-- Desktop: tabel dalam kartu. Nomor identitas selalu tersamar di daftar, untuk semua peran.
              relative menahan teks sr-only di kepala tabel tetap di dalam area gulir; nama dan email boleh turun baris. --}}
         <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-            <table class="w-full min-w-[860px] border-collapse">
+            <table class="tabel-rapat w-full min-w-[880px] table-fixed border-collapse">
+                {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat chip atau halaman diganti. Nama dan email membagi sisanya. --}}
+                <colgroup>
+                    <col>
+                    <col class="w-18">
+                    <col class="w-41">
+                    <col class="w-38">
+                    <col>
+                    <col class="w-28">
+                    @if ($this->bisaKelola)
+                        <col class="w-25">
+                    @endif
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Nama Lengkap</th>
@@ -126,13 +138,13 @@ new #[Title('Penghuni')] class extends Component {
                     @foreach ($this->daftarPenghuni as $penghuni)
                         @php($nomorKamar = $penghuni->kontrakAktif?->kamar?->nomor_kamar)
                         <tr wire:key="penghuni-tabel-{{ $penghuni->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
-                            <td class="px-5 teks-badan-kuat">{{ $penghuni->user?->nama }}</td>
+                            <td class="px-5 [overflow-wrap:anywhere] teks-badan-kuat">{{ $penghuni->user?->nama }}</td>
                             <td class="num px-5 {{ $nomorKamar ? '' : 'text-ink-muted' }}">{{ $nomorKamar ?? '-' }}</td>
                             <td class="num px-5 whitespace-nowrap">{{ Format::telepon($penghuni->no_telepon) }}</td>
                             <td class="num px-5 tracking-[0.02em] whitespace-nowrap">{{ $penghuni->no_identitas_tersamar }}</td>
                             @php([$namaEmail, $domainEmail] = array_pad(explode('@', (string) $penghuni->user?->email, 2), 2, ''))
                             {{-- Email patah di "@" bila kolom sempit; potongan di tengah kata hanya bila satu bagian tetap tidak muat. --}}
-                            <td class="px-5 text-ink-muted"><span class="block min-w-40 [overflow-wrap:anywhere]">{{ $namaEmail }}<wbr>{{ '@'.$domainEmail }}</span></td>
+                            <td class="px-5 text-ink-muted"><span class="block [overflow-wrap:anywhere]">{{ $namaEmail }}<wbr>{{ '@'.$domainEmail }}</span></td>
                             <td class="px-5">
                                 @if ($penghuni->status_penghuni === StatusPenghuni::Aktif)
                                     <x-status jenis="ok">Aktif</x-status>

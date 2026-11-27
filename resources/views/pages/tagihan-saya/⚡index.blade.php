@@ -257,7 +257,14 @@ new #[Title('Tagihan')] class extends Component {
 
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-                    <table class="w-full min-w-[640px] border-collapse">
+                    <table class="w-full min-w-[640px] table-fixed border-collapse">
+                        {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat halaman daftar diganti. --}}
+                        <colgroup>
+                            <col class="w-[25%]">
+                            <col class="w-[19%]">
+                            <col class="w-[22%]">
+                            <col class="w-[34%]">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th scope="col" class="border-b border-border px-5 py-3.5 text-left whitespace-nowrap teks-kolom">Periode</th>

@@ -226,7 +226,7 @@ it('faktur ber-referensi sama tetapi datanya berbeda ditandai gagal tanpa dipost
     $hasil = kirimKeOdoo($baris);
 
     expect($hasil->status_sinkronisasi)->toBe(StatusSinkronisasi::Gagal)
-        ->and($hasil->pesan_error)->toBe("Faktur {$baris->referensi_unik} di Odoo tidak cocok dengan data web ({$beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.")
+        ->and($hasil->pesan_error)->toBe("Faktur {$baris->referensi_unik} di Odoo tidak cocok dengan data web ({$beda}). Periksa manual di Odoo.")
         ->and($hasil->odoo_record_id)->toBeNull()
         // Hanya membaca: tidak ada faktur baru, posting, pembayaran, atau perubahan di Odoo.
         ->and(array_values(array_diff(panggilanOdoo(), ['res.partner/search_read', 'res.partner/create', 'account.move/search_read', 'res.partner/read'])))->toBe([]);

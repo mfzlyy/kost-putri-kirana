@@ -186,21 +186,23 @@ it('tagihan yang ditolak dan sudah lewat jatuh tempo kembali dihitung tunggakan'
 
 // ---- Lewat halaman ----
 
-it('F-13: halaman Terima mengubah data, menampilkan toast, dan memilih item berikutnya', function () {
+it('F-13 dan 20D: Terima di desktop mengubah data, menampilkan toast, dan panel menampilkan item berikutnya', function () {
     $pertama = siapkanBuktiMenunggu('01', 'Anisa Putri', '2026-11-02 08:00');
     $kedua = siapkanBuktiMenunggu('02', 'Rina Maharani', '2026-11-03 08:00');
     $pengelola = User::factory()->pengelola()->create();
 
     $komponen = komponenVerifikasi($pengelola)
+        ->set('layarLebar', true)
         ->call('pilih', $pertama->id)
         ->call('terima', $pertama->id)
         ->assertDispatched('toast-show')
         ->assertDispatched('antrean-verifikasi', jumlah: 1)
-        ->assertSet('bukti', '')
+        ->assertSet('bukti', (string) $kedua->id)
         ->assertDontSee('bukti bayar menunggu')
+        ->assertSeeHtml('data-test="panel-periksa"')
         ->assertSee('Kamar 02, Tagihan November');
 
-    expect($komponen->instance()->panel->id)->toBe($kedua->id)
+    expect($komponen->instance()->dipilih->id)->toBe($kedua->id)
         ->and($pertama->fresh()->status_verifikasi)->toBe(StatusVerifikasi::Diterima)
         ->and($pertama->fresh()->diverifikasi_oleh)->toBe($pengelola->id)
         ->and($pertama->tagihan->fresh()->status_tagihan)->toBe(StatusTagihan::Lunas)
@@ -218,7 +220,7 @@ it('F-13: toast sukses Terima menyebut kamar dan bulan', function () {
 it('F-13: halaman Tolak wajib alasan 5 sampai 500 karakter setelah trim', function (string $alasan, ?string $pesan) {
     $p = siapkanBuktiMenunggu('02', 'Rina Maharani');
 
-    $komponen = komponenVerifikasi()->set('alasan', $alasan)->call('tolak', $p->id);
+    $komponen = komponenVerifikasi()->call('pilih', $p->id)->set('alasan', $alasan)->call('tolak', $p->id);
 
     if ($pesan !== null) {
         $komponen->assertHasErrors('alasan')->assertSee($pesan);
@@ -276,22 +278,59 @@ it('F-13: bukti yang sudah diputuskan pihak lain memunculkan toast peringatan da
     $basi = siapkanBuktiMenunggu('01', 'Anisa Putri', '2026-11-02 08:00');
     $lain = siapkanBuktiMenunggu('02', 'Rina Maharani', '2026-11-03 08:00');
 
-    $komponen = komponenVerifikasi()->call('pilih', $basi->id);
+    $komponen = komponenVerifikasi()->set('layarLebar', true)->call('pilih', $basi->id);
 
     // Pengelola lain menerima bukti yang sama lebih dulu.
     $basi->terima(User::factory()->pengelola()->create());
 
     $komponen->call('terima', $basi->id)
         ->assertDispatched('toast-show', fn ($nama, $data) => str_contains(json_encode($data), 'warning') && str_contains(json_encode($data), 'Bukti ini sudah diputuskan. Daftar sudah diperbarui.'))
-        ->assertSet('bukti', '')
+        ->assertSet('bukti', (string) $lain->id)
         ->assertDontSee('bukti bayar menunggu');
 
     expect(SinkronisasiErp::query()->count())->toBe(1)
-        ->and($komponen->instance()->panel->id)->toBe($lain->id);
+        ->and($komponen->instance()->dipilih->id)->toBe($lain->id);
 
     // Id yang tidak dikenal diperlakukan sama.
     $komponen->set('alasan', 'Alasan yang cukup')->call('tolak', 987654)->assertDispatched('toast-show');
     expect($lain->fresh()->status_verifikasi)->toBe(StatusVerifikasi::Menunggu);
+});
+
+it('20D: Terima dan Tolak di desktop memilih item teratas berikutnya; setelah yang terakhir panel tertutup', function () {
+    $pertama = siapkanBuktiMenunggu('01', 'Anisa Putri', '2026-11-02 08:00');
+    $kedua = siapkanBuktiMenunggu('02', 'Rina Maharani', '2026-11-03 08:00');
+    $ketiga = siapkanBuktiMenunggu('03', 'Salsa Nabila', '2026-11-04 08:00');
+
+    // Memutuskan item tengah: panel pindah ke item teratas yang tersisa (urutan antrean tetap).
+    $komponen = komponenVerifikasi()
+        ->set('layarLebar', true)
+        ->call('pilih', $kedua->id)
+        ->call('terima', $kedua->id)
+        ->assertSet('bukti', (string) $pertama->id)
+        ->set('alasan', 'Nominal transfer kurang.')
+        ->call('tolak', $pertama->id)
+        ->assertSet('bukti', (string) $ketiga->id)
+        ->assertSeeHtml('wire:key="panel-'.$ketiga->id.'"')
+        ->call('terima', $ketiga->id)
+        ->assertSet('bukti', '')
+        ->assertDontSeeHtml('data-test="panel-periksa"')
+        ->assertDontSeeHtml('data-test="konfirmasi-terima"')
+        ->assertSee('Tidak ada bukti yang menunggu.');
+
+    expect($komponen->instance()->dipilih)->toBeNull();
+});
+
+it('20D: di layar sempit, setelah Terima kembali ke daftar tanpa panel', function () {
+    $pertama = siapkanBuktiMenunggu('01', 'Anisa Putri', '2026-11-02 08:00');
+    siapkanBuktiMenunggu('02', 'Rina Maharani', '2026-11-03 08:00');
+
+    komponenVerifikasi()
+        ->assertSet('layarLebar', false)
+        ->call('pilih', $pertama->id)
+        ->call('terima', $pertama->id)
+        ->assertSet('bukti', '')
+        ->assertDontSeeHtml('data-test="panel-periksa"')
+        ->assertSee('Kamar 02, Rina');
 });
 
 it('F-13: halaman tidak menulis kolom status langsung dan tidak memanggil Odoo; pengiriman hanya lewat antrean', function () {

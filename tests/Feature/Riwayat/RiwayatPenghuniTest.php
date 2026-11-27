@@ -106,7 +106,7 @@ it('F-14 butir 3: penghuni tidak melihat status Odoo, nama pengelola, atau kolom
 
     $html = $this->actingAs($kontrak->penghuni->user)->get('/riwayat-transaksi')->assertOk()->getContent();
 
-    foreach (['Odoo', 'Terkirim', 'Gagal', 'Menunggu', 'Pengelola Rahasia', 'oleh ', '>Penghuni</th>', '>Kamar</th>', $kontrak->penghuni->no_telepon] as $terlarang) {
+    foreach (['Odoo', 'Pembukuan', 'Terkirim', 'Gagal', 'Menunggu', 'Pengelola Rahasia', 'oleh ', '>Penghuni</th>', '>Kamar</th>', $kontrak->penghuni->no_telepon] as $terlarang) {
         expect($html)->not->toContain($terlarang);
     }
 });

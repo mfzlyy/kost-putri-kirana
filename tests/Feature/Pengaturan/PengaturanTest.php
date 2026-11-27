@@ -50,7 +50,9 @@ it('F-04: pengelola menyimpan pengaturan dan diperbarui_oleh terisi', function (
         ->set('batas_peringatan_kontrak_hari', 30)
         ->call('simpan')
         ->assertHasNoErrors()
-        ->assertSee('Terakhir diubah oleh Dewi Pengelola');
+        // Pengubah terakhir tetap disimpan di basis data, tetapi tidak ditampilkan.
+        ->assertDontSee('Terakhir diubah oleh')
+        ->assertDontSee('Dewi Pengelola');
 
     $baris = PengaturanOperasional::query()->find(1);
 
@@ -128,3 +130,29 @@ it('F-04: penghuni dan vendor mendapat 403 di /pengaturan', function (string $pe
         ->get('/pengaturan')
         ->assertForbidden();
 })->with(['penghuni', 'vendor']);
+
+it('20D: Batas Peringatan memakai akhiran "hari" di dalam isian, tanpa kalimat bantuan', function () {
+    PengaturanOperasional::factory()->lengkap(10, 30)->create();
+
+    $html = halamanPengaturanSebagai(User::factory()->pengelola()->create())
+        ->assertSee('Batas Peringatan')
+        ->assertSee('Tanggal 1–28.')
+        ->assertDontSee('Jumlah hari sebelum kontrak berakhir.')
+        ->assertDontSee('Terakhir diubah oleh')
+        ->html();
+
+    expect($html)->toMatch('#data-flux-input-group[^>]*>.*?<input[^>]*aria-describedby="satuan-batas"#s')
+        ->and($html)->toMatch('#id="satuan-batas"[^>]*data-flux-input-group-suffix[^>]*>\s*hari\s*</div>#s');
+});
+
+it('20D: galat Batas Peringatan tetap tampil dan menandai isian', function () {
+    PengaturanOperasional::factory()->lengkap(10, 30)->create();
+
+    $html = halamanPengaturanSebagai(User::factory()->pengelola()->create())
+        ->set('batas_peringatan_kontrak_hari', 400)
+        ->call('simpan')
+        ->assertSee('Isi batas antara 1 dan 365 hari.')
+        ->html();
+
+    expect($html)->toMatch('#<input[^>]*aria-invalid="true"[^>]*data-test="input-batas"|<input[^>]*data-test="input-batas"[^>]*aria-invalid="true"#s');
+});

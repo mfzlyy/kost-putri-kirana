@@ -47,7 +47,6 @@
     /* Hover dan tekan (DESIGN.md, bagian Interaksi). */
     --color-primary-active: color-mix(in srgb, var(--color-primary-hover) 90%, var(--color-ink));
     --color-surface-active: color-mix(in srgb, var(--color-surface-muted) 92%, var(--color-ink));
-    --color-segmen-hover: color-mix(in srgb, var(--color-surface) 60%, transparent);
     --color-danger-active: color-mix(in srgb, var(--color-danger-container) 92%, var(--color-danger));
     --color-positif-active: color-mix(in srgb, var(--color-primary-container) 92%, var(--color-primary));
     --color-danger-solid-active: color-mix(in srgb, var(--color-on-danger-container) 90%, var(--color-ink));
@@ -89,6 +88,8 @@
 
     html {
         color-scheme: light;
+        /* Tempat bilah gulir selalu disediakan: isi halaman tidak bergeser saat daftar memanjang atau memendek. */
+        scrollbar-gutter: stable;
     }
 
     /* Tautan teks di area konten: hijau primer, berat 600, tanpa garis bawah (mockup v2); garis bawah muncul
@@ -384,6 +385,32 @@
     white-space: nowrap;
 }
 
+/* Ukuran pemilih periode: label tengah (40px) dan tombol panah persegi 40px. */
+@utility tombol-sedang {
+    display: inline-flex;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@utility tombol-persegi {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 8px;
+}
+
 /* Baris filter dirapatkan ke konten di bawahnya: 24px dari kepala (jarak halaman), 16px ke konten. */
 @utility baris-filter {
     margin-bottom: -8px;
@@ -470,8 +497,9 @@ textarea {
 /*
  * Ringkasan angka (x-ringkasan-angka). Kartunya adalah container: tata letak mengikuti lebar kartu, bukan lebar layar.
  *   >= 1000px : satu kolom per item          600-999px : tiga kolom          < 600px : daftar label kiri, nilai kanan
- * Kolom memakai minmax(max-content, 1fr) sehingga tidak pernah lebih sempit dari isinya. Bila kolom tetap tidak muat,
- * skrip kecil di komponen menaikkan data-turun (1 = tiga kolom, 2 = daftar), jadi angka tidak pernah keluar kotak.
+ * Kolom sama lebar dan tetap (minmax(0, 1fr)): posisi sel tidak berubah saat nilai berganti. Bila suatu nilai tidak
+ * muat di selnya, skrip kecil di komponen menaikkan data-turun (1 = tiga kolom, 2 = daftar), jadi angka tidak pernah
+ * keluar kotak.
  */
 .ringkasan {
     container-type: inline-size;
@@ -512,7 +540,7 @@ textarea {
 
 @container (min-width: 600px) {
     .ringkasan-isi:not([data-turun='2']) {
-        grid-template-columns: repeat(var(--kolom-md), minmax(max-content, 1fr));
+        grid-template-columns: repeat(var(--kolom-md), minmax(0, 1fr));
         gap: 16px 24px;
     }
 
@@ -534,7 +562,7 @@ textarea {
 
 @container (min-width: 1000px) {
     .ringkasan-isi:not([data-turun='1'], [data-turun='2']) {
-        grid-template-columns: repeat(var(--kolom), minmax(max-content, 1fr));
+        grid-template-columns: repeat(var(--kolom), minmax(0, 1fr));
     }
 }
 /* Tombol Flux standar 44px; padding 0 18px, radius 8px, huruf 15px berat 600. */
@@ -568,6 +596,12 @@ table tbody td {
 
 table tbody tr {
     height: 60px;
+}
+
+/* Tabel banyak kolom (Kontrak, Penghuni): padding sel 16px supaya kolom nama tetap terbaca dengan lebar kolom tetap. */
+table.tabel-rapat thead th,
+table.tabel-rapat tbody td {
+    padding-inline: 16px;
 }
 
 /* Teks bawaan Flux di bawah batas keterbacaan: isi callout 15px, keterangan paginasi 13px. */
@@ -702,15 +736,36 @@ select:focus[data-flux-control] {
 
 /* Nonaktif dan sedang memproses: memudar. */
 .tombol:disabled,
+.tombol-sedang:disabled,
 .tombol-kecil:disabled,
+.tombol-persegi:disabled,
 .tombol[data-sibuk],
-.tombol-kecil[data-sibuk] {
+.tombol-sedang[data-sibuk],
+.tombol-kecil[data-sibuk],
+.tombol-persegi[data-sibuk] {
     opacity: 0.6;
 }
 
 .tombol[data-sibuk],
-.tombol-kecil[data-sibuk] {
+.tombol-sedang[data-sibuk],
+.tombol-kecil[data-sibuk],
+.tombol-persegi[data-sibuk] {
     pointer-events: none;
+}
+
+/*
+ * Label tengah pemilih periode (x-pemilih-periode): lebar tetap 160px, cukup untuk "September 2026", sehingga
+ * kontrol tidak berubah lebar saat bulan diganti. Di ponsel label mengisi sisa baris di antara kedua panah.
+ */
+.pemilih-periode-label {
+    width: 10rem;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 39.999rem) {
+    .pemilih-periode-label {
+        width: 100%;
+    }
 }
 
 /* Tautan teks untuk navigasi: Kembali (juga remah roti), Buka berkas, Unggah di dalam callout. */
@@ -816,19 +871,6 @@ select:focus[data-flux-control] {
         background-color: var(--color-surface-muted);
     }
 
-    /* Segmen periode: di ponsel segmennya putih, mulai 640px berada di atas surface-muted. */
-    [data-flux-main] a.segmen:not([aria-current='true']):hover {
-        background-color: var(--color-surface-muted);
-        color: var(--color-ink);
-        text-decoration: none;
-    }
-
-    @media (min-width: 40rem) {
-        [data-flux-main] a.segmen:not([aria-current='true']):hover {
-            background-color: var(--color-segmen-hover);
-        }
-    }
-
     /* Pilihan radio berbentuk label: input di dalam label, atau label sesudah input (peer). */
     label.pilihan:not(:has(input:checked, input:disabled)):hover,
     input:not(:checked, :disabled) + label.pilihan:hover {
@@ -887,7 +929,6 @@ select:focus[data-flux-control] {
 .tombol-sekunder:not(:disabled):active,
 .tombol-ikon:not(:disabled):active,
 .chip[aria-pressed='false']:not(:disabled):active,
-[data-flux-main] a.segmen:not([aria-current='true']):active,
 label.pilihan:not(:has(input:checked, input:disabled)):active,
 input:not(:checked, :disabled) + label.pilihan:active,
 .kartu-klik:active,
@@ -962,12 +1003,6 @@ nav [aria-disabled='true'][aria-label] > * {
     outline-offset: -2px;
 }
 
-@media (max-width: 39.999rem) {
-    .segmen:focus-visible {
-        outline-offset: -2px;
-    }
-}
-
 /*
  * Gerak dasar (docs/design/DESIGN.md, bagian Gerak): umpan balik aksi, bukan hiasan.
  * 150ms ease-out untuk warna, latar, garis, dan cincin fokus. Elemen muncul/hilang
@@ -1013,6 +1048,39 @@ nav [aria-disabled='true'][aria-label] > * {
     /* Isi panel detail yang baru masuk setelah pengguna mengganti pilihan (Verifikasi, Keluhan). */
     .panel-masuk {
         animation: panel-masuk 180ms ease-out;
+    }
+
+    /* Panel detail desktop dibuka (masuk dari kanan) dan ditutup (kebalikannya). */
+    .panel-geser {
+        animation: panel-geser 200ms ease-out;
+    }
+
+    .panel-keluar {
+        animation: panel-keluar 200ms ease-in forwards;
+    }
+}
+
+@keyframes panel-geser {
+    from {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes panel-keluar {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(16px);
     }
 }
 

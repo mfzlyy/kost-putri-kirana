@@ -4,8 +4,8 @@
     items: daftar ['label' => string, 'nilai' => string, 'keterangan' => ?string, 'nada' => 'biasa'|'bahaya', 'kunci' => ?string]
     Tata letak mengikuti lebar kartu (container query di app.css), bukan lebar layar:
       - kartu >= 1000px: kolom sebanyak item; 600-999px: tiga kolom; < 600px: daftar label kiri, nilai kanan.
-      - kolom minmax(max-content, 1fr); bila tetap tidak muat, skrip di bawah menaikkan data-turun (1 = tiga kolom,
-        2 = daftar) sampai tidak ada angka yang keluar dari kotak.
+      - kolom sama lebar dan tetap, jadi posisi sel tidak berubah saat nilai berganti; bila suatu nilai tidak muat,
+        skrip di bawah menaikkan data-turun (1 = tiga kolom, 2 = daftar) sampai tidak ada angka yang keluar dari kotak.
       - nada bahaya: warna status-late, garis kiri 1px dan padding kiri 24px di dalam lebar kolomnya; selalu terakhir.
 --}}
 @props([
@@ -34,7 +34,8 @@
             const g = $refs.isi;
             let lebar = -1;
             let sibuk = false;
-            const meluber = () => g.scrollWidth > g.clientWidth + 1;
+            const meluber = () => g.scrollWidth > g.clientWidth + 1
+                || Array.from(g.querySelectorAll('.ringkasan-nilai')).some((n) => n.scrollWidth > n.clientWidth + 1);
             const ukur = () => {
                 if (sibuk) return;
                 sibuk = true;

@@ -113,7 +113,7 @@ it('F-17: Vendor::aktif hanya akun vendor aktif, urut nama', function () {
     expect(Vendor::aktif()->pluck('nama_vendor')->all())->toBe(['CV Listrik Mandiri', 'Toko Perabot Jaya']);
 });
 
-it('F-17: pengelola menugaskan lewat halaman, toast tampil, form kosong, tiket tetap terpilih dengan data penugasan', function () {
+it('F-17: pengelola menugaskan lewat halaman (layar sempit): toast tampil, form kosong, tiket tetap terpilih dengan data penugasan', function () {
     $tiket = tiketDiajukanUji('KLH-0012');
     $vendor = Vendor::factory()->create(['nama_vendor' => 'CV Sejuk Abadi', 'jenis_layanan' => 'Pendingin ruangan']);
     $pengelola = User::factory()->pengelola()->create();
@@ -135,6 +135,69 @@ it('F-17: pengelola menugaskan lewat halaman, toast tampil, form kosong, tiket t
         ->assertDispatched('antrean-keluhan', jumlah: 0);
 
     expect($tiket->fresh()->status_tiket)->toBe(StatusTiket::Ditugaskan);
+});
+
+/** Mengisi form lalu menugaskan $tiket dari halaman desktop dengan filter $status. */
+function tugaskanDiDesktop(TiketKeluhan $tiket, string $status)
+{
+    return Livewire::withQueryParams(['status' => $status])
+        ->actingAs(User::factory()->pengelola()->create())
+        ->test('pages::tiket-keluhan.index', ['tiket' => (string) $tiket->id])
+        ->set('layarLebar', true)
+        ->set('vendorId', (string) Vendor::factory()->create()->id)
+        ->set('jenisKerusakan', 'Bocor')
+        ->set('instruksi', 'Perbaiki')
+        ->call('tugaskan', $tiket->id)
+        ->assertHasNoErrors();
+}
+
+it('20D: setelah Tugaskan di desktop, panel menampilkan tiket teratas berikutnya di daftar yang disaring', function (string $status) {
+    $pertama = tiketDiajukanUji('KLH-0001', '2026-11-01 07:00');
+    $kedua = tiketDiajukanUji('KLH-0002', '2026-11-02 07:00');
+
+    tugaskanDiDesktop($pertama, $status)
+        ->assertSet('tiket', (string) $kedua->id)
+        ->assertSeeHtml('wire:key="panel-'.$kedua->id.'"')
+        ->assertSeeHtml('data-test="form-tugaskan"')
+        ->assertSet('jenisKerusakan', '');
+})->with(['perlu', 'diajukan', 'semua']);
+
+it('20D: setelah tiket diajukan terakhir ditugaskan, panel tertutup dan daftar menampilkan keadaan kosong', function () {
+    $tiket = tiketDiajukanUji('KLH-0001');
+
+    tugaskanDiDesktop($tiket, 'diajukan')
+        ->assertSet('tiket', '')
+        ->assertDontSeeHtml('data-test="panel-tiket"')
+        ->assertSee('Tidak ada tiket yang sesuai filter.');
+
+    expect($tiket->fresh()->status_tiket)->toBe(StatusTiket::Ditugaskan);
+});
+
+it('20D: bila tidak ada tiket lain di daftar, panel tertutup dan tiket yang ditugaskan tetap di daftar', function () {
+    $tiket = tiketDiajukanUji('KLH-0001');
+
+    tugaskanDiDesktop($tiket, 'perlu')
+        ->assertSet('tiket', '')
+        ->assertDontSeeHtml('data-test="panel-tiket"')
+        ->assertSeeHtml('data-test="item-tiket"');
+});
+
+it('20D: halaman daftar yang menjadi kosong setelah Tugaskan mundur ke halaman terakhir', function () {
+    foreach (range(1, 21) as $n) {
+        $tiket = tiketDiajukanUji(sprintf('KLH-%04d', $n), '2026-11-01 07:'.str_pad((string) $n, 2, '0', STR_PAD_LEFT));
+    }
+
+    $komponen = Livewire::withQueryParams(['status' => 'diajukan', 'page' => 2])
+        ->actingAs(User::factory()->pengelola()->create())
+        ->test('pages::tiket-keluhan.index', ['tiket' => (string) $tiket->id])
+        ->set('layarLebar', true)
+        ->set('vendorId', (string) Vendor::factory()->create()->id)
+        ->set('jenisKerusakan', 'Bocor')
+        ->set('instruksi', 'Perbaiki')
+        ->call('tugaskan', $tiket->id);
+
+    expect($komponen->instance()->halaman->currentPage())->toBe(1)
+        ->and($komponen->instance()->dipilih->nomor_tiket)->toBe('KLH-0001');
 });
 
 it('F-17: validasi form memakai pesan Indonesia', function () {

@@ -160,7 +160,18 @@ new #[Title('Kamar')] class extends Component {
     @else
         {{-- Desktop: tabel dalam kartu --}}
         <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-            <table class="w-full min-w-[720px] border-collapse">
+            <table class="w-full min-w-[800px] table-fixed border-collapse">
+                {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat chip diganti. Penghuni dan Keterangan membagi sisanya. --}}
+                <colgroup>
+                    <col class="w-22">
+                    <col>
+                    <col>
+                    <col class="w-36">
+                    <col class="w-30">
+                    @if ($this->bisaKelola)
+                        <col class="w-48">
+                    @endif
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Kamar</th>
@@ -178,8 +189,8 @@ new #[Title('Kamar')] class extends Component {
                         @php($namaPenghuni = $kamar->kontrakAktif?->penghuni?->user?->nama)
                         <tr wire:key="kamar-tabel-{{ $kamar->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
                             <td class="num px-5 teks-nomor-kamar {{ $namaPenghuni ? '' : 'text-ink-muted' }}">{{ $kamar->nomor_kamar }}</td>
-                            <td class="px-5 {{ $namaPenghuni ? 'teks-badan-kuat' : 'text-ink-muted' }}">{{ $namaPenghuni ?? 'Belum ada' }}</td>
-                            <td class="px-5 text-ink-muted">{{ $kamar->keterangan }}</td>
+                            <td class="px-5 [overflow-wrap:anywhere] {{ $namaPenghuni ? 'teks-badan-kuat' : 'text-ink-muted' }}">{{ $namaPenghuni ?? 'Belum ada' }}</td>
+                            <td class="px-5 [overflow-wrap:anywhere] text-ink-muted">{{ $kamar->keterangan }}</td>
                             <td class="num px-5 text-end whitespace-nowrap teks-badan-kuat">{{ \App\Support\Format::rupiah($kamar->tarif_bulanan) }}</td>
                             <td class="px-5">
                                 @if ($namaPenghuni !== null)

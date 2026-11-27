@@ -69,6 +69,49 @@ new #[Title('Tagihan')] class extends Component {
         return $this->parsePeriode($this->periode) ?? $this->hariIni->startOfMonth();
     }
 
+    /**
+     * Bulan di daftar pemilih periode (YYYY-MM), terbaru dulu: bulan yang punya tagihan, bulan berjalan, dan bulan depan.
+     *
+     * @return Collection<int, string>
+     */
+    #[Computed]
+    public function daftarPeriode(): Collection
+    {
+        $bulanIni = $this->hariIni->startOfMonth();
+
+        return Tagihan::query()
+            ->toBase()
+            ->distinct()
+            ->pluck('periode')
+            ->map(fn (string $periode) => substr($periode, 0, 7))
+            ->push($bulanIni->format('Y-m'), $bulanIni->addMonthNoOverflow()->format('Y-m'))
+            ->unique()
+            ->sortDesc()
+            ->values();
+    }
+
+    /**
+     * Tujuan panah ‹; null di periode tagihan paling awal (atau bulan berjalan bila belum ada tagihan sebelumnya).
+     */
+    #[Computed]
+    public function periodeSebelumnya(): ?CarbonImmutable
+    {
+        $awal = CarbonImmutable::parse($this->daftarPeriode->last().'-01');
+
+        return $this->periodeTerpilih->gt($awal) ? $this->periodeTerpilih->subMonthNoOverflow() : null;
+    }
+
+    /**
+     * Tujuan panah ›; null mulai bulan depan dari hari ini, karena tagihan tidak diterbitkan lebih jauh.
+     */
+    #[Computed]
+    public function periodeBerikutnya(): ?CarbonImmutable
+    {
+        $akhir = $this->hariIni->startOfMonth()->addMonthNoOverflow();
+
+        return $this->periodeTerpilih->lt($akhir) ? $this->periodeTerpilih->addMonthNoOverflow() : null;
+    }
+
     #[Computed]
     public function filterAktif(): string
     {
@@ -402,7 +445,7 @@ new #[Title('Tagihan')] class extends Component {
         $this->periode = $hasil->periode->format('Y-m');
         $this->dialogDibuka = false;
         $this->reset('periodeTerbit');
-        unset($this->semuaTunggakan, $this->semuaBaris, $this->hitungan, $this->barisTersaring, $this->grupLama, $this->grupPeriode, $this->ringkasan, $this->infoPeriode, $this->belumDitagih, $this->periodeTombol, $this->pratinjau, $this->periodeTerpilih);
+        unset($this->daftarPeriode, $this->periodeSebelumnya, $this->periodeBerikutnya, $this->semuaTunggakan, $this->semuaBaris, $this->hitungan, $this->barisTersaring, $this->grupLama, $this->grupPeriode, $this->ringkasan, $this->infoPeriode, $this->belumDitagih, $this->periodeTombol, $this->pratinjau, $this->periodeTerpilih);
 
         Flux::modal('terbitkan-tagihan')->close();
         Flux::toast(variant: $varian, text: $pesan);
@@ -442,29 +485,35 @@ new #[Title('Tagihan')] class extends Component {
 
     $labelDialog = $bulanTahun($this->periodeDialog);
 
-    $tautanPeriode = fn ($tanggal) => route('tagihan.index', ['periode' => $tanggal->format('Y-m')]);
-    $pilihanPeriode = collect([$periode->subMonthNoOverflow(), $periode, $periode->addMonthNoOverflow()])
-        ->map(fn ($tanggal) => [
-            'nilai' => $tanggal->format('Y-m'),
-            'href' => $tautanPeriode($tanggal),
-            'aktif' => $tanggal->equalTo($periode),
-            'label' => $bulan($tanggal),
-            'pendek' => $tanggal->locale('id')->translatedFormat('M'),
-            'lengkap' => $bulanTahun($tanggal),
-        ])
-        ->all();
+    // Pemilih periode selalu menulis bulan dan tahun.
+    $pilihanBulan = fn ($tanggal) => ['nilai' => $tanggal->format('Y-m'), 'label' => $bulanTahun($tanggal)];
+    $daftarBulan = $this->daftarPeriode->map(fn (string $nilai) => $pilihanBulan(\Carbon\CarbonImmutable::parse($nilai.'-01')))->all();
 
     $kelasTh = 'border-b border-border px-5 py-3.5 whitespace-nowrap teks-kolom';
 @endphp
 
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Tagihan" :lebar="true">
-        <x-segmen-periode :pilihan="$pilihanPeriode" data-test="pemilih-periode" />
+        <x-pemilih-periode
+            :terpilih="$pilihanBulan($periode)"
+            :daftar="$daftarBulan"
+            :sebelumnya="$this->periodeSebelumnya?->format('Y-m')"
+            :berikutnya="$this->periodeBerikutnya?->format('Y-m')"
+            data-test="pemilih-periode"
+        />
 
-        @if ($bisaKelola && $periodeTombol)
-            <x-tombol wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="max-sm:w-full" data-test="terbitkan-tagihan">
-                Terbitkan
-            </x-tombol>
+        @if ($bisaKelola)
+            {{--
+                Desktop: tempat tombol tetap ada walau tombolnya tidak tampil, supaya pemilih periode tidak bergeser.
+                Ponsel: pemilih periode berbaris sendiri, jadi tempat kosong disembunyikan.
+            --}}
+            <div @class(['flex h-11 w-32 max-sm:w-full', 'max-sm:hidden' => ! $periodeTombol]) data-test="tempat-terbitkan">
+                @if ($periodeTombol)
+                    <x-tombol wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="w-full" data-test="terbitkan-tagihan">
+                        Terbitkan
+                    </x-tombol>
+                @endif
+            </div>
         @endif
     </x-judul-halaman>
 
@@ -487,7 +536,7 @@ new #[Title('Tagihan')] class extends Component {
             ['kunci' => 'lunas', 'label' => 'Lunas', 'nilai' => Format::rupiah($ringkasan['lunas'])],
             ['kunci' => 'menunggu', 'label' => 'Menunggu', 'nilai' => Format::rupiah($ringkasan['menunggu'])],
             ['kunci' => 'belum', 'label' => 'Belum Bayar', 'nilai' => Format::rupiah($ringkasan['belum'])],
-            ['kunci' => 'tunggakan', 'label' => 'Tunggakan', 'nilai' => Format::rupiah($ringkasan['tunggakan']), 'keterangan' => $ringkasan['jumlahTunggakan'].' tagihan, semua periode', 'nada' => 'bahaya'],
+            ['kunci' => 'tunggakan', 'label' => 'Tunggakan', 'nilai' => Format::rupiah($ringkasan['tunggakan']), 'keterangan' => $ringkasan['jumlahTunggakan'].' tagihan', 'nada' => 'bahaya'],
         ]"
     />
 
@@ -514,7 +563,16 @@ new #[Title('Tagihan')] class extends Component {
         @else
             {{-- Desktop: tabel dalam kartu --}}
             <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-                <table class="w-full min-w-[760px] border-collapse" data-test="tabel-tagihan">
+                <table class="w-full min-w-[900px] table-fixed border-collapse" data-test="tabel-tagihan">
+                    {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat bulan atau chip diganti. Penghuni memakai sisanya. --}}
+                    <colgroup>
+                        <col class="w-22">
+                        <col>
+                        <col class="w-36">
+                        <col class="w-55">
+                        <col class="w-36">
+                        <col class="w-40">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th scope="col" class="{{ $kelasTh }} text-start">Kamar</th>
@@ -535,8 +593,8 @@ new #[Title('Tagihan')] class extends Component {
                                     @php($ui = $statusUi($b['status']))
                                     <tr wire:key="tabel-{{ $b['id'] }}" class="h-[60px] border-t border-row-divider" data-test="baris-tagihan">
                                         <td class="num px-5 teks-nomor-kamar">{{ $b['kamar'] }}</td>
-                                        <td class="px-5 whitespace-nowrap teks-badan-kuat">{{ $b['nama'] }}</td>
-                                        <td class="px-5 whitespace-nowrap">{{ $bulan($b['periode']) }}</td>
+                                        <td class="px-5 [overflow-wrap:anywhere] teks-badan-kuat">{{ $b['nama'] }}</td>
+                                        <td class="px-5">{{ $bulan($b['periode']) }}</td>
                                         <td class="px-5 whitespace-nowrap">
                                             @if ($b['telat'])
                                                 <x-status jenis="telat">{{ $tanggalPendek($b['jatuhTempo']) }}, Lewat {{ $b['hariLewat'] }} Hari</x-status>

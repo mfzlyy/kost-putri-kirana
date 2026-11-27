@@ -375,7 +375,7 @@ Paling panjang 500 karakter, tanpa traceback, API key, header, atau isi perminta
 | `nominal_bayar` berbeda dari `tagihan.nominal` | `Nominal pembayaran berbeda dengan nominal tagihan.` |
 | Faktur ganda | `Ada lebih dari satu faktur {REF} di Odoo. Periksa manual.` |
 | Faktur dibatalkan | `Faktur {REF} dibatalkan di Odoo. Periksa manual.` |
-| Faktur tidak cocok dengan data web | `Faktur {REF} di Odoo tidak cocok dengan data web ({beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.` dengan `{beda}` = satu atau lebih dari `penghuni, periode, nominal` |
+| Faktur tidak cocok dengan data web | `Faktur {REF} di Odoo tidak cocok dengan data web ({beda}). Periksa manual di Odoo.` dengan `{beda}` = satu atau lebih dari `penghuni, periode, nominal` |
 | Faktur dibayar sebagian | `Faktur {REF} baru dibayar sebagian di Odoo. Periksa manual.` |
 | Tidak ada jurnal bank | `Jurnal bank tidak ditemukan di Odoo.` |
 | Belum lunas setelah semua langkah | `Faktur {REF} sudah dibuat tetapi belum lunas di Odoo (status {payment_state}).` |
@@ -518,12 +518,12 @@ Pesan umum di bagian 8.4 (konfigurasi, koneksi, 401, `Odoo menolak: ...`, galat 
 | Partner vendor ganda | `Ada lebih dari satu partner VDR-{id} di Odoo. Periksa manual.` |
 | Tagihan ganda | `Ada lebih dari satu tagihan vendor {REF} di Odoo. Periksa manual.` |
 | Tagihan dibatalkan | `Tagihan vendor {REF} dibatalkan di Odoo. Periksa manual.` |
-| Tagihan tidak cocok | `Tagihan vendor {REF} di Odoo tidak cocok dengan data web ({beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.` dengan `{beda}` = satu atau lebih dari `vendor, tanggal, nominal` |
+| Tagihan tidak cocok | `Tagihan vendor {REF} di Odoo tidak cocok dengan data web ({beda}). Periksa manual di Odoo.` dengan `{beda}` = satu atau lebih dari `vendor, tanggal, nominal` |
 | Tagihan belum posted | `Tagihan vendor {REF} sudah dibuat tetapi belum posted di Odoo.` |
-| Fasilitas belum tertaut | `Fasilitas belum ditautkan ke peralatan Odoo. Jalankan php artisan erp:cocokkan-peralatan.` |
+| Fasilitas belum tertaut | `Fasilitas belum ditautkan ke peralatan Odoo.` |
 | Peralatan sudah dihapus | `Peralatan Odoo #{id} untuk fasilitas ini tidak ditemukan. Jalankan php artisan erp:cocokkan-peralatan.` |
 | Permintaan ganda | `Ada lebih dari satu permintaan perawatan {REF} di Odoo. Periksa manual.` |
-| Permintaan tidak cocok | `Permintaan perawatan {REF} di Odoo tidak cocok dengan data web ({beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.` dengan `{beda}` = `peralatan`, `tanggal`, atau keduanya |
+| Permintaan tidak cocok | `Permintaan perawatan {REF} di Odoo tidak cocok dengan data web ({beda}). Periksa manual di Odoo.` dengan `{beda}` = `peralatan`, `tanggal`, atau keduanya |
 | Tidak ada tahap selesai | `Tahap perawatan selesai tidak ditemukan di Odoo.` |
 | Belum di tahap selesai setelah dipindahkan | `Permintaan perawatan {REF} sudah dibuat tetapi belum di tahap selesai di Odoo.` |
 

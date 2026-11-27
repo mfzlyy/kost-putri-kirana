@@ -313,7 +313,6 @@ new #[Title('Penghuni')] class extends Component {
                 <flux:field>
                     <flux:label>Akun</flux:label>
                     <p class="m-0 min-h-11 content-center" data-test="akun-terkunci">{{ $penghuni->user?->email }}</p>
-                    <flux:description>Akun tidak bisa diganti.</flux:description>
                 </flux:field>
             @endif
 

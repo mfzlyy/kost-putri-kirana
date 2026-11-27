@@ -274,7 +274,7 @@ it('tagihan ber-referensi sama tetapi datanya berbeda ditandai gagal tanpa dipos
     $hasil = kirimKeOdoo($baris);
 
     expect($hasil->status_sinkronisasi)->toBe(StatusSinkronisasi::Gagal)
-        ->and($hasil->pesan_error)->toBe("Tagihan vendor KPK-TKT-0001-B di Odoo tidak cocok dengan data web ({$beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.")
+        ->and($hasil->pesan_error)->toBe("Tagihan vendor KPK-TKT-0001-B di Odoo tidak cocok dengan data web ({$beda}). Periksa manual di Odoo.")
         ->and($hasil->odoo_record_id)->toBeNull()
         ->and(array_values(array_diff(panggilanOdoo(), ['res.partner/read', 'account.move/search_read'])))->toBe([]);
 })->with([

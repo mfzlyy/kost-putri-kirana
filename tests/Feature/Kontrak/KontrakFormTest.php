@@ -126,10 +126,10 @@ it('F-07 butir 1: tarif terisi dari kamar saat kamar dipilih dan tarif manual ti
     $kamarB = Kamar::factory()->create(['nomor_kamar' => '08', 'tarif_bulanan' => 1250000]);
 
     $komponen = formKontrakSebagai(User::factory()->pengelola()->create())
-        ->assertSee('Pilih kamar untuk mengisi tarif.')
+        ->assertDontSee('Pilih kamar untuk mengisi tarif.')
         ->set('kamar_id', (string) $kamarA->id)
         ->assertSet('tarif_bulanan', '1.400.000')
-        ->assertSee('Diisi dari tarif Kamar 07.')
+        ->assertDontSee('Diisi dari tarif Kamar')
         // Ganti kamar selama tarif belum diubah: tarif mengikuti kamar baru.
         ->set('kamar_id', (string) $kamarB->id)
         ->assertSet('tarif_bulanan', '1.250.000')
@@ -177,7 +177,7 @@ it('F-07: tanggal berakhir sebelum hari ini ditolak dengan pesan migrasi data', 
         'tanggal_berakhir' => '2026-11-10',
     ])
         ->call('simpan')
-        ->assertHasErrors(['tanggal_berakhir' => ['Tanggal berakhir sudah lewat. Kontrak yang sudah selesai dicatat lewat migrasi data.']]);
+        ->assertHasErrors(['tanggal_berakhir' => ['Tanggal berakhir sudah lewat.']]);
 });
 
 it('F-07: tanggal berakhir hari ini masih boleh', function () {

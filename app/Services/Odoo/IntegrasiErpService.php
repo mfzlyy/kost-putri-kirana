@@ -36,7 +36,7 @@ class IntegrasiErpService
 
     public const PESAN_TANPA_VENDOR = 'Tiket tidak punya vendor.';
 
-    public const PESAN_BELUM_DITAUTKAN = 'Fasilitas belum ditautkan ke peralatan Odoo. Jalankan php artisan erp:cocokkan-peralatan.';
+    public const PESAN_BELUM_DITAUTKAN = 'Fasilitas belum ditautkan ke peralatan Odoo.';
 
     public const PESAN_TANPA_TAHAP_SELESAI = 'Tahap perawatan selesai tidak ditemukan di Odoo.';
 
@@ -467,7 +467,7 @@ class IntegrasiErpService
         if ($beda !== []) {
             throw new PengirimanErpGagal(
                 "{$catatan} di Odoo tidak cocok dengan data web (".implode(', ', $beda).'). '
-                .'Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.'
+                .'Periksa manual di Odoo.'
             );
         }
     }

@@ -282,7 +282,15 @@ new #[Title('Akun')] class extends Component {
     @else
         {{-- Desktop: tabel dalam kartu --}}
         <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-            <table class="w-full min-w-[720px] border-collapse">
+            <table class="w-full min-w-[720px] table-fixed border-collapse">
+                {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat chip atau halaman diganti. Nama dan Email membagi sisanya. --}}
+                <colgroup>
+                    <col>
+                    <col>
+                    <col class="w-30">
+                    <col class="w-32">
+                    <col class="w-40">
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Nama</th>
@@ -295,8 +303,8 @@ new #[Title('Akun')] class extends Component {
                 <tbody>
                     @foreach ($this->daftarAkun as $akun)
                         <tr wire:key="akun-tabel-{{ $akun->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
-                            <td class="px-5 teks-badan-kuat">{{ $akun->nama }}</td>
-                            <td class="px-5 text-ink-muted"><span class="block min-w-40 [overflow-wrap:anywhere] lg:min-w-56">{{ $akun->email }}</span></td>
+                            <td class="px-5 [overflow-wrap:anywhere] teks-badan-kuat">{{ $akun->nama }}</td>
+                            <td class="px-5 text-ink-muted"><span class="block [overflow-wrap:anywhere]">{{ $akun->email }}</span></td>
                             <td class="px-5">{{ $akun->peran->label() }}</td>
                             <td class="px-5">
                                 @if ($akun->isAktif())
@@ -357,7 +365,7 @@ new #[Title('Akun')] class extends Component {
             <dd>{{ $akunNonaktif?->peran->label() }}</dd>
         </x-slot:ringkasan>
 
-        <x-slot:akibat>Pemilik akun ini langsung keluar dan tidak bisa masuk. Anda bisa mengaktifkannya lagi.</x-slot:akibat>
+        <x-slot:akibat>Akun ini langsung keluar dan tidak bisa masuk sampai diaktifkan lagi.</x-slot:akibat>
     </x-dialog-konfirmasi>
 
     <flux:modal
@@ -438,7 +446,6 @@ new #[Title('Akun')] class extends Component {
                         <flux:field>
                             <flux:label>Nama Vendor</flux:label>
                             <flux:input wire:model.blur="nama_vendor" required maxlength="120" />
-                            <flux:description>Awalnya diisi dari nama akun.</flux:description>
                             <flux:error name="nama_vendor" />
                         </flux:field>
 

@@ -89,7 +89,7 @@ it('F-02: Nonaktifkan akun memakai dialog seragam, bukan confirm bawaan browser'
     periksaBentukDialog($komponen, 'nonaktifkan-akun');
     $komponen->assertSee('Nonaktifkan Akun Rina Maharani?')
         ->assertSeeInOrder(['Email', 'rina@contoh.test', 'Peran', 'Penghuni'])
-        ->assertSee('Pemilik akun ini langsung keluar dan tidak bisa masuk. Anda bisa mengaktifkannya lagi.')
+        ->assertSee('Akun ini langsung keluar dan tidak bisa masuk sampai diaktifkan lagi.')
         ->assertSee('Nonaktifkan')
         ->call('nonaktifkan', $akun->id)
         ->assertSet('idNonaktif', null);

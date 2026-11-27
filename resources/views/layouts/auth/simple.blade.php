@@ -7,7 +7,7 @@
     <body class="min-h-svh bg-background text-ink antialiased">
         <div class="flex min-h-svh flex-col lg:flex-row">
             {{-- Panel desktop --}}
-            <section class="hidden flex-1 basis-[460px] flex-col justify-between gap-12 bg-sidebar p-14 text-primary-container lg:flex">
+            <section class="hidden flex-1 basis-[460px] flex-col gap-12 bg-sidebar p-14 text-primary-container lg:flex">
                 <a href="{{ route('home') }}" wire:navigate class="sorot-gelap flex items-center gap-3 self-start no-underline">
                     <x-app-logo-icon varian="gelap" aria-hidden="true" class="h-[38px] w-8" />
                     <span class="sr-only">Kost Putri Kirana</span>
@@ -17,7 +17,7 @@
                     </span>
                 </a>
 
-                <div class="flex max-w-[460px] flex-col gap-7">
+                <div class="my-auto flex max-w-[460px] flex-col gap-7">
                     <div aria-hidden="true" class="grid max-w-[360px] grid-cols-4 gap-2.5">
                         @foreach (range(1, 8) as $nomor)
                             <div @class([
@@ -31,10 +31,7 @@
                     </div>
 
                     <p class="m-0 text-white teks-hero">Delapan kamar, satu catatan.</p>
-                    <p class="m-0 max-w-[400px] text-on-sidebar teks-badan">Tagihan, bukti bayar, dan laporan kerusakan kos di Cikarang Utara tercatat di sini.</p>
                 </div>
-
-                <p class="m-0 text-on-sidebar-muted! teks-bantuan">Akun dibuat oleh pengelola kos.</p>
             </section>
 
             {{-- Pita ponsel --}}

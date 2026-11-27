@@ -160,7 +160,7 @@ it('permintaan ber-referensi sama tetapi datanya berbeda ditandai gagal tanpa di
     $baris = kirimKeOdoo(barisRawat());
 
     expect($baris->status_sinkronisasi)->toBe(StatusSinkronisasi::Gagal)
-        ->and($baris->pesan_error)->toBe("Permintaan perawatan KPK-TKT-0001-M di Odoo tidak cocok dengan data web ({$beda}). Kemungkinan sisa data uji sebelum reset basis data. Periksa manual.")
+        ->and($baris->pesan_error)->toBe("Permintaan perawatan KPK-TKT-0001-M di Odoo tidak cocok dengan data web ({$beda}). Periksa manual di Odoo.")
         ->and($baris->odoo_record_id)->toBeNull()
         ->and(panggilanOdoo())->toBe(['maintenance.request/search_read']);
 })->with([
@@ -192,7 +192,7 @@ it('gagal dengan saran perintah bila fasilitas tidak lagi tertaut, tanpa memangg
     $hasil = kirimKeOdoo($baris);
 
     expect($hasil->status_sinkronisasi)->toBe(StatusSinkronisasi::Gagal)
-        ->and($hasil->pesan_error)->toBe('Fasilitas belum ditautkan ke peralatan Odoo. Jalankan php artisan erp:cocokkan-peralatan.');
+        ->and($hasil->pesan_error)->toBe('Fasilitas belum ditautkan ke peralatan Odoo.');
     Http::assertNothingSent();
 });
 

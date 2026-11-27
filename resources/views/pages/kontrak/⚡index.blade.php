@@ -269,8 +269,6 @@ new #[Title('Kontrak')] class extends Component {
                         Batas peringatan belum diatur.
                         @if ($bisaKelola)
                             <a href="{{ route('pengaturan.index') }}" wire:navigate>Atur di Pengaturan</a>
-                        @else
-                            Pengelola belum mengatur batasnya di Pengaturan.
                         @endif
                     </flux:callout.text>
                 </flux:callout>
@@ -330,7 +328,19 @@ new #[Title('Kontrak')] class extends Component {
         {{-- Desktop: tabel dalam kartu. relative menahan teks sr-only di kepala tabel tetap di dalam area gulir;
              nama boleh turun baris. --}}
         <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-            <table class="w-full min-w-[820px] border-collapse">
+            <table @class(['tabel-rapat w-full table-fixed border-collapse', 'min-w-[900px]' => $bisaKelola, 'min-w-[720px]' => ! $bisaKelola])>
+                {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat chip atau halaman diganti. Penghuni memakai sisanya. --}}
+                <colgroup>
+                    <col class="w-18">
+                    <col>
+                    <col class="w-30">
+                    <col class="w-30">
+                    <col class="w-33">
+                    <col class="w-28">
+                    @if ($bisaKelola)
+                        <col class="w-54">
+                    @endif
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Kamar</th>
@@ -349,7 +359,7 @@ new #[Title('Kontrak')] class extends Component {
                         @php($aktif = $kontrak->status_kontrak === StatusKontrak::Aktif)
                         <tr wire:key="kontrak-tabel-{{ $kontrak->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
                             <td class="num px-5 teks-nomor-kamar">{{ $kontrak->kamar?->nomor_kamar }}</td>
-                            <td class="px-5 teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}</td>
+                            <td class="px-5 [overflow-wrap:anywhere] teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}</td>
                             <td class="px-5 whitespace-nowrap">{{ $tanggalId($kontrak->tanggal_mulai) }}</td>
                             <td class="px-5 whitespace-nowrap">{{ $tanggalId($kontrak->tanggal_berakhir) }}</td>
                             <td class="num px-5 text-end whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($kontrak->tarif_bulanan) }}</td>
