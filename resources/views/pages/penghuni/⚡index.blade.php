@@ -84,24 +84,24 @@ new #[Title('Penghuni')] class extends Component {
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Penghuni">
         @if ($this->bisaKelola)
-            <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="tombol-utama" data-test="tambah-penghuni">
+            <x-tombol :href="route('penghuni.tambah')" wire:navigate data-test="tambah-penghuni">
                 Tambah
-            </flux:button>
+            </x-tombol>
         @endif
     </x-judul-halaman>
 
-    <div role="group" aria-label="Saring status" class="baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <x-chip-filter.baris label="Saring status" class="baris-filter">
         <x-chip-filter :aktif="$this->filterAktif === 'semua'" :jumlah="$this->hitungan['semua']" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'keluar'" :jumlah="$this->hitungan['keluar']" wire:click="$set('filterStatus', 'keluar')">Keluar</x-chip-filter>
-    </div>
+    </x-chip-filter.baris>
 
     <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
     @if ($this->daftarPenghuni->isEmpty())
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada data penghuni.' : 'Tidak ada penghuni yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('penghuni.tambah')" wire:navigate class="tombol-utama">Tambah</flux:button>
+                <x-tombol :href="route('penghuni.tambah')" wire:navigate>Tambah</x-tombol>
             @endif
         </div>
     @else
@@ -126,7 +126,7 @@ new #[Title('Penghuni')] class extends Component {
                     @foreach ($this->daftarPenghuni as $penghuni)
                         @php($nomorKamar = $penghuni->kontrakAktif?->kamar?->nomor_kamar)
                         <tr wire:key="penghuni-tabel-{{ $penghuni->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
-                            <td class="px-5 font-semibold">{{ $penghuni->user?->nama }}</td>
+                            <td class="px-5 teks-badan-kuat">{{ $penghuni->user?->nama }}</td>
                             <td class="num px-5 {{ $nomorKamar ? '' : 'text-ink-muted' }}">{{ $nomorKamar ?? '-' }}</td>
                             <td class="num px-5 whitespace-nowrap">{{ Format::telepon($penghuni->no_telepon) }}</td>
                             <td class="num px-5 tracking-[0.02em] whitespace-nowrap">{{ $penghuni->no_identitas_tersamar }}</td>
@@ -142,7 +142,7 @@ new #[Title('Penghuni')] class extends Component {
                             </td>
                             @if ($this->bisaKelola)
                                 <td class="px-5 text-end whitespace-nowrap">
-                                    <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 items-center px-2 teks-tombol-kecil">Ubah</a>
+                                    <x-tombol varian="sekunder" ukuran="kecil" :href="route('penghuni.ubah', $penghuni)" wire:navigate>Ubah</x-tombol>
                                 </td>
                             @endif
                         </tr>
@@ -158,14 +158,14 @@ new #[Title('Penghuni')] class extends Component {
                 <li wire:key="penghuni-kartu-{{ $penghuni->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                     <div class="flex items-center justify-between gap-3">
                         <span class="flex min-w-0 items-center gap-2.5">
-                            <span class="truncate font-[650]">{{ $penghuni->user?->nama }}</span>
+                            <span class="truncate teks-badan-kuat">{{ $penghuni->user?->nama }}</span>
                             @if ($penghuni->status_penghuni !== StatusPenghuni::Aktif)
                                 <x-status jenis="belum">Nonaktif</x-status>
                             @endif
                         </span>
                         <span class="shrink-0 teks-badan {{ $nomorKamar ? '' : 'text-ink-muted' }}">
                             @if ($nomorKamar)
-                                Kamar <strong class="num">{{ $nomorKamar }}</strong>
+                                Kamar <strong class="num teks-badan-kuat">{{ $nomorKamar }}</strong>
                             @else
                                 -
                             @endif
@@ -176,7 +176,7 @@ new #[Title('Penghuni')] class extends Component {
                         <span class="num tracking-[0.02em]">{{ $penghuni->no_identitas_tersamar }}</span>
                     </div>
                     @if ($this->bisaKelola)
-                        <a href="{{ route('penghuni.ubah', $penghuni) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 w-fit items-center px-1 teks-tombol-kecil">Ubah</a>
+                        <x-tombol varian="sekunder" ukuran="kecil" :href="route('penghuni.ubah', $penghuni)" wire:navigate class="mt-1.5 w-full">Ubah</x-tombol>
                     @endif
                 </li>
             @endforeach

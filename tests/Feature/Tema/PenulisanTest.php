@@ -139,8 +139,8 @@ it('angka antrean Verifikasi memakai gaya aktif di halamannya dan gaya biasa di 
         return $cocok[0] ?? '';
     })();
 
-    expect($angka($aktif))->toContain('bg-primary')->toContain('font-semibold')->not->toContain('bg-primary-container/[.14]')
-        ->and($angka($lain))->toContain('bg-primary-container/[.14]')->not->toContain('font-semibold')
+    expect($angka($aktif))->toContain('bg-primary')->toContain('teks-pil-aktif')->not->toContain('bg-primary-container/[.14]')
+        ->and($angka($lain))->toContain('bg-primary-container/[.14]')->not->toContain('teks-pil-aktif')
         ->and($angka($aktif))->toContain('h-[22px]')->toContain('rounded-full')->toContain('teks-pil')->toContain('flex-none');
     expect($aktif)->toContain('1 bukti menunggu');
 });

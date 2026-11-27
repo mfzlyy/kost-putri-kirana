@@ -8,7 +8,7 @@
       - catatan   : satu kalimat Catatan info
       - isi       : field isian (label, bantuan, galat)
 
-    variant "bahaya" membuat tombol aksi merah (status-late); "biasa" memakai gaya Primary.
+    variant "bahaya" membuat tombol aksi merah penuh (x-tombol bahaya-penuh); "biasa" memakai x-tombol utama.
     Desktop: dialog di tengah, lebar maksimal 480 px. Ponsel: bottom sheet dengan tombol selebar layar,
     tombol aksi di atas dan Batal di bawah. Fokus awal di tombol Batal.
 --}}
@@ -73,19 +73,14 @@
         {{-- Kaki --}}
         <div class="flex justify-end gap-2 border-t border-divider pt-[18px] max-sm:flex-col-reverse">
             <flux:modal.close>
-                <flux:button type="button" variant="outline" autofocus class="tombol-sekunder max-sm:w-full">Batal</flux:button>
+                <x-tombol varian="sekunder" autofocus class="max-sm:w-full">Batal</x-tombol>
             </flux:modal.close>
 
-            <flux:button
-                type="button"
-                :variant="$variant === 'bahaya' ? 'danger' : 'primary'"
-                {{ $attributes->class([
-                    'max-sm:w-full',
-                    'tombol-bahaya-penuh' => $variant === 'bahaya',
-                    'tombol-utama' => $variant !== 'bahaya',
-                ])->merge($targetAksi !== '' ? ['wire:target' => $targetAksi] : []) }}
+            <x-tombol
+                :varian="$variant === 'bahaya' ? 'bahaya-penuh' : 'utama'"
+                {{ $attributes->class('max-sm:w-full')->merge($targetAksi !== '' ? ['wire:target' => $targetAksi] : []) }}
                 wire:loading.attr="disabled"
-            >{{ $labelAksi }}</flux:button>
+            >{{ $labelAksi }}</x-tombol>
         </div>
     </div>
 </flux:modal>

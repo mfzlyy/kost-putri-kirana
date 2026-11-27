@@ -23,7 +23,7 @@
         </div>
 
         @if ($galatAutentikasi->isNotEmpty())
-            <div role="alert" class="flex flex-col gap-1 rounded-lg bg-danger-container px-3.5 py-3 font-medium text-on-danger-container">
+            <div role="alert" class="flex flex-col gap-1 rounded-lg bg-danger-container px-3.5 py-3 text-on-danger-container teks-badan">
                 @foreach ($galatAutentikasi as $pesan)
                     <p class="m-0">{{ $pesan }}</p>
                 @endforeach
@@ -59,9 +59,9 @@
             <flux:error name="password" />
         </flux:field>
 
-        <flux:button variant="primary" type="submit" class="tombol-utama w-full" data-test="login-button">
+        <x-tombol type="submit" class="w-full" data-test="login-button">
             Masuk
-        </flux:button>
+        </x-tombol>
 
         <p class="m-0 teks-bantuan">Lupa password? Hubungi pengelola kos.</p>
     </form>

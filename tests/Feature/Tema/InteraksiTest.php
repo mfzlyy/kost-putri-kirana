@@ -116,6 +116,7 @@ it('setiap jenis elemen klik punya aturan hover di dalam media hover', function 
 })->with([
     '.tombol-utama:not(:disabled):hover',
     '.tombol-sekunder:not(:disabled):hover',
+    '.tombol-positif:not(:disabled):hover',
     '.tombol-bahaya:not(:disabled):hover',
     '.tombol-bahaya-penuh:not(:disabled):hover',
     '.tautan-aksi:not(:disabled):hover',
@@ -161,10 +162,10 @@ it('teks peran di sidebar memakai satu warna dengan kontras minimal 4,5:1', func
     $user = User::factory()->{$peran}()->create();
     $html = $this->actingAs($user)->get(route($user->peran->halamanUtama()))->assertOk()->getContent();
 
-    expect(kelasElemen($html, 'data-test="peran-pengguna"'))
-        ->toContain('text-on-sidebar-muted!')
-        ->toContain('font-medium!')
-        ->toContain('teks-bantuan');
+    expect(kelasElemen($html, 'data-test="peran-pengguna"'))->toBe('teks-peran')
+        ->and(blokCss(cssAplikasi(), '@utility teks-peran'))
+        ->toContain('font-weight: 500')
+        ->toContain('color: var(--color-on-sidebar-muted)');
 
     $warna = function (string $token): float {
         preg_match('/--color-'.$token.': #([0-9a-f]{6});/i', cssAplikasi(), $cocok);
@@ -180,13 +181,13 @@ it('teks peran di sidebar memakai satu warna dengan kontras minimal 4,5:1', func
     expect(($warna('on-sidebar-muted') + 0.05) / ($warna('sidebar') + 0.05))->toBeGreaterThanOrEqual(4.5);
 })->with(['pemilik', 'pengelola', 'penghuni', 'vendor']);
 
-it('chip, menu sidebar, tab penghuni, dan tautan Batal merender kelas interaksinya', function () {
+it('chip, menu sidebar, tab penghuni, dan tombol Batal merender kelas interaksinya', function () {
     foreach ([true, false] as $aktif) {
         $chip = Blade::render('<x-chip-filter :aktif="$aktif">Semua</x-chip-filter>', ['aktif' => $aktif]);
         expect(kelasElemen($chip, 'aria-pressed'))->toMatch('/(^|\s)chip(\s|$)/');
     }
 
-    expect(Blade::render('<x-tautan-batal href="/kamar" />'))->toContain('tautan-aksi');
+    expect(Blade::render('<x-tombol varian="sekunder" href="/kamar">Batal</x-tombol>'))->toContain('tombol-sekunder');
 
     $penghuni = User::factory()->penghuni()->create();
     $html = $this->actingAs($penghuni)->get('/tagihan-saya')->assertOk()->getContent();
@@ -210,8 +211,8 @@ it('Tagihan merender segmen periode dan tombol utama; Sinkronisasi dan Akun mere
 
     $akun = $this->actingAs($pengelola)->get('/akun')->assertOk()->getContent();
 
-    expect(kelasElemen($akun, 'wire:click="konfirmasiNonaktifkan'))->toContain('tautan-bahaya')
-        ->and(kelasElemen($akun, 'wire:click="aktifkan'))->toContain('tautan-aksi')
+    expect(kelasElemen($akun, 'wire:click="konfirmasiNonaktifkan'))->toContain('tombol-bahaya')
+        ->and(kelasElemen($akun, 'wire:click="aktifkan'))->toContain('tombol-positif')
         ->and(kelasElemen($akun, 'data-test="tambah-akun-button"'))->toContain('tombol-utama');
 });
 
@@ -259,7 +260,7 @@ it('kartu Pekerjaan vendor bisa diklik; kartu Keluhan penghuni tidak, jadi tanpa
     $keluhan = Livewire::actingAs($penghuni->user)->test('pages::keluhan-saya.index')->html();
 
     expect(kelasElemen($pekerjaan, 'data-test="kartu-tiket"'))->toContain('kartu-klik')
-        ->and(kelasElemen($pekerjaan, 'data-test="selesai-tiket"'))->toContain('tombol-sekunder')
+        ->and(kelasElemen($pekerjaan, 'data-test="selesai-tiket"'))->toContain('tombol-utama')
         ->and(kelasElemen($keluhan, 'data-test="kartu-tiket"'))->not->toBeEmpty()->not->toContain('kartu-klik');
 });
 

@@ -146,7 +146,7 @@ it('F-07: pengelola melihat aksi perpanjang dan akhiri pada kontrak aktif saja',
     $semua = daftarKontrakSebagai(User::factory()->pengelola()->create(), ['status' => 'semua']);
 
     // Satu baris aktif: tabel desktop dan kartu ponsel masing-masing memuat satu tombol Akhiri.
-    expect(substr_count($semua->html(), '>Akhiri</button>'))->toBe(2);
+    expect(substr_count($semua->html(), 'wire:click="konfirmasiAkhiri('))->toBe(2);
 });
 
 it('F-07: penghuni dan vendor mendapat 403 di /kontrak', function (string $peran) {

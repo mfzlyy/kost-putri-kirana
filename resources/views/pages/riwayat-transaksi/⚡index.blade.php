@@ -277,10 +277,10 @@ new #[Title('Riwayat')] class extends Component {
                         <tbody>
                             @foreach ($baris as $b)
                                 <tr wire:key="tabel-{{ $b->id }}" class="border-t border-row-divider first:border-t-0">
-                                    <td class="px-5 py-3.5 font-semibold whitespace-nowrap">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</td>
+                                    <td class="px-5 py-3.5 whitespace-nowrap teks-badan-kuat">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</td>
                                     <td class="px-5 py-3.5 whitespace-nowrap">{{ $tanggal($b->tanggal_bayar) }}</td>
                                     <td class="px-5 py-3.5 whitespace-nowrap text-ink-muted">{{ $tanggal($b->diverifikasi_pada) }}</td>
-                                    <td class="num px-5 py-3.5 text-right font-semibold whitespace-nowrap">{{ Format::rupiah($b->nominal_bayar) }}</td>
+                                    <td class="num px-5 py-3.5 text-right whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</td>
                                     <td class="px-5 py-3.5"><x-status jenis="ok">Lunas</x-status></td>
                                 </tr>
                             @endforeach
@@ -292,8 +292,8 @@ new #[Title('Riwayat')] class extends Component {
                 <ul class="m-0 list-none overflow-hidden rounded-2xl border border-border bg-surface p-0 md:hidden">
                     @foreach ($baris as $b)
                         <li wire:key="daftar-{{ $b->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 first:border-t-0">
-                            <span class="font-semibold">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</span>
-                            <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
+                            <span class="teks-badan-kuat">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</span>
+                            <span class="num teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</span>
                             <span class="teks-bantuan">Dibayar {{ $tanggal($b->tanggal_bayar) }}, Diterima {{ $tanggal($b->diverifikasi_pada) }}</span>
                             <span class="justify-self-end self-center text-status-ok">
                                 <svg width="14" height="14" viewBox="0 0 16 16" role="img" aria-label="Lunas"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -303,14 +303,14 @@ new #[Title('Riwayat')] class extends Component {
                 </ul>
 
                 @if ($sisa > 0)
-                    <button
-                        type="button"
+                    <x-tombol
+                        varian="sekunder"
                         wire:click="tampilkanLagi"
                         wire:loading.attr="disabled"
                         wire:target="tampilkanLagi"
-                        class="tombol tombol-sekunder w-full md:w-fit"
+                        class="w-full md:w-fit"
                         data-test="tampilkan-lagi"
-                    >Lainnya</button>
+                    >Lainnya</x-tombol>
                 @endif
             @endif
         @endif
@@ -387,9 +387,9 @@ new #[Title('Riwayat')] class extends Component {
                                 @endphp
                                 <tr wire:key="tabel-{{ $b->id }}" class="border-t border-row-divider first:border-t-0">
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}</td>
-                                    <td class="px-5 py-3 font-semibold">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="font-normal text-ink-muted">(sudah keluar)</span>@endif</td>
+                                    <td class="px-5 py-3 teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="text-ink-muted teks-badan">(sudah keluar)</span>@endif</td>
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $kontrak->kamar?->nomor_kamar }}</td>
-                                    <td class="num px-5 py-3 text-right font-semibold whitespace-nowrap">{{ Format::rupiah($b->nominal_bayar) }}</td>
+                                    <td class="num px-5 py-3 text-right whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $tanggal($b->tanggal_bayar) }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-ink-muted">
                                         {{ $waktu($b->diverifikasi_pada) }}
@@ -425,8 +425,8 @@ new #[Title('Riwayat')] class extends Component {
                         @endphp
                         <li wire:key="daftar-{{ $b->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                             <div class="flex items-baseline justify-between gap-3">
-                                <span class="font-semibold">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="font-normal text-ink-muted">(sudah keluar)</span>@endif</span>
-                                <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
+                                <span class="teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="text-ink-muted teks-badan">(sudah keluar)</span>@endif</span>
+                                <span class="num teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</span>
                             </div>
                             <span class="teks-bantuan">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, Diterima {{ $waktu($b->diverifikasi_pada) }}</span>
                             <div class="flex items-center gap-2" data-test="status-odoo">

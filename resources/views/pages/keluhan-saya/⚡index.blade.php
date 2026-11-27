@@ -77,14 +77,14 @@ new #[Title('Keluhan')] class extends Component {
     @else
         <x-judul-halaman judul="Keluhan">
             @can('create', App\Models\TiketKeluhan::class)
-                <a href="{{ route('keluhan-saya.ajukan') }}" wire:navigate class="tombol tombol-utama max-sm:w-full">Ajukan</a>
+                <x-tombol :href="route('keluhan-saya.ajukan')" wire:navigate class="max-sm:w-full">Ajukan</x-tombol>
             @endcan
         </x-judul-halaman>
 
         @if ($nomorBaru !== null)
             <div role="status" class="flex items-center gap-2.5 rounded-xl bg-primary-container px-4 py-3.5 text-on-primary-container teks-badan" data-test="flash-keluhan">
                 <svg viewBox="0 0 16 16" class="size-4 shrink-0 text-status-ok" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Keluhan terkirim dengan nomor <strong class="font-semibold">{{ $nomorBaru }}</strong>.</span>
+                <span>Keluhan terkirim dengan nomor <strong class="teks-badan-kuat">{{ $nomorBaru }}</strong>.</span>
             </div>
         @endif
 

@@ -276,8 +276,8 @@ new #[Title('Verifikasi')] class extends Component {
                         class="baris-pilih grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 text-ink no-underline first:border-t-0 hover:text-ink"
                         data-test="item-antrean"
                     >
-                        <span class="font-[650]">Kamar {{ $kontrakItem->kamar?->nomor_kamar }}, {{ $namaDepan($kontrakItem->penghuni?->user?->nama) }}</span>
-                        <span class="num font-[650]">{{ Format::rupiah($tagihanItem->nominal) }}</span>
+                        <span class="teks-badan-kuat">Kamar {{ $kontrakItem->kamar?->nomor_kamar }}, {{ $namaDepan($kontrakItem->penghuni?->user?->nama) }}</span>
+                        <span class="num teks-badan-kuat">{{ Format::rupiah($tagihanItem->nominal) }}</span>
                         <span class="teks-bantuan">{{ $tagihanItem->periode->locale('id')->translatedFormat('F') }}, diunggah {{ Format::waktuUnggah($item->diunggah_pada) }}</span>
                         <span class="justify-self-end">
                             @if ($telat)
@@ -333,7 +333,7 @@ new #[Title('Verifikasi')] class extends Component {
                             @else
                                 @if ($berkas['ekstensi'] === 'pdf')
                                     <flux:icon.document-text class="size-10" />
-                                    <span class="teks-tombol-kecil">Berkas PDF</span>
+                                    <span class="teks-badan-kuat">Berkas PDF</span>
                                 @else
                                     <img
                                         src="{{ $urlBukti }}"
@@ -371,14 +371,14 @@ new #[Title('Verifikasi')] class extends Component {
 
                     <div class="flex flex-col gap-3 border-t border-divider pt-5 lg:flex-row lg:flex-wrap">
                         <flux:modal.trigger name="terima-pembayaran">
-                            <button type="button" class="tombol tombol-utama w-full lg:w-auto" data-test="buka-terima">Terima</button>
+                            <x-tombol class="w-full lg:w-auto" data-test="buka-terima">Terima</x-tombol>
                         </flux:modal.trigger>
-                        <button
-                            type="button"
+                        <x-tombol
+                            varian="bahaya"
                             wire:click="bukaTolak({{ $panel->id }})"
-                            class="tombol tombol-bahaya w-full lg:w-auto"
+                            class="w-full lg:w-auto"
                             data-test="buka-tolak"
-                        >Tolak</button>
+                        >Tolak</x-tombol>
                     </div>
                 </div>
             </section>

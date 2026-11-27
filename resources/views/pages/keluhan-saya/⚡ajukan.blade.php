@@ -205,7 +205,7 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
                         ['nilai' => 'kamar', 'label' => $adaKontrak ? 'Kamar '.$nomorKamar : 'Kamar', 'nonaktif' => ! $adaKontrak],
                         ['nilai' => 'area_bersama', 'label' => 'Area Bersama', 'nonaktif' => false],
                     ] as $pilihan)
-                        <label class="pilihan relative flex h-11 cursor-pointer items-center justify-center bg-surface px-4 font-semibold has-[:checked]:bg-chip-active has-[:checked]:text-white has-[:disabled]:cursor-not-allowed has-[:disabled]:bg-surface-disabled has-[:disabled]:text-ink-muted has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-primary">
+                        <label class="pilihan relative flex h-11 cursor-pointer items-center justify-center bg-surface px-4 teks-chip has-[:checked]:bg-chip-active has-[:checked]:text-white has-[:disabled]:cursor-not-allowed has-[:disabled]:bg-surface-disabled has-[:disabled]:text-ink-muted has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-primary">
                             <input
                                 type="radio"
                                 name="lokasi"
@@ -238,7 +238,7 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
                             <label
                                 wire:key="fasilitas-{{ $lokasi }}-{{ $fasilitas->id }}"
                                 @class([
-                                    'pilihan relative inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border bg-surface px-3.5 font-[550] has-[:checked]:border-2 has-[:checked]:border-primary has-[:checked]:bg-primary-container has-[:checked]:font-semibold has-[:checked]:text-on-primary-container has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary',
+                                    'pilihan relative inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border bg-surface px-3.5 teks-chip has-[:checked]:border-2 has-[:checked]:border-primary has-[:checked]:bg-primary-container has-[:checked]:text-on-primary-container has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary',
                                     'border-border-strong' => ! $errors->has('fasilitas_id'),
                                     'border-red-400' => $errors->has('fasilitas_id'),
                                 ])
@@ -283,14 +283,14 @@ new #[Title('Ajukan Keluhan')] #[Layout('layouts::app', ['tanpaTabPenghuni' => t
             </div>
 
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:border-t md:border-divider md:pt-[18px]">
-                <button
+                <x-tombol
                     type="submit"
-                    @disabled($daftar->isEmpty())
-                    class="tombol tombol-utama w-full disabled:opacity-60 md:w-auto"
+                    :disabled="$daftar->isEmpty()"
+                    class="w-full md:w-auto"
                 >
                     <span wire:loading.remove wire:target="kirim">Kirim</span>
                     <span wire:loading wire:target="kirim">Mengirim…</span>
-                </button>
+                </x-tombol>
             </div>
         </form>
     @endif

@@ -153,7 +153,7 @@ it('F-16: flash nomor tiket tampil sekali dan kartunya bergaris Primary', functi
         ->get(route('keluhan-saya.index'))
         ->assertOk()
         ->assertSee('Keluhan terkirim dengan nomor')
-        ->assertSee('<strong class="font-semibold">KLH-0013</strong>', false)
+        ->assertSee('<strong class="teks-badan-kuat">KLH-0013</strong>', false)
         ->assertSee('border-2 border-primary', false);
 
     $this->actingAs($user)->get(route('keluhan-saya.index'))

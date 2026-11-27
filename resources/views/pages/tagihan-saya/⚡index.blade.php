@@ -210,7 +210,7 @@ new #[Title('Tagihan')] class extends Component {
                 @endphp
                 <div class="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between md:gap-x-8">
                     <div class="@container flex min-w-0 flex-col gap-2.5 md:flex-1 md:gap-1.5">
-                        <h2 id="judul-utama" class="m-0 font-[550] text-ink-muted teks-badan">Tagihan {{ $b['periode']->locale('id')->translatedFormat('F') }}</h2>
+                        <h2 id="judul-utama" class="m-0 teks-bagian">Tagihan {{ $b['periode']->locale('id')->translatedFormat('F') }}</h2>
                         <div class="num teks-angka-utama">{{ Format::rupiah($b['nominal']) }}</div>
 
                         @if ($b['telatHari'] > 0)
@@ -218,7 +218,7 @@ new #[Title('Tagihan')] class extends Component {
                         @elseif ($sisaHari === 0)
                             <p class="m-0 teks-badan">Jatuh Tempo Hari Ini</p>
                         @else
-                            <p class="m-0 teks-badan">Jatuh Tempo <strong class="font-semibold">{{ $jatuhTempo }}</strong>, {{ $sisaHari }} Hari Lagi</p>
+                            <p class="m-0 teks-badan">Jatuh Tempo <strong class="teks-badan-kuat">{{ $jatuhTempo }}</strong>, {{ $sisaHari }} Hari Lagi</p>
                         @endif
 
                         @if ($b['alasanDitolak'] !== null)
@@ -229,11 +229,11 @@ new #[Title('Tagihan')] class extends Component {
                     </div>
 
                     <div class="flex flex-col gap-2 max-md:mt-1.5 md:items-end">
-                        <a
-                            href="{{ route('tagihan-saya.unggah', $b['id']) }}"
+                        <x-tombol
+                            :href="route('tagihan-saya.unggah', $b['id'])"
                             wire:navigate
-                            class="tombol tombol-utama max-md:w-full"
-                        >Unggah Bukti</a>
+                            class="max-md:w-full"
+                        >Unggah Bukti</x-tombol>
                         @if ($utama['lainnya'] > 0)
                             <p class="m-0 teks-bantuan" data-test="tagihan-lain">{{ $utama['lainnya'] }} tagihan lain belum dibayar.</p>
                         @endif
@@ -269,9 +269,9 @@ new #[Title('Tagihan')] class extends Component {
                         <tbody>
                             @foreach ($this->daftar as $b)
                                 <tr wire:key="tabel-{{ $b['id'] }}" class="border-t border-row-divider first:border-t-0">
-                                    <td class="px-5 py-3.5 align-top font-semibold whitespace-nowrap">{{ $b['periode']->locale('id')->translatedFormat('F Y') }}</td>
+                                    <td class="px-5 py-3.5 align-top whitespace-nowrap teks-badan-kuat">{{ $b['periode']->locale('id')->translatedFormat('F Y') }}</td>
                                     <td class="px-5 py-3.5 align-top whitespace-nowrap">{{ $b['jatuhTempo']->locale('id')->translatedFormat('j M') }}</td>
-                                    <td class="num px-5 py-3.5 text-right align-top font-semibold whitespace-nowrap">{{ Format::rupiah($b['nominal']) }}</td>
+                                    <td class="num px-5 py-3.5 text-right align-top whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b['nominal']) }}</td>
                                     <td class="px-5 py-3.5 align-top"><x-status-tagihan :baris="$b" /></td>
                                 </tr>
                             @endforeach
@@ -284,8 +284,8 @@ new #[Title('Tagihan')] class extends Component {
                     @foreach ($this->daftar as $b)
                         <li wire:key="daftar-{{ $b['id'] }}" class="flex flex-col gap-1.5 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="font-semibold">{{ $b['periode']->locale('id')->translatedFormat('F Y') }}</span>
-                                <span class="num font-semibold">{{ Format::rupiah($b['nominal']) }}</span>
+                                <span class="teks-badan-kuat">{{ $b['periode']->locale('id')->translatedFormat('F Y') }}</span>
+                                <span class="num teks-badan-kuat">{{ Format::rupiah($b['nominal']) }}</span>
                             </div>
                             <x-status-tagihan :baris="$b" :ponsel="true" />
                         </li>

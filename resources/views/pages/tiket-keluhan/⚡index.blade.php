@@ -285,7 +285,7 @@ new #[Title('Keluhan')] class extends Component {
     {{-- Ponsel yang sedang membuka satu tiket tidak memakai kepala halaman, chip, dan daftar; judulnya ada di panel detail. --}}
     <x-judul-halaman :class="$adaPilihan ? 'max-lg:hidden' : ''" judul="Keluhan" />
 
-    <div role="group" aria-label="Saring status" @class(['baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0', 'max-lg:hidden' => $adaPilihan])>
+    <x-chip-filter.baris label="Saring status" :class="$adaPilihan ? 'baris-filter max-lg:hidden' : 'baris-filter'">
         @foreach ($filter as $chip)
             <x-chip-filter
                 wire:key="chip-{{ $chip['nilai'] }}"
@@ -294,7 +294,7 @@ new #[Title('Keluhan')] class extends Component {
                 wire:click="pilihStatus('{{ $chip['nilai'] }}')"
             >{{ $chip['label'] }}</x-chip-filter>
         @endforeach
-    </div>
+    </x-chip-filter.baris>
 
     @if ($panel === null)
         <p class="m-0 rounded-2xl border border-border bg-surface p-5 text-ink-muted" data-test="pesan-kosong">
@@ -320,7 +320,7 @@ new #[Title('Keluhan')] class extends Component {
                         >
                             <span class="min-w-0">
                                 <span class="num me-2 teks-bantuan" data-test="nomor-tiket">{{ $item->nomor_tiket }}</span>
-                                <span class="font-[650]">{{ $item->fasilitas->nama_fasilitas }}</span>
+                                <span class="teks-badan-kuat">{{ $item->fasilitas->nama_fasilitas }}</span>
                             </span>
                             <x-status :jenis="$this->jenisStatus($item->status_tiket)">{{ $item->status_tiket->label() }}</x-status>
                             <span class="teks-bantuan">{{ $this->lokasiTiket($item) }}, {{ $tanggal($item->tanggal_lapor, 'j M') }}</span>
@@ -405,7 +405,7 @@ new #[Title('Keluhan')] class extends Component {
                         <ol class="m-0 flex list-none flex-col gap-2.5 p-0" data-test="riwayat-status">
                             @foreach ($riwayat as $baris)
                                 <li wire:key="riwayat-{{ $baris->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 teks-badan">
-                                    <span class="font-[650]">{{ $baris->status_sesudah->label() }}</span>
+                                    <span class="teks-badan-kuat">{{ $baris->status_sesudah->label() }}</span>
                                     <span class="num teks-bantuan">{{ App\Support\Format::tanggalJam($baris->waktu_perubahan) }}</span>
                                     <span class="teks-bantuan">{{ $baris->diubahOleh?->nama }}</span>
                                 </li>
@@ -424,7 +424,7 @@ new #[Title('Keluhan')] class extends Component {
                             <fieldset class="m-0 min-w-0 border-0 p-0" @error('vendorId') aria-describedby="galat-vendor" @enderror>
                                 <legend class="mb-1.5 p-0 teks-label">Vendor</legend>
                                 @if ($vendorAktif->isEmpty())
-                                    <p class="m-0 text-ink-muted teks-badan" data-test="vendor-kosong">Belum ada vendor aktif. Tambah di <a href="{{ route('akun.index') }}" wire:navigate class="font-semibold">Akun</a>.</p>
+                                    <p class="m-0 text-ink-muted teks-badan" data-test="vendor-kosong">Belum ada vendor aktif. Tambah di <a href="{{ route('akun.index') }}" wire:navigate>Akun</a>.</p>
                                 @else
                                     <div class="flex flex-col gap-2" data-test="daftar-vendor">
                                         @foreach ($vendorAktif as $vendor)
@@ -444,7 +444,7 @@ new #[Title('Keluhan')] class extends Component {
                                                     class="sr-only"
                                                     @error('vendorId') aria-invalid="true" @enderror
                                                 >
-                                                <span class="font-semibold">{{ $vendor->nama_vendor }}</span>
+                                                <span class="teks-badan-kuat">{{ $vendor->nama_vendor }}</span>
                                                 <span class="teks-bantuan">{{ $vendor->jenis_layanan }}</span>
                                             </label>
                                         @endforeach
@@ -495,15 +495,15 @@ new #[Title('Keluhan')] class extends Component {
                             </div>
 
                             <div class="flex flex-col lg:flex-row">
-                                <button
+                                <x-tombol
                                     type="submit"
-                                    @disabled($vendorAktif->isEmpty())
-                                    class="tombol tombol-utama w-full disabled:opacity-60 lg:w-auto"
+                                    :disabled="$vendorAktif->isEmpty()"
+                                    class="w-full lg:w-auto"
                                     data-test="tombol-tugaskan"
                                 >
                                     <span wire:loading.remove wire:target="tugaskan">Tugaskan</span>
                                     <span wire:loading wire:target="tugaskan">Menugaskan…</span>
-                                </button>
+                                </x-tombol>
                             </div>
                         </form>
                     @endif

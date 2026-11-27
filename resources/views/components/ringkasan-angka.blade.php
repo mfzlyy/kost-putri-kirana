@@ -65,7 +65,7 @@
             @endphp
             <div {{ $atribut($tandaNada)->class(['ringkasan-sel', 'text-status-late' => $bahaya]) }}>
                 <div {{ $atribut($kunci ? ['data-test' => "ringkasan-{$kunci}-label"] : [])->class(['teks-kolom', 'text-status-late!' => $bahaya]) }}>{{ $item['label'] }}</div>
-                <div {{ $atribut($kunci ? ['data-test' => "ringkasan-{$kunci}"] : [])->class(['ringkasan-nilai']) }}>{{ $item['nilai'] }}</div>
+                <div {{ $atribut($kunci ? ['data-test' => "ringkasan-{$kunci}"] : [])->class(['ringkasan-nilai teks-angka']) }}>{{ $item['nilai'] }}</div>
                 @if (filled($item['keterangan'] ?? null))
                     <div {{ $atribut($kunci ? ['data-test' => "ringkasan-{$kunci}-keterangan"] : [])->class(['teks-bantuan ringkasan-sel-keterangan', 'text-status-late!' => $bahaya]) }}>{{ $item['keterangan'] }}</div>
                 @endif

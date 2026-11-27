@@ -43,13 +43,13 @@
     --color-danger: #9e2418;
     --color-danger-container: #fadfdb;
     --color-on-danger-container: #7e1c12;
-    --color-danger-border: #e3b4ad;
 
     /* Hover dan tekan (DESIGN.md, bagian Interaksi). */
     --color-primary-active: color-mix(in srgb, var(--color-primary-hover) 90%, var(--color-ink));
     --color-surface-active: color-mix(in srgb, var(--color-surface-muted) 92%, var(--color-ink));
     --color-segmen-hover: color-mix(in srgb, var(--color-surface) 60%, transparent);
     --color-danger-active: color-mix(in srgb, var(--color-danger-container) 92%, var(--color-danger));
+    --color-positif-active: color-mix(in srgb, var(--color-primary-container) 92%, var(--color-primary));
     --color-danger-solid-active: color-mix(in srgb, var(--color-on-danger-container) 90%, var(--color-ink));
     --color-sidebar-hover: rgb(255 255 255 / 0.08);
     --color-sidebar-active: rgb(255 255 255 / 0.14);
@@ -278,11 +278,69 @@
     font-weight: 650;
 }
 
-/* Angka di pil menu (antrean): 13px, tabular. Berat diatur terpisah (aktif 600). */
+/* Angka di pil menu (antrean): 13px, tabular. Pil item menu aktif memakai teks-pil-aktif (600). */
 @utility teks-pil {
     font-size: 13px;
     line-height: 1;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
+}
+
+@utility teks-pil-aktif {
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Peran pengguna di sidebar dan top bar. */
+@utility teks-peran {
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--color-on-sidebar-muted);
+}
+
+/* Label tab bawah penghuni. */
+@utility teks-tab {
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 600;
+}
+
+/* Wordmark logo: baris atas "Kost Putri", lalu "Kirana". */
+@utility teks-merek-atas {
+    font-size: 12px;
+    line-height: 1.1;
+    font-weight: 400;
+}
+
+@utility teks-merek {
+    font-size: 18px;
+    line-height: 1.1;
+    font-weight: 750;
+    font-stretch: 125%;
+}
+
+@utility teks-merek-kecil {
+    font-size: 15px;
+    line-height: 1.1;
+    font-weight: 750;
+    font-stretch: 125%;
+}
+
+/* Kalimat besar di halaman masuk. */
+@utility teks-hero {
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 750;
+    font-stretch: 125%;
+
+    @media (min-width: 64rem) {
+        font-size: 44px;
+        line-height: 1.02;
+        letter-spacing: -0.01em;
+    }
 }
 
 @utility teks-status {
@@ -297,7 +355,7 @@
     font-weight: 500;
 }
 
-/* Tombol standar 44px dan tombol kecil 36px untuk elemen yang bukan flux:button (tautan dan button biasa). */
+/* Ukuran x-tombol: normal 44px (aksi halaman, form, dialog) dan kecil 36px (baris tabel dan kartu daftar). */
 @utility tombol {
     display: inline-flex;
     height: 44px;
@@ -512,6 +570,16 @@ table tbody tr {
     height: 60px;
 }
 
+/* Teks bawaan Flux di bawah batas keterbacaan: isi callout 15px, keterangan paginasi 13px. */
+[data-flux-callout] [data-slot='text'] {
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+[data-flux-pagination] .text-xs {
+    font-size: 13px;
+}
+
 [data-flux-toast-dialog] {
     font-size: 14px;
     line-height: 1.4;
@@ -553,11 +621,52 @@ select:focus[data-flux-control] {
 }
 
 /*
+ * Baris chip filter (x-chip-filter.baris). Mulai 640px membungkus dengan jarak 8px. Di ponsel satu baris yang digulir
+ * menyamping: tanpa scrollbar, melebar sampai tepi layar (margin negatif sebesar padding halaman 16px, lalu padding
+ * dalam yang sama), ruang 4px atas-bawah untuk cincin fokus, dan pudar 32px hanya di sisi yang masih menyimpan chip.
+ */
+.baris-chip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-block: -4px;
+    padding-block: 4px;
+}
+
+@media (max-width: 39.999rem) {
+    .baris-chip {
+        --pudar-kiri: 0px;
+        --pudar-kanan: 0px;
+        flex-wrap: nowrap;
+        margin-inline: -16px;
+        padding-inline: 16px;
+        scroll-padding-inline: 16px;
+        scroll-snap-type: x proximity;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        mask-image: linear-gradient(to right, transparent, #000 var(--pudar-kiri), #000 calc(100% - var(--pudar-kanan)), transparent);
+    }
+
+    .baris-chip::-webkit-scrollbar {
+        display: none;
+    }
+
+    .baris-chip[data-pudar-kiri] {
+        --pudar-kiri: 32px;
+    }
+
+    .baris-chip[data-pudar-kanan] {
+        --pudar-kanan: 32px;
+    }
+}
+
+/*
  * Interaksi (docs/design/DESIGN.md, bagian Interaksi): satu kelas per jenis elemen yang bisa diklik. Aturan tanpa
  * layer, jadi mengalahkan utilitas bawaan Flux. Urutan penting: hover (hanya perangkat dengan pointer), lalu tekan
  * (:active, semua perangkat), lalu keadaan terpilih. Hover hanya mengubah warna, latar, garis, dan garis bawah;
  * garis memakai border yang sudah ada atau bayangan dalam sehingga ukuran tidak bergeser.
  */
+/* Varian x-tombol. */
 .tombol-utama {
     background-color: var(--color-primary);
     color: #ffffff;
@@ -571,18 +680,40 @@ select:focus[data-flux-control] {
     text-decoration: none;
 }
 
+.tombol-positif {
+    border: 1px solid var(--color-primary);
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
 .tombol-bahaya {
-    border: 1px solid var(--color-danger-border);
+    border: 1px solid var(--color-danger);
     background-color: var(--color-surface);
     color: var(--color-danger);
+    text-decoration: none;
 }
 
 .tombol-bahaya-penuh {
-    background-color: var(--color-status-late);
+    background-color: var(--color-danger);
     color: #ffffff;
+    text-decoration: none;
 }
 
-/* Tautan aksi (ghost): Kembali, Buka, Ubah, Perpanjang, Aktifkan, Tampilkan, Batal. */
+/* Nonaktif dan sedang memproses: memudar. */
+.tombol:disabled,
+.tombol-kecil:disabled,
+.tombol[data-sibuk],
+.tombol-kecil[data-sibuk] {
+    opacity: 0.6;
+}
+
+.tombol[data-sibuk],
+.tombol-kecil[data-sibuk] {
+    pointer-events: none;
+}
+
+/* Tautan teks untuk navigasi: Kembali (juga remah roti), Buka berkas, Unggah di dalam callout. */
 [data-flux-main] a.tautan-aksi,
 .tautan-aksi {
     border-radius: 8px;
@@ -592,7 +723,7 @@ select:focus[data-flux-control] {
     text-underline-offset: 3px;
 }
 
-/* Aksi berbahaya berupa teks: Hapus, Akhiri, Nonaktifkan, Keluar. */
+/* Baris "Keluar" di daftar akun ponsel penghuni. */
 .tautan-bahaya {
     border-radius: 8px;
     color: var(--color-danger);
@@ -631,6 +762,12 @@ select:focus[data-flux-control] {
         border-color: var(--color-ink-muted);
         background-color: var(--color-surface-muted);
         color: var(--color-ink);
+    }
+
+    .tombol-positif:not(:disabled):hover {
+        border-color: var(--color-primary);
+        background-color: var(--color-primary-container);
+        color: var(--color-primary);
     }
 
     .tombol-bahaya:not(:disabled):hover {
@@ -728,15 +865,6 @@ select:focus[data-flux-control] {
         color: var(--color-on-sidebar-strong);
     }
 
-    /* Kontrak, "Segera Berakhir": tautan aksi di ponsel, tombol sekunder mulai 768px. */
-    @media (min-width: 48rem) {
-        [data-flux-main] a.sekunder-md:hover {
-            border-color: var(--color-ink-muted);
-            background-color: var(--color-surface-muted);
-            text-decoration: none;
-        }
-    }
-
     /* Isian: garis menegas saat hover; fokus, galat, dan nonaktif tidak berubah. */
     input:not([type='checkbox'], [type='radio'], [type='file'], [type='hidden'], [type='submit'], [type='button'], :disabled, :focus, [aria-invalid='true'], [data-invalid]):hover,
     select:not(:disabled, :focus, [aria-invalid='true'], [data-invalid]):hover,
@@ -766,6 +894,10 @@ input:not(:checked, :disabled) + label.pilihan:active,
 .baris-klik:active,
 .baris-pilih:active {
     background-color: var(--color-surface-active);
+}
+
+.tombol-positif:not(:disabled):active {
+    background-color: var(--color-positif-active);
 }
 
 .tombol-bahaya:not(:disabled):active,

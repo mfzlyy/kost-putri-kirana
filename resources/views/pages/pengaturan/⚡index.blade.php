@@ -80,7 +80,7 @@ new #[Title('Pengaturan')] class extends Component {
 
         <form wire:submit="simpan" class="flex flex-col gap-[26px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
             <fieldset class="m-0 border-0 p-0">
-                <legend class="mb-1 p-0 teks-tombol">Tanggal Jatuh Tempo</legend>
+                <legend class="mb-1 p-0 teks-label">Tanggal Jatuh Tempo</legend>
                 <p id="bantuan-hari" class="mt-0 mb-2.5 teks-bantuan">Tanggal 1 sampai 28, setiap bulan.</p>
 
                 <div role="radiogroup" aria-describedby="bantuan-hari" class="grid grid-cols-7 gap-1.5 lg:grid-cols-[repeat(14,40px)]">
@@ -96,7 +96,7 @@ new #[Title('Pengaturan')] class extends Component {
                             />
                             <label
                                 for="hari-{{ $hari }}"
-                                class="pilihan num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-tombol-kecil"
+                                class="pilihan num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-chip"
                             >{{ $hari }}</label>
                         </div>
                     @endforeach
@@ -108,7 +108,7 @@ new #[Title('Pengaturan')] class extends Component {
             </fieldset>
 
             <div>
-                <label for="batas-peringatan" class="mb-1 block teks-tombol">Batas Peringatan</label>
+                <label for="batas-peringatan" class="mb-1 block teks-label">Batas Peringatan</label>
                 <p id="bantuan-batas" class="mt-0 mb-2 teks-bantuan">Jumlah hari sebelum kontrak berakhir.</p>
                 <div class="flex items-center gap-2.5">
                     <input
@@ -130,10 +130,10 @@ new #[Title('Pengaturan')] class extends Component {
             </div>
 
             <div class="flex flex-col gap-3 border-t border-divider pt-[18px] sm:flex-row sm:items-center sm:gap-4">
-                <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
+                <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
                     <span wire:loading.remove wire:target="simpan">Simpan</span>
                     <span wire:loading wire:target="simpan">Menyimpan</span>
-                </flux:button>
+                </x-tombol>
 
                 @if ($this->pengaturan->diperbaruiOleh)
                     <span class="max-sm:text-center teks-bantuan">Terakhir diubah oleh {{ $this->pengaturan->diperbaruiOleh->nama }}</span>

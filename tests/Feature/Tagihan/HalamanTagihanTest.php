@@ -122,7 +122,8 @@ it('nama bulan berbahasa Indonesia dan tahun ditambahkan bila berbeda dari tahun
     // Pemilik tidak punya dialog terbitkan, jadi daftar bulan di dialog tidak ikut terbaca.
     $komponen = halamanTagihan(User::factory()->pemilik()->create(), ['periode' => '2026-12']);
 
-    $komponen->assertSee('Januari 2027')->assertSee('Desember')->assertDontSee('Desember 2026');
+    // Tahun berjalan tidak ditulis di teks tampak; aria-label segmen tetap lengkap dengan tahun.
+    $komponen->assertSee('Januari 2027')->assertSee('Desember')->assertDontSeeHtml('>Desember 2026<')->assertSeeHtml('aria-label="Desember 2026"');
 });
 
 it('F-15: chip filter dan jumlahnya dihitung dari gabungan kedua grup; telat juga dihitung di status asalnya', function () {
@@ -254,7 +255,7 @@ it('14E: tombol hanya bertuliskan "Terbitkan" tanpa bulan, aria-label memuat per
 it('14E: tombol di keadaan kosong juga bertuliskan "Terbitkan" dengan aria-label periode', function () {
     $komponen = halamanTagihan(User::factory()->pengelola()->create(), ['periode' => '2026-11']);
 
-    expect($komponen->html())->toMatch('/<button[^>]*aria-label="Terbitkan tagihan November 2026"[^>]*data-test="terbitkan-tagihan-kosong"[^>]*>(?:(?!<\/button>).)*<span>Terbitkan<\/span>\s*<\/button>/s');
+    expect($komponen->html())->toMatch('/<button[^>]*aria-label="Terbitkan tagihan November 2026"[^>]*data-test="terbitkan-tagihan-kosong"[^>]*>Terbitkan<\/button>/s');
 });
 
 it('11A: periode tanpa tagihan tetapi punya kontrak berhak: tombol "Terbitkan {bulan itu}"', function () {

@@ -94,7 +94,7 @@ it('bawaan desktop memilih item teratas, dan aria-current hanya pada item yang d
 
     expect($html)->toContain('Kamar 01, Tagihan November')
         ->and(substr_count($html, 'aria-current="true"'))->toBe(1)
-        ->and($html)->toMatch('#aria-current="true"[^>]*>\s*<span class="font-\[650\]">Kamar 01#s');
+        ->and($html)->toMatch('#aria-current="true"[^>]*>\s*<span class="teks-badan-kuat">Kamar 01#s');
     expect($pertama->id)->toBeInt();
 });
 

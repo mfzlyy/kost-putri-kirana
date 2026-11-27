@@ -187,19 +187,18 @@ new #[Title('Pekerjaan')] class extends Component {
                                 <x-status :jenis="$this->jenisStatus($tiket->status_tiket)">{{ $tiket->status_tiket->label() }}</x-status>
                             </div>
 
-                            <div class="relative z-10 mt-1 flex max-sm:[&>*]:flex-1">
+                            <div class="relative z-10 mt-1 flex">
                                 @if ($tiket->status_tiket === StatusTiket::Ditugaskan)
-                                    <flux:button
-                                        type="button"
-                                        variant="primary"
+                                    <x-tombol
+                                        ukuran="kecil"
                                         wire:click="mulai({{ $tiket->id }})"
                                         wire:loading.attr="disabled"
                                         wire:target="mulai({{ $tiket->id }})"
-                                        class="tombol-utama max-sm:w-full"
+                                        class="max-sm:w-full"
                                         data-test="mulai-tiket"
-                                    >Mulai</flux:button>
+                                    >Mulai</x-tombol>
                                 @else
-                                    <a href="{{ route('permintaan-kerja.detail', $tiket) }}" wire:navigate class="tombol tombol-sekunder max-sm:w-full" data-test="selesai-tiket">Selesai</a>
+                                    <x-tombol ukuran="kecil" :href="route('permintaan-kerja.detail', $tiket)" wire:navigate class="max-sm:w-full" data-test="selesai-tiket">Selesai</x-tombol>
                                 @endif
                             </div>
                         </li>
@@ -218,7 +217,7 @@ new #[Title('Pekerjaan')] class extends Component {
                             <a href="{{ route('permintaan-kerja.detail', $tiket) }}" wire:navigate class="baris-klik grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 px-4 py-3.5 text-ink no-underline hover:text-ink">
                                 <span class="min-w-0">
                                     <span class="num me-2 teks-bantuan" data-test="nomor-tiket">{{ $tiket->nomor_tiket }}</span>
-                                    <span class="font-[650]">{{ $tiket->fasilitas->nama_fasilitas }}, {{ $this->lokasiTiket($tiket) }}</span>
+                                    <span class="teks-badan-kuat">{{ $tiket->fasilitas->nama_fasilitas }}, {{ $this->lokasiTiket($tiket) }}</span>
                                 </span>
                                 <span class="num justify-self-end teks-badan-kuat" data-test="biaya-selesai">{{ Format::rupiah($tiket->biaya_perbaikan) }}</span>
                                 <span class="teks-bantuan">Selesai {{ $this->tanggalPendek($this->waktuStatus($tiket, StatusTiket::Selesai)) }}</span>

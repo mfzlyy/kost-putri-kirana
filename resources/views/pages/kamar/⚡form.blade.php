@@ -156,7 +156,7 @@ new #[Title('Kamar')] class extends Component {
                 <flux:field>
                     <flux:label>Tarif</flux:label>
                     <flux:input.group>
-                        <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
+                        <flux:input.group.prefix class="text-ink-muted teks-label">Rp</flux:input.group.prefix>
                         <flux:input
                             wire:model="tarif_bulanan"
                             inputmode="numeric"
@@ -187,10 +187,10 @@ new #[Title('Kamar')] class extends Component {
             @endif
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-                <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
+                <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-kamar">
                     Simpan
-                </flux:button>
-                <x-tautan-batal :href="route('kamar.index')" />
+                </x-tombol>
+                <x-tombol varian="sekunder" :href="route('kamar.index')" wire:navigate>Batal</x-tombol>
             </div>
         </form>
 
@@ -200,10 +200,10 @@ new #[Title('Kamar')] class extends Component {
 
                 @if ($this->izinHapus->denied())
                     <p class="m-0 teks-bantuan" data-test="alasan-tidak-bisa-hapus">{{ $this->izinHapus->message() }}</p>
-                    <button type="button" disabled title="{{ str_contains($this->izinHapus->message(), 'fasilitas') ? 'Masih punya fasilitas' : 'Masih punya kontrak' }}" class="h-10 w-fit cursor-not-allowed rounded-lg border border-border bg-background px-3.5 text-[#8A918F] teks-tombol-kecil">Hapus</button>
+                    <x-tombol varian="bahaya" class="w-fit max-sm:w-full" disabled :title="str_contains($this->izinHapus->message(), 'fasilitas') ? 'Masih punya fasilitas' : 'Masih punya kontrak'">Hapus</x-tombol>
                 @else
                     <flux:modal.trigger name="hapus-kamar">
-                        <button type="button" class="tombol-bahaya h-10 w-fit rounded-lg px-3.5 teks-tombol-kecil" data-test="buka-hapus-kamar">Hapus</button>
+                        <x-tombol varian="bahaya" class="w-fit max-sm:w-full" data-test="buka-hapus-kamar">Hapus</x-tombol>
                     </flux:modal.trigger>
                 @endif
             </aside>

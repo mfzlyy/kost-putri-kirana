@@ -111,26 +111,6 @@ it('Tagihan dan Riwayat memakai x-ringkasan-angka dengan kisi tetap', function (
         ->and($riwayat)->toContain('--kolom: 2;');
 });
 
-it('view tidak menulis ukuran huruf lepas di halaman dan komponen bersama', function () {
-    $berkas = collect(
-        File::allFiles(resource_path('views/pages'))
-    )->merge(File::files(resource_path('views/components')))
-        ->merge(File::allFiles(resource_path('views/components/menu-samping')));
-
-    $terlarang = '/\btext-(?:\[\d+px\]|xs|sm|base|lg|xl|2xl|3xl)\b/';
-
-    foreach ($berkas as $f) {
-        $isi = file_get_contents($f->getPathname());
-
-        // Brand (logo, hero login) dan tab bawah 12px boleh punya ukuran sendiri.
-        if (in_array($f->getFilename(), ['app-logo.blade.php', 'menu-tab-penghuni.blade.php', 'passkey-registration.blade.php', 'auth-session-status.blade.php'], true)) {
-            continue;
-        }
-
-        expect(preg_match($terlarang, $isi))->toBe(0, "Ukuran huruf lepas di {$f->getFilename()}");
-    }
-});
-
 it('CSS mendefinisikan token tipografi dan ukuran kontrol sekali di app.css', function () {
     $css = file_get_contents(resource_path('css/app.css'));
 

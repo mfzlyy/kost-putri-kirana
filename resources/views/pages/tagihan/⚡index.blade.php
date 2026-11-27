@@ -443,36 +443,28 @@ new #[Title('Tagihan')] class extends Component {
     $labelDialog = $bulanTahun($this->periodeDialog);
 
     $tautanPeriode = fn ($tanggal) => route('tagihan.index', ['periode' => $tanggal->format('Y-m')]);
-    $pilihanPeriode = [
-        ['tanggal' => $periode->subMonthNoOverflow(), 'aktif' => false],
-        ['tanggal' => $periode, 'aktif' => true],
-        ['tanggal' => $periode->addMonthNoOverflow(), 'aktif' => false],
-    ];
+    $pilihanPeriode = collect([$periode->subMonthNoOverflow(), $periode, $periode->addMonthNoOverflow()])
+        ->map(fn ($tanggal) => [
+            'nilai' => $tanggal->format('Y-m'),
+            'href' => $tautanPeriode($tanggal),
+            'aktif' => $tanggal->equalTo($periode),
+            'label' => $bulan($tanggal),
+            'pendek' => $tanggal->locale('id')->translatedFormat('M'),
+            'lengkap' => $bulanTahun($tanggal),
+        ])
+        ->all();
 
     $kelasTh = 'border-b border-border px-5 py-3.5 whitespace-nowrap teks-kolom';
 @endphp
 
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Tagihan" :lebar="true">
-        <nav aria-label="Periode" class="grid h-10 w-full grid-cols-3 overflow-hidden rounded-lg border border-border-strong bg-surface sm:inline-flex sm:w-auto sm:gap-1 sm:rounded-[10px] sm:border-0 sm:bg-surface-muted sm:p-1" data-test="pemilih-periode">
-            @foreach ($pilihanPeriode as $pilihan)
-                <a
-                    href="{{ $tautanPeriode($pilihan['tanggal']) }}"
-                    wire:click.prevent="pilihPeriode('{{ $pilihan['tanggal']->format('Y-m') }}')"
-                    @if ($pilihan['aktif']) aria-current="true" @endif
-                    @class([
-                        'segmen flex items-center justify-center border-s border-border-strong no-underline first:border-s-0 sm:h-8 sm:rounded-[7px] sm:border-0 sm:px-3.5 teks-chip',
-                        'bg-chip-active text-white sm:bg-surface sm:text-ink sm:shadow-[0_1px_0_#dedbd3]' => $pilihan['aktif'],
-                        'bg-surface text-ink sm:bg-transparent sm:text-[#33403d]' => ! $pilihan['aktif'],
-                    ])
-                >{{ $bulan($pilihan['tanggal']) }}</a>
-            @endforeach
-        </nav>
+        <x-segmen-periode :pilihan="$pilihanPeriode" data-test="pemilih-periode" />
 
         @if ($bisaKelola && $periodeTombol)
-            <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="tombol-utama max-sm:w-full" data-test="terbitkan-tagihan">
+            <x-tombol wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="max-sm:w-full" data-test="terbitkan-tagihan">
                 Terbitkan
-            </flux:button>
+            </x-tombol>
         @endif
     </x-judul-halaman>
 
@@ -480,7 +472,7 @@ new #[Title('Tagihan')] class extends Component {
         <flux:callout variant="warning" icon="exclamation-triangle" data-test="callout-jatuh-tempo">
             <flux:callout.text>
                 @if ($bisaKelola)
-                    Atur tanggal jatuh tempo di <a href="{{ route('pengaturan.index') }}" wire:navigate class="font-semibold">Pengaturan</a> dulu.
+                    Atur tanggal jatuh tempo di <a href="{{ route('pengaturan.index') }}" wire:navigate>Pengaturan</a> dulu.
                 @else
                     Tanggal jatuh tempo belum diatur.
                 @endif
@@ -499,13 +491,13 @@ new #[Title('Tagihan')] class extends Component {
         ]"
     />
 
-    <div role="group" aria-label="Saring status" class="baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <x-chip-filter.baris label="Saring status" class="baris-filter">
         <x-chip-filter :aktif="$this->filterAktif === 'semua'" :jumlah="$hitungan['semua']" wire:click="$set('filterStatus', 'semua')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'telat'" :jumlah="$hitungan['telat']" wire:click="$set('filterStatus', 'telat')">Telat</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'belum'" :jumlah="$hitungan['belum']" wire:click="$set('filterStatus', 'belum')">Belum Bayar</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'menunggu'" :jumlah="$hitungan['menunggu']" wire:click="$set('filterStatus', 'menunggu')">Menunggu</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'lunas'" :jumlah="$hitungan['lunas']" wire:click="$set('filterStatus', 'lunas')">Lunas</x-chip-filter>
-    </div>
+    </x-chip-filter.baris>
 
     <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
         @if (! $adaIsi)
@@ -513,7 +505,7 @@ new #[Title('Tagihan')] class extends Component {
                 @if ($belumAdaApaPun)
                     <p class="m-0 text-ink-muted">Tagihan {{ $labelPeriode }} belum diterbitkan.</p>
                     @if ($bisaKelola && $periodeTombol)
-                        <flux:button variant="primary" wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" class="tombol-utama" data-test="terbitkan-tagihan-kosong">Terbitkan</flux:button>
+                        <x-tombol wire:click="bukaTerbit" :disabled="! $siap" :aria-label="$labelAriaTerbit" data-test="terbitkan-tagihan-kosong">Terbitkan</x-tombol>
                     @endif
                 @else
                     <p class="m-0 text-ink-muted">Tidak ada tagihan yang sesuai filter.</p>
@@ -543,7 +535,7 @@ new #[Title('Tagihan')] class extends Component {
                                     @php($ui = $statusUi($b['status']))
                                     <tr wire:key="tabel-{{ $b['id'] }}" class="h-[60px] border-t border-row-divider" data-test="baris-tagihan">
                                         <td class="num px-5 teks-nomor-kamar">{{ $b['kamar'] }}</td>
-                                        <td class="px-5 whitespace-nowrap">{{ $b['nama'] }}</td>
+                                        <td class="px-5 whitespace-nowrap teks-badan-kuat">{{ $b['nama'] }}</td>
                                         <td class="px-5 whitespace-nowrap">{{ $bulan($b['periode']) }}</td>
                                         <td class="px-5 whitespace-nowrap">
                                             @if ($b['telat'])
@@ -552,7 +544,7 @@ new #[Title('Tagihan')] class extends Component {
                                                 {{ $tanggalPendek($b['jatuhTempo']) }}
                                             @endif
                                         </td>
-                                        <td class="num px-5 text-end font-semibold whitespace-nowrap">{{ Format::rupiah($b['nominal']) }}</td>
+                                        <td class="num px-5 text-end whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b['nominal']) }}</td>
                                         <td class="px-5">
                                             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                                                 <x-status :jenis="$ui[0]">{{ $ui[1] }}</x-status>
@@ -581,16 +573,16 @@ new #[Title('Tagihan')] class extends Component {
                                     <div class="flex items-baseline justify-between gap-3">
                                         <span class="flex min-w-0 items-baseline gap-2.5">
                                             <span class="num teks-nomor-kamar">{{ $b['kamar'] }}</span>
-                                            <span class="truncate font-semibold">{{ $b['nama'] }}</span>
+                                            <span class="truncate teks-badan-kuat">{{ $b['nama'] }}</span>
                                         </span>
-                                        <strong class="num shrink-0">{{ Format::rupiah($b['nominal']) }}</strong>
+                                        <strong class="num shrink-0 teks-badan-kuat">{{ Format::rupiah($b['nominal']) }}</strong>
                                     </div>
                                     <div class="flex items-center justify-between gap-3">
                                         <span class="teks-bantuan">{{ $b['periode']->locale('id')->translatedFormat('M') }}, Jatuh Tempo {{ $tanggalPendek($b['jatuhTempo']) }}</span>
                                         <x-status :jenis="$ui[0]">{{ $ui[1] }}</x-status>
                                     </div>
                                     @if ($b['telat'])
-                                        <x-status jenis="telat" class="teks-bantuan!">Lewat {{ $b['hariLewat'] }} Hari</x-status>
+                                        <x-status jenis="telat">Lewat {{ $b['hariLewat'] }} Hari</x-status>
                                     @endif
                                     @if ($b['buktiDitolak'])
                                         <span class="num teks-bantuan">Ditolak, {{ $tanggalPendek($b['buktiDitolak']) }}</span>

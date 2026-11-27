@@ -240,14 +240,14 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
                     </span>
                     <span class="flex min-w-0 flex-1 flex-col">
                         @if ($bukti)
-                            <span class="truncate font-semibold" data-test="nama-berkas">{{ $bukti->getClientOriginalName() }}</span>
+                            <span class="truncate teks-badan-kuat" data-test="nama-berkas">{{ $bukti->getClientOriginalName() }}</span>
                             <span class="num teks-bantuan" data-test="ukuran-berkas">{{ Format::ukuranBerkas($bukti->getSize()) }}</span>
                         @else
                             <span class="text-ink-muted">Belum ada berkas</span>
                         @endif
                         <span wire:loading wire:target="bukti" class="teks-bantuan" role="status">Mengunggah…</span>
                     </span>
-                    <span class="shrink-0 text-primary teks-tombol-kecil">{{ $bukti ? 'Ganti' : 'Pilih' }}</span>
+                    <x-tombol elemen="span" varian="sekunder" ukuran="kecil" class="shrink-0">{{ $bukti ? 'Ganti' : 'Pilih' }}</x-tombol>
                     <input
                         id="bukti"
                         type="file"
@@ -283,16 +283,16 @@ new #[Title('Unggah Bukti')] #[Layout('layouts::app', ['tanpaTabPenghuni' => tru
             </div>
 
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:border-t md:border-divider md:pt-[18px]">
-                <button
+                <x-tombol
                     type="submit"
                     wire:loading.attr="disabled"
                     wire:target="bukti,kirim"
-                    class="tombol tombol-utama w-full disabled:opacity-60 md:w-auto"
+                    class="w-full md:w-auto"
                 >
                     <span wire:loading.remove wire:target="bukti,kirim">Kirim</span>
                     <span wire:loading wire:target="bukti">Mengunggah…</span>
                     <span wire:loading wire:target="kirim">Mengirim…</span>
-                </button>
+                </x-tombol>
             </div>
         </form>
     </div>

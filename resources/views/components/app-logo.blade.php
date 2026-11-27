@@ -19,14 +19,13 @@
         :class="$kecil ? 'h-6 w-5 shrink-0' : 'h-[31px] w-[26px] shrink-0'"
     />
     <span class="sr-only">Kost Putri Kirana, ke beranda</span>
-    <span class="flex flex-col leading-[1.1]" aria-hidden="true">
+    <span class="flex flex-col" aria-hidden="true">
         @unless ($kecil)
-            <span @class(['text-[11px]', 'text-on-sidebar-muted' => $sidebar, 'text-ink-muted' => ! $sidebar])>Kost Putri</span>
+            <span @class(['teks-merek-atas', 'text-on-sidebar-muted' => $sidebar, 'text-ink-muted' => ! $sidebar])>Kost Putri</span>
         @endunless
         <span @class([
-            'font-stretch-expanded font-[750]',
-            'text-[18px] leading-[1.1]' => ! $kecil,
-            'leading-[1.1] teks-badan' => $kecil,
+            'teks-merek' => ! $kecil,
+            'teks-merek-kecil' => $kecil,
             'text-white' => $sidebar,
             'text-ink' => ! $sidebar,
         ])>Kirana</span>

@@ -131,9 +131,9 @@ new #[Title('Kamar')] class extends Component {
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Kamar">
         @if ($this->bisaKelola)
-            <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="tombol-utama" data-test="tambah-kamar">
+            <x-tombol :href="route('kamar.tambah')" wire:navigate data-test="tambah-kamar">
                 Tambah
-            </flux:button>
+            </x-tombol>
         @endif
     </x-judul-halaman>
 
@@ -143,23 +143,23 @@ new #[Title('Kamar')] class extends Component {
         </flux:callout>
     @endif
 
-    <div role="group" aria-label="Saring status" class="baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <x-chip-filter.baris label="Saring status" class="baris-filter">
         <x-chip-filter :aktif="$this->filterAktif === ''" :jumlah="$this->hitungan['semua']" wire:click="$set('filterStatus', '')">Semua</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'terisi'" :jumlah="$this->hitungan['terisi']" wire:click="$set('filterStatus', 'terisi')">Terisi</x-chip-filter>
         <x-chip-filter :aktif="$this->filterAktif === 'kosong'" :jumlah="$this->hitungan['kosong']" wire:click="$set('filterStatus', 'kosong')">Kosong</x-chip-filter>
-    </div>
+    </x-chip-filter.baris>
 
     <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
     @if ($this->daftarKamar->isEmpty())
         <div class="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-10 text-center" data-test="pesan-kosong">
             <p class="m-0 text-ink-muted">{{ $this->hitungan['semua'] === 0 ? 'Belum ada kamar.' : 'Tidak ada kamar yang sesuai filter.' }}</p>
             @if ($this->hitungan['semua'] === 0 && $this->bisaKelola)
-                <flux:button variant="primary" :href="route('kamar.tambah')" wire:navigate class="tombol-utama">Tambah</flux:button>
+                <x-tombol :href="route('kamar.tambah')" wire:navigate>Tambah</x-tombol>
             @endif
         </div>
     @else
         {{-- Desktop: tabel dalam kartu --}}
-        <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
+        <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
             <table class="w-full min-w-[720px] border-collapse">
                 <thead>
                     <tr>
@@ -178,9 +178,9 @@ new #[Title('Kamar')] class extends Component {
                         @php($namaPenghuni = $kamar->kontrakAktif?->penghuni?->user?->nama)
                         <tr wire:key="kamar-tabel-{{ $kamar->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
                             <td class="num px-5 teks-nomor-kamar {{ $namaPenghuni ? '' : 'text-ink-muted' }}">{{ $kamar->nomor_kamar }}</td>
-                            <td class="px-5 {{ $namaPenghuni ? '' : 'text-ink-muted' }}">{{ $namaPenghuni ?? 'Belum ada' }}</td>
+                            <td class="px-5 {{ $namaPenghuni ? 'teks-badan-kuat' : 'text-ink-muted' }}">{{ $namaPenghuni ?? 'Belum ada' }}</td>
                             <td class="px-5 text-ink-muted">{{ $kamar->keterangan }}</td>
-                            <td class="num px-5 text-end font-semibold whitespace-nowrap">{{ \App\Support\Format::rupiah($kamar->tarif_bulanan) }}</td>
+                            <td class="num px-5 text-end whitespace-nowrap teks-badan-kuat">{{ \App\Support\Format::rupiah($kamar->tarif_bulanan) }}</td>
                             <td class="px-5">
                                 @if ($namaPenghuni !== null)
                                     <x-status jenis="ok">Terisi</x-status>
@@ -190,10 +190,12 @@ new #[Title('Kamar')] class extends Component {
                             </td>
                             @if ($this->bisaKelola)
                                 <td class="px-5 text-end whitespace-nowrap">
-                                    <a href="{{ route('kamar.ubah', $kamar) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 items-center px-2 teks-tombol-kecil">Ubah</a>
-                                    @can('delete', $kamar)
-                                        <button type="button" class="tautan-bahaya min-h-10 px-2 teks-tombol-kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</button>
-                                    @endcan
+                                    <div class="flex justify-end gap-2">
+                                        <x-tombol varian="sekunder" ukuran="kecil" :href="route('kamar.ubah', $kamar)" wire:navigate>Ubah</x-tombol>
+                                        @can('delete', $kamar)
+                                            <x-tombol varian="bahaya" ukuran="kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</x-tombol>
+                                        @endcan
+                                    </div>
                                 </td>
                             @endif
                         </tr>
@@ -210,7 +212,7 @@ new #[Title('Kamar')] class extends Component {
                     <div class="flex items-center justify-between gap-3">
                         <span class="flex min-w-0 items-baseline gap-2.5">
                             <span class="num teks-nomor-kamar {{ $namaPenghuni ? '' : 'text-ink-muted' }}">{{ $kamar->nomor_kamar }}</span>
-                            <span class="truncate font-semibold {{ $namaPenghuni ? '' : 'text-ink-muted' }}">{{ $namaPenghuni ?? 'Belum ada penghuni' }}</span>
+                            <span class="truncate teks-badan-kuat {{ $namaPenghuni ? '' : 'text-ink-muted' }}">{{ $namaPenghuni ?? 'Belum ada penghuni' }}</span>
                         </span>
                         @if ($namaPenghuni !== null)
                             <x-status jenis="ok">Terisi</x-status>
@@ -220,13 +222,13 @@ new #[Title('Kamar')] class extends Component {
                     </div>
                     <div class="flex items-center justify-between gap-3 teks-badan">
                         <span class="text-ink-muted">{{ $kamar->keterangan }}</span>
-                        <span class="num shrink-0 font-semibold">{{ \App\Support\Format::rupiah($kamar->tarif_bulanan) }}</span>
+                        <span class="num shrink-0 teks-badan-kuat">{{ \App\Support\Format::rupiah($kamar->tarif_bulanan) }}</span>
                     </div>
                     @if ($this->bisaKelola)
-                        <div class="mt-0.5 flex gap-2">
-                            <a href="{{ route('kamar.ubah', $kamar) }}" wire:navigate class="tautan-aksi inline-flex min-h-10 items-center px-1 teks-tombol-kecil">Ubah</a>
+                        <div class="mt-1.5 flex gap-2 [&>:only-child]:flex-1">
+                            <x-tombol varian="sekunder" ukuran="kecil" :href="route('kamar.ubah', $kamar)" wire:navigate>Ubah</x-tombol>
                             @can('delete', $kamar)
-                                <button type="button" class="tautan-bahaya min-h-10 px-1 teks-tombol-kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</button>
+                                <x-tombol varian="bahaya" ukuran="kecil" wire:click="konfirmasiHapus({{ $kamar->id }})">Hapus</x-tombol>
                             @endcan
                         </div>
                     @endif

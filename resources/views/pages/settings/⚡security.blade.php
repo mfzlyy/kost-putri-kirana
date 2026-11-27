@@ -68,10 +68,10 @@ new #[Title('Ganti Password')] class extends Component {
         />
 
         <div class="flex flex-col gap-2 sm:flex-row">
-            <flux:button variant="primary" type="submit" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" data-test="update-password-button">
+            <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" data-test="update-password-button">
                 Simpan
-            </flux:button>
-            <x-tautan-batal :href="url('/beranda')" />
+            </x-tombol>
+            <x-tombol varian="sekunder" :href="url('/beranda')" wire:navigate>Batal</x-tombol>
         </div>
     </form>
 </section>

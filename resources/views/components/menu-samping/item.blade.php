@@ -11,9 +11,9 @@
 
 @php
     // Angka antrean: pil 22px, 13px, angka tabular. Item aktif berlatar Primary, item biasa berlatar putih transparan.
-    $kelasAngka = 'teks-pil inline-flex h-[22px] flex-none items-center rounded-full px-2 text-white';
-    $kelasAngkaAktif = 'bg-primary font-semibold';
-    $kelasAngkaBiasa = 'bg-primary-container/[.14]';
+    $kelasAngka = 'inline-flex h-[22px] flex-none items-center rounded-full px-2 text-white';
+    $kelasAngkaAktif = 'teks-pil-aktif bg-primary';
+    $kelasAngkaBiasa = 'teks-pil bg-primary-container/[.14]';
 @endphp
 
 <a

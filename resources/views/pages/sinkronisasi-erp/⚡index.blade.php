@@ -243,13 +243,12 @@ new #[Title('Sinkronisasi')] class extends Component {
         'menunggu' => ['label' => 'Menunggu', 'kosong' => 'Tidak ada transaksi yang menunggu.'],
         'terkirim' => ['label' => 'Terkirim', 'kosong' => 'Belum ada transaksi yang terkirim.'],
     ];
-    $kelasTombol = 'tombol-kecil tombol-sekunder disabled:opacity-60';
 @endphp
 
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Sinkronisasi" />
 
-    <div role="group" aria-label="Saring status" class="baris-filter -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <x-chip-filter.baris label="Saring status" class="baris-filter">
         @foreach ($filter as $nilai => $chip)
             <x-chip-filter
                 wire:key="chip-{{ $nilai }}"
@@ -258,7 +257,7 @@ new #[Title('Sinkronisasi')] class extends Component {
                 wire:click="pilihStatus('{{ $nilai }}')"
             >{{ $chip['label'] }}</x-chip-filter>
         @endforeach
-    </div>
+    </x-chip-filter.baris>
 
     <div class="relative">
         {{-- Elemen tersendiri supaya polling berhenti begitu dilepas; menutupi daftar agar .visible mengikuti daftar. --}}
@@ -294,7 +293,7 @@ new #[Title('Sinkronisasi')] class extends Component {
                                     @if ($disorot) aria-current="true" x-data x-init="$nextTick(() => $el.scrollIntoView({ block: 'center' }))" @endif
                                     data-test="baris-sinkronisasi"
                                 >
-                                    <td class="num font-semibold whitespace-nowrap" data-test="referensi">{{ $baris->referensi_unik }}</td>
+                                    <td class="num whitespace-nowrap teks-badan-kuat" data-test="referensi">{{ $baris->referensi_unik }}</td>
                                     <td class="whitespace-nowrap">{{ $baris->labelJenis() }}</td>
                                     <td data-test="sumber">
                                         <a href="{{ $sumber['url'] }}" wire:navigate>{{ $sumber['teks'] }}</a>
@@ -309,10 +308,10 @@ new #[Title('Sinkronisasi')] class extends Component {
                                     <td class="num whitespace-nowrap" data-test="waktu">{{ $baris->waktu_kirim ? Format::tanggalJam($baris->waktu_kirim) : '–' }}</td>
                                     <td class="text-right">
                                         @if ($baris->status_sinkronisasi === StatusSinkronisasi::Gagal)
-                                            <button type="button" wire:click="kirimUlang({{ $baris->id }})" wire:loading.attr="disabled" wire:target="kirimUlang({{ $baris->id }})" class="{{ $kelasTombol }}" data-test="kirim-ulang">
+                                            <x-tombol varian="sekunder" ukuran="kecil" wire:click="kirimUlang({{ $baris->id }})" wire:loading.attr="disabled" wire:target="kirimUlang({{ $baris->id }})" data-test="kirim-ulang">
                                                 <span wire:loading.remove wire:target="kirimUlang({{ $baris->id }})">Kirim Ulang</span>
                                                 <span wire:loading wire:target="kirimUlang({{ $baris->id }})">Mengirim…</span>
-                                            </button>
+                                            </x-tombol>
                                         @endif
                                     </td>
                                 </tr>
@@ -335,23 +334,23 @@ new #[Title('Sinkronisasi')] class extends Component {
                             data-test="kartu-sinkronisasi"
                         >
                             <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                                <span class="num font-semibold">{{ $baris->referensi_unik }}</span>
+                                <span class="num teks-badan-kuat">{{ $baris->referensi_unik }}</span>
                                 <x-status :jenis="$jenisStatus[$baris->status_sinkronisasi->value]">{{ $baris->status_sinkronisasi->label() }}</x-status>
                             </div>
                             <span class="teks-bantuan">{{ $baris->labelJenis() }}</span>
                             <a href="{{ $sumber['url'] }}" wire:navigate class="[overflow-wrap:anywhere]">{{ $sumber['teks'] }}</a>
                             @if ($sumber['nominal'] !== null)
-                                <span class="num font-semibold">{{ $sumber['nominal'] }}</span>
+                                <span class="num teks-badan-kuat">{{ $sumber['nominal'] }}</span>
                             @endif
                             <span class="num teks-bantuan">Waktu {{ $baris->waktu_kirim ? Format::tanggalJam($baris->waktu_kirim) : '–' }}</span>
                             @if ($baris->status_sinkronisasi === StatusSinkronisasi::Gagal)
                                 @if (filled($baris->pesan_error))
                                     <p class="m-0 [overflow-wrap:anywhere] teks-galat">{{ $baris->pesan_error }}</p>
                                 @endif
-                                <button type="button" wire:click="kirimUlang({{ $baris->id }})" wire:loading.attr="disabled" wire:target="kirimUlang({{ $baris->id }})" class="{{ $kelasTombol }} mt-1.5 h-11! w-full" data-test="kirim-ulang-ponsel">
+                                <x-tombol varian="sekunder" ukuran="kecil" wire:click="kirimUlang({{ $baris->id }})" wire:loading.attr="disabled" wire:target="kirimUlang({{ $baris->id }})" class="mt-1.5 w-full" data-test="kirim-ulang-ponsel">
                                     <span wire:loading.remove wire:target="kirimUlang({{ $baris->id }})">Kirim Ulang</span>
                                     <span wire:loading wire:target="kirimUlang({{ $baris->id }})">Mengirim…</span>
-                                </button>
+                                </x-tombol>
                             @endif
                         </li>
                     @endforeach

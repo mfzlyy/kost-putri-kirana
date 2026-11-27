@@ -10,13 +10,10 @@
 
 <div class="flex flex-col items-start gap-1">
     @if ($baris['status'] === \App\Enums\StatusTagihan::BelumDibayar)
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+        {{-- Ponsel: tombol selebar kartu di bawah semua status (order-last); desktop: sebaris dengan status. --}}
+        <div @class(['contents' => $ponsel, 'flex flex-wrap items-center gap-x-4 gap-y-2' => ! $ponsel])>
             <x-status jenis="belum">Belum Bayar{{ $ponsel ? ', '.$jatuhTempo : '' }}</x-status>
-            <a
-                href="{{ route('tagihan-saya.unggah', $baris['id']) }}"
-                wire:navigate
-                class="tautan-aksi -my-1.5 inline-flex min-h-11 items-center teks-tombol-kecil"
-            >Unggah<span class="sr-only"> {{ $baris['periode']->locale('id')->translatedFormat('F Y') }}</span></a>
+            <x-tombol varian="sekunder" ukuran="kecil" :href="route('tagihan-saya.unggah', $baris['id'])" wire:navigate :class="$ponsel ? 'order-last mt-1 self-stretch' : ''">Unggah<span class="sr-only"> {{ $baris['periode']->locale('id')->translatedFormat('F Y') }}</span></x-tombol>
         </div>
         @if ($baris['alasanDitolak'] !== null)
             <span class="teks-galat" data-test="alasan-ditolak">Ditolak{{ $baris['ditolakPada'] ? ', '.$baris['ditolakPada']->locale('id')->translatedFormat('j M') : '' }}: {{ $baris['alasanDitolak'] }}</span>

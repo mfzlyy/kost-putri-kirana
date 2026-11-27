@@ -328,7 +328,7 @@ new #[Title('Kontrak')] class extends Component {
     <div class="flex flex-col gap-2">
         <a href="{{ route('kontrak.index') }}" wire:navigate class="tautan-aksi hidden w-fit lg:inline">Kontrak</a>
         <div class="flex items-start gap-1">
-            <a href="{{ route('kontrak.index') }}" wire:navigate aria-label="Kembali ke kontrak" class="tombol-ikon -ms-2 inline-flex size-11 shrink-0 items-center justify-center lg:hidden">
+            <a href="{{ route('kontrak.index') }}" wire:navigate aria-label="Kembali ke kontrak" class="tombol-ikon -ms-2 inline-flex size-11 shrink-0 items-center justify-center text-ink lg:hidden">
                 <flux:icon.arrow-left class="size-5" />
             </a>
             <x-judul-halaman class="min-w-0 flex-1" :judul="$judul" />
@@ -347,15 +347,15 @@ new #[Title('Kontrak')] class extends Component {
             <dl class="m-0 grid grid-cols-1 gap-3 sm:grid-cols-3" data-test="ringkasan-kontrak">
                 <div>
                     <dt class="teks-bantuan">Penghuni</dt>
-                    <dd class="m-0 font-semibold">{{ $kontrakLama->penghuni?->user?->nama }}</dd>
+                    <dd class="m-0 teks-badan-kuat">{{ $kontrakLama->penghuni?->user?->nama }}</dd>
                 </div>
                 <div>
                     <dt class="teks-bantuan">Kamar</dt>
-                    <dd class="num m-0 font-semibold">{{ $kontrakLama->kamar?->nomor_kamar }}</dd>
+                    <dd class="num m-0 teks-badan-kuat">{{ $kontrakLama->kamar?->nomor_kamar }}</dd>
                 </div>
                 <div>
                     <dt class="teks-bantuan">Mulai</dt>
-                    <dd class="m-0 font-semibold">{{ $tanggalPanjang($kontrakLama->tanggal_berakhir->addDay()) }}</dd>
+                    <dd class="m-0 teks-badan-kuat">{{ $tanggalPanjang($kontrakLama->tanggal_berakhir->addDay()) }}</dd>
                 </div>
             </dl>
 
@@ -373,7 +373,7 @@ new #[Title('Kontrak')] class extends Component {
                 <flux:field>
                     <flux:label>Tarif</flux:label>
                     <flux:input.group>
-                        <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
+                        <flux:input.group.prefix class="text-ink-muted teks-label">Rp</flux:input.group.prefix>
                         <flux:input
                             wire:model="tarif_bulanan"
                             inputmode="numeric"
@@ -391,7 +391,7 @@ new #[Title('Kontrak')] class extends Component {
         @else
             @if ($tanpaPenghuni)
                 <flux:callout variant="warning" icon="exclamation-triangle" data-test="tanpa-penghuni">
-                    <flux:callout.text>Semua penghuni aktif sudah punya kontrak. <a href="{{ route('penghuni.tambah') }}" wire:navigate class="font-semibold">Tambah penghuni</a> dulu.</flux:callout.text>
+                    <flux:callout.text>Semua penghuni aktif sudah punya kontrak. <a href="{{ route('penghuni.tambah') }}" wire:navigate>Tambah penghuni</a> dulu.</flux:callout.text>
                 </flux:callout>
             @else
                 <flux:field>
@@ -437,10 +437,10 @@ new #[Title('Kontrak')] class extends Component {
                                 @class([
                                     'pilihan relative flex min-h-[84px] flex-col justify-between rounded-[10px] border px-2.5 pt-[22px] pb-2.5 before:absolute before:top-[7px] before:left-1/2 before:-ml-1 before:size-2 before:rounded-full before:border before:border-border before:bg-background',
                                     'cursor-pointer border-border bg-surface peer-checked:border-primary peer-checked:bg-primary-container peer-checked:shadow-[inset_0_0_0_1px_var(--color-primary)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary' => ! $terisi,
-                                    'cursor-not-allowed border-border bg-surface-disabled text-[#8A918F]' => $terisi,
+                                    'cursor-not-allowed border-border bg-surface-disabled text-ink-muted' => $terisi,
                                 ])
                             >
-                                <strong class="num font-stretch-expanded">{{ $kamar->nomor_kamar }}</strong>
+                                <strong class="teks-nomor-kamar">{{ $kamar->nomor_kamar }}</strong>
                                 <span class="teks-bantuan">{{ $keterangan }}</span>
                             </label>
                         </div>
@@ -466,7 +466,7 @@ new #[Title('Kontrak')] class extends Component {
                 <flux:field>
                     <flux:label>Tarif</flux:label>
                     <flux:input.group>
-                        <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
+                        <flux:input.group.prefix class="text-ink-muted teks-label">Rp</flux:input.group.prefix>
                         <flux:input
                             wire:model="tarif_bulanan"
                             inputmode="numeric"
@@ -486,10 +486,10 @@ new #[Title('Kontrak')] class extends Component {
         @endif
 
         <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-            <flux:button type="submit" variant="primary" class="tombol-utama max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
+            <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" :disabled="$tanpaPenghuni" data-test="simpan-kontrak">
                 Simpan
-            </flux:button>
-            <x-tautan-batal :href="route('kontrak.index')" />
+            </x-tombol>
+            <x-tombol varian="sekunder" :href="route('kontrak.index')" wire:navigate>Batal</x-tombol>
         </div>
     </form>
 </section>
