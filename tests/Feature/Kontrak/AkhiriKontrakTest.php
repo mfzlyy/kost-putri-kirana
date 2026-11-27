@@ -48,11 +48,7 @@ it('F-07 butir 5: kontrak berjalan diakhiri dengan tanggal keluar hari ini; kama
         ->assertSet('tanggal_keluar', '2026-11-11')
         ->assertSee('Akhiri Kontrak Kamar 07?')
         ->assertSeeInOrder(['Penghuni', 'Nadia Ramadhani', 'Masa Sewa', '1 Jan 2026 sampai 30 Jun 2027', 'Tarif', 'Rp1.400.000'])
-        ->assertSeeInOrder([
-            'Kamar 07 menjadi kosong.',
-            'Kontrak pindah ke riwayat.',
-            'Tagihan dan status penghuni tidak berubah.',
-        ])
+        ->assertSee('Kamar 07 akan menjadi kosong, sedangkan tagihan dan status penghuni tetap. Kontrak yang diakhiri tidak bisa diaktifkan lagi.')
         ->assertDontSeeHtml('data-test="catatan-dialog"')
         ->assertSee('Tanggal Keluar')
         ->assertSee('Menggantikan tanggal berakhir.')

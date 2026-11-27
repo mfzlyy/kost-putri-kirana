@@ -26,7 +26,7 @@ it('F-02: memilih Vendor menampilkan Nama vendor, Jenis layanan, dan Telepon', f
         ->assertSee('Nama Vendor')
         ->assertSee('Jenis Layanan')
         ->assertSee('Telepon')
-        ->assertSee('Awalnya diisi dari nama akun.');
+        ->assertDontSee('Awalnya diisi dari nama akun.');
 });
 
 it('F-02: Nama vendor terisi dari Nama sampai pengguna mengubahnya sendiri', function () {

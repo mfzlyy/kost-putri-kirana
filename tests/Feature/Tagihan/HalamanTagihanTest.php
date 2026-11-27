@@ -85,8 +85,10 @@ it('F-15 butir 5 dan 7: pengelola melihat ringkasan dengan angka benar untuk dat
     $komponen->assertSee('Rp5.150.000')
         ->assertSee('Rp2.650.000')
         ->assertSee('Rp1.400.000')
-        ->assertSee('1 tagihan, semua periode')
+        ->assertDontSee('semua periode')
         ->assertDontSee('November: 4 tagihan, 1 kontrak belum ditagih. Jatuh tempo tanggal 10.');
+
+    expect($komponen->html())->toMatch('#data-test="ringkasan-tunggakan-keterangan"[^>]*>1 tagihan</div>#');
 });
 
 it('daftar memuat tagihan periode terpilih dan tunggakan lama di grup "Telat Sebelumnya"', function () {
@@ -109,20 +111,158 @@ it('periode dibaca dari ?periode=YYYY-MM; nilai tidak valid kembali ke bulan ber
     $oktober = halamanTagihan($pengelola, ['periode' => '2026-10']);
 
     expect($oktober->instance()->periodeTerpilih->format('Y-m'))->toBe('2026-10');
-    $oktober->assertDontSee('Oktober: 1 tagihan, 4 kontrak belum ditagih. Jatuh tempo tanggal 10.')
-        ->assertSee('September')
-        ->assertSee('November');
+    $oktober->assertDontSee('Oktober: 1 tagihan, 4 kontrak belum ditagih. Jatuh tempo tanggal 10.');
+    expect(labelPemilihPeriode($oktober))->toBe('Oktober 2026');
 
     foreach (['2026-13', 'abc', '2026-1', '', '2026-11-01'] as $tidakValid) {
         expect(halamanTagihan($pengelola, ['periode' => $tidakValid])->instance()->periodeTerpilih->format('Y-m'))->toBe('2026-11');
     }
 });
 
-it('nama bulan berbahasa Indonesia dan tahun ditambahkan bila berbeda dari tahun berjalan', function () {
-    // Pemilik tidak punya dialog terbitkan, jadi daftar bulan di dialog tidak ikut terbaca.
-    $komponen = halamanTagihan(User::factory()->pemilik()->create(), ['periode' => '2026-12']);
+it('nama bulan berbahasa Indonesia; teks halaman menambahkan tahun hanya bila berbeda dari tahun berjalan', function () {
+    $pemilik = User::factory()->pemilik()->create();
 
-    $komponen->assertSee('Januari 2027')->assertSee('Desember')->assertDontSee('Desember 2026');
+    // Pemilih periode selalu menulis bulan dan tahun; judul dan pesan hanya menulis tahun yang berbeda.
+    $desember = halamanTagihan($pemilik, ['periode' => '2026-12'])->assertSee('Tagihan Desember belum diterbitkan.');
+    $januari = halamanTagihan($pemilik, ['periode' => '2027-01'])->assertSee('Tagihan Januari 2027 belum diterbitkan.');
+
+    expect(labelPemilihPeriode($desember))->toBe('Desember 2026')
+        ->and(labelPemilihPeriode($januari))->toBe('Januari 2027');
+});
+
+/** Teks label tengah pemilih periode. */
+function labelPemilihPeriode($komponen): ?string
+{
+    return preg_match('#<button\b[^>]*data-test="periode-label"[^>]*>(.*?)</button>#s', $komponen->html(), $cocok)
+        ? trim(strip_tags($cocok[1]))
+        : null;
+}
+
+/**
+ * Keadaan satu panah pemilih periode ("sebelumnya" atau "berikutnya"): periode tujuan, null bila nonaktif.
+ */
+function tujuanPanah($komponen, string $arah): ?string
+{
+    preg_match('#<button\b[^>]*data-test="periode-'.$arah.'"[^>]*>#s', $komponen->html(), $tombol);
+    expect($tombol)->not->toBeEmpty();
+
+    if (preg_match('#\sdisabled(=|\s|>)#', $tombol[0])) {
+        return null;
+    }
+
+    preg_match('#wire:click="pilihPeriode\((?:&\#039;|\')(\d{4}-\d{2})#', $tombol[0], $tujuan);
+
+    return $tujuan[1] ?? '';
+}
+
+/**
+ * Bulan di daftar pemilih periode, berurutan: nilai YYYY-MM => [label, terpilih].
+ *
+ * @return array<string, array{string, bool}>
+ */
+function daftarBulanPeriode($komponen): array
+{
+    preg_match_all('#<(?:button|a)\b([^>]*data-test="opsi-periode"[^>]*)>(.*?)</(?:button|a)>#s', $komponen->html(), $cocok, PREG_SET_ORDER);
+    $hasil = [];
+
+    foreach ($cocok as [, $atribut, $isi]) {
+        preg_match('#data-periode="([0-9-]+)"#', $atribut, $nilai);
+        $hasil[$nilai[1]] = [trim(preg_replace('/\s+/', ' ', strip_tags($isi))), str_contains($atribut, 'aria-current="true"')];
+    }
+
+    return $hasil;
+}
+
+it('20D pemilih periode: label bulan dan tahun, panah berlabel, berpindah satu bulan lewat ?periode=', function () {
+    dataCampuranTagihan();
+
+    $komponen = halamanTagihan(User::factory()->pengelola()->create());
+    $html = $komponen->html();
+
+    expect(labelPemilihPeriode($komponen))->toBe('November 2026')
+        ->and($html)->toContain('aria-label="Pilih bulan, November 2026"')
+        ->and($html)->toContain('aria-label="Bulan sebelumnya"')
+        ->and($html)->toContain('aria-label="Bulan berikutnya"')
+        ->and($html)->not->toContain('>Okt</')
+        ->and(tujuanPanah($komponen, 'sebelumnya'))->toBe('2026-10')
+        ->and(tujuanPanah($komponen, 'berikutnya'))->toBe('2026-12');
+
+    $komponen->call('pilihPeriode', '2026-10')->assertSet('periode', '2026-10');
+    expect(labelPemilihPeriode($komponen))->toBe('Oktober 2026')
+        ->and(tujuanPanah($komponen, 'berikutnya'))->toBe('2026-11');
+
+    $komponen->call('pilihPeriode', '2026-11')->assertSet('periode', '2026-11');
+    expect(labelPemilihPeriode($komponen))->toBe('November 2026');
+});
+
+it('20D pemilih periode: panah kanan nonaktif mulai bulan depan, panah kiri di periode tagihan paling awal', function () {
+    dataCampuranTagihan(); // tagihan paling awal Oktober 2026
+    $pengelola = User::factory()->pengelola()->create();
+    $di = fn (string $periode) => halamanTagihan($pengelola, ['periode' => $periode]);
+
+    expect(tujuanPanah($di('2026-10'), 'sebelumnya'))->toBeNull()
+        ->and(tujuanPanah($di('2026-10'), 'berikutnya'))->toBe('2026-11')
+        ->and(tujuanPanah($di('2026-12'), 'berikutnya'))->toBeNull()
+        ->and(tujuanPanah($di('2026-12'), 'sebelumnya'))->toBe('2026-11')
+        // Periode dari URL di luar batas tetap bisa dilihat, dan panahnya hanya menuju ke dalam batas.
+        ->and(tujuanPanah($di('2027-03'), 'berikutnya'))->toBeNull()
+        ->and(tujuanPanah($di('2027-03'), 'sebelumnya'))->toBe('2027-02')
+        ->and(tujuanPanah($di('2026-01'), 'sebelumnya'))->toBeNull()
+        ->and(tujuanPanah($di('2026-01'), 'berikutnya'))->toBe('2026-02');
+});
+
+it('20D pemilih periode: tanpa tagihan, batas awalnya bulan berjalan', function () {
+    $komponen = halamanTagihan(User::factory()->pemilik()->create());
+
+    expect(tujuanPanah($komponen, 'sebelumnya'))->toBeNull()
+        ->and(tujuanPanah($komponen, 'berikutnya'))->toBe('2026-12')
+        ->and(array_keys(daftarBulanPeriode($komponen)))->toBe(['2026-12', '2026-11']);
+});
+
+it('20D pemilih periode: daftar bulan berisi bulan bertagihan, bulan berjalan, dan bulan depan, terbaru di atas', function () {
+    $kontrak = buatKontrakUji('01', 'Anisa Putri');
+    tagihanUji($kontrak, '2026-08-01', '2026-08-10', StatusTagihan::Lunas);
+    tagihanUji($kontrak, '2026-10-01', '2026-10-10', StatusTagihan::BelumDibayar);
+
+    $komponen = halamanTagihan(User::factory()->pengelola()->create(), ['periode' => '2026-10']);
+
+    expect(daftarBulanPeriode($komponen))->toBe([
+        '2026-12' => ['Desember 2026', false],
+        '2026-11' => ['November 2026', false],
+        '2026-10' => ['Oktober 2026', true],
+        '2026-08' => ['Agustus 2026', false],
+    ]);
+
+    // Bulan tanpa tagihan di antara keduanya tetap bisa dicapai dengan panah.
+    expect(tujuanPanah($komponen, 'sebelumnya'))->toBe('2026-09');
+});
+
+it('20D pemilih periode: daftar bulan dan batas ikut berubah setelah tagihan diterbitkan', function () {
+    buatKontrakUji('01', 'Anisa Putri');
+
+    $komponen = halamanTagihan(User::factory()->pengelola()->create());
+    expect(tujuanPanah($komponen, 'sebelumnya'))->toBeNull();
+
+    $komponen->call('bukaTerbit')->set('periodeTerbit', '2026-09')->call('terbitkan')->assertSet('periode', '2026-09');
+
+    expect(array_keys(daftarBulanPeriode($komponen)))->toBe(['2026-12', '2026-11', '2026-09'])
+        ->and(tujuanPanah($komponen, 'sebelumnya'))->toBeNull()
+        ->and(tujuanPanah($komponen, 'berikutnya'))->toBe('2026-10');
+});
+
+it('20D: tempat tombol Terbitkan tetap ada di desktop tetapi tersembunyi di ponsel bila tombol tidak tampil; tidak ada untuk pemilik', function () {
+    foreach (['01', '02'] as $nomor) {
+        tagihanUji(buatKontrakUji($nomor, "Penghuni {$nomor}"), '2026-12-01', '2026-12-10', StatusTagihan::BelumDibayar);
+    }
+    $pengelola = User::factory()->pengelola()->create();
+
+    $kelasTempat = fn (string $periode) => kelasElemen(halamanTagihan($pengelola, ['periode' => $periode])->html(), 'data-test="tempat-terbitkan"');
+
+    // November punya tombol; Desember (bulan depan, sudah lengkap) tidak.
+    expect($kelasTempat('2026-11'))->toContain('h-11 w-32')->not->toContain('max-sm:hidden')
+        ->and($kelasTempat('2026-12'))->toContain('h-11 w-32')->toContain('max-sm:hidden')
+        ->and(labelTombolTerbit(halamanTagihan($pengelola, ['periode' => '2026-12'])))->toBeNull();
+    halamanTagihan(User::factory()->pemilik()->create())->assertDontSeeHtml('data-test="tempat-terbitkan"');
 });
 
 it('F-15: chip filter dan jumlahnya dihitung dari gabungan kedua grup; telat juga dihitung di status asalnya', function () {
@@ -189,9 +329,7 @@ it('F-10 butir 2: dialog menampilkan pratinjau jumlah, yang dilewati, jatuh temp
 
     $komponen->assertSee('Terbitkan Tagihan November 2026?')
         ->assertSee('Kontrak Ditagih')
-        ->assertSee('1 tagihan baru, belum dibayar.')
-        ->assertSee('Langsung tampil di Tagihan penghuni.')
-        ->assertSee('Kontrak yang sudah ditagih dilewati.');
+        ->assertSee('1 tagihan baru akan langsung tampil di Tagihan penghuni dan tidak bisa dibatalkan. Kontrak yang sudah ditagih dilewati.');
 
     $komponen->set('periodeTerbit', '2026-12');
     $pratinjau = $komponen->instance()->pratinjau;
@@ -256,7 +394,7 @@ it('14E: tombol hanya bertuliskan "Terbitkan" tanpa bulan, aria-label memuat per
 it('14E: tombol di keadaan kosong juga bertuliskan "Terbitkan" dengan aria-label periode', function () {
     $komponen = halamanTagihan(User::factory()->pengelola()->create(), ['periode' => '2026-11']);
 
-    expect($komponen->html())->toMatch('/<button[^>]*aria-label="Terbitkan tagihan November 2026"[^>]*data-test="terbitkan-tagihan-kosong"[^>]*>(?:(?!<\/button>).)*<span>Terbitkan<\/span>\s*<\/button>/s');
+    expect($komponen->html())->toMatch('/<button[^>]*aria-label="Terbitkan tagihan November 2026"[^>]*data-test="terbitkan-tagihan-kosong"[^>]*>Terbitkan<\/button>/s');
 });
 
 it('11A: periode tanpa tagihan tetapi punya kontrak berhak: tombol "Terbitkan {bulan itu}"', function () {

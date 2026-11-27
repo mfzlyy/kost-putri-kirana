@@ -16,9 +16,9 @@
                 <h1 class="teks-judul m-0">Akses ditolak</h1>
                 <p class="teks-badan m-0 text-ink-muted">Anda tidak memiliki akses ke halaman ini.</p>
 
-                <a href="{{ url('/beranda') }}" class="tombol bg-primary text-white no-underline hover:bg-primary-hover">
+                <x-tombol :href="url('/beranda')">
                     Beranda
-                </a>
+                </x-tombol>
 
                 <p class="m-0 teks-bantuan">Kode 403</p>
             </div>

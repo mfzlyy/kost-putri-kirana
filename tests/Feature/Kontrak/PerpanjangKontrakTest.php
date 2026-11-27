@@ -80,13 +80,14 @@ it('F-07 butir 6: riwayat penghuni punya dua kontrak dan kamar tetap terisi', fu
         ->and(Kontrak::query()->where('kamar_id', $lama->kamar_id)->count())->toBe(2);
 });
 
-it('F-07: formulir perpanjang menampilkan ringkasan, catatan, dan tarif kamar sebagai bawaan', function () {
+it('F-07: formulir perpanjang menampilkan ringkasan dan tarif kamar sebagai bawaan, tanpa kotak catatan', function () {
     $lama = kontrakAkanBerakhir();
 
     formPerpanjangSebagai(User::factory()->pengelola()->create(), $lama)
         ->assertSee('Perpanjang Kontrak')
         ->assertSeeInOrder(['Penghuni', 'Salsa Nabila', 'Kamar', '03', 'Mulai', '21 November 2026'])
-        ->assertSee('Kontrak lama (21 Mei 2026 sampai 20 November 2026) ditutup dan tersimpan di riwayat.')
+        ->assertDontSee('ditutup dan tersimpan di riwayat')
+        ->assertDontSeeHtml('data-test="catatan-perpanjang"')
         ->assertSet('tarif_bulanan', '1.400.000')
         ->assertSee('Tarif lama Rp1.250.000.')
         ->assertSee('Simpan');

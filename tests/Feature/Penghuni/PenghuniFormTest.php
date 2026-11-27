@@ -207,7 +207,7 @@ it('F-06: form ubah menampilkan email akun hanya-baca dan NIK tersamar tanpa sel
 
     formPenghuniSebagai(User::factory()->pengelola()->create(), $penghuni)
         ->assertSee($penghuni->user->email)
-        ->assertSee('Akun tidak bisa diganti.')
+        ->assertDontSee('Akun tidak bisa diganti.')
         ->assertSee('Tersimpan: 32**********8901.')
         ->assertSee('Kosongkan bila tidak berubah.')
         ->assertDontSee(NIK_UJI_FORM)

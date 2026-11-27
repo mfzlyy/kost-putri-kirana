@@ -165,7 +165,8 @@ it('F-15 butir 5 dan 7: jumlah dan total nominal tunggakan sama dengan penjumlah
     }
 
     $komponen = halamanNovember();
-    $komponen->assertSee('Rp6.700.000')->assertSee('5 tagihan, semua periode');
+    $komponen->assertSee('Rp6.700.000')->assertDontSee('semua periode');
+    expect($komponen->html())->toMatch('#data-test="ringkasan-tunggakan-keterangan"[^>]*>5 tagihan</div>#');
 
     // Daftar November: dua tunggakan lama + tujuh tagihan November; chip Telat = 5.
     expect($komponen->instance()->hitungan['telat'])->toBe(5)

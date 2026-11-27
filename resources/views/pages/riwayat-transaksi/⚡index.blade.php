@@ -266,7 +266,14 @@ new #[Title('Riwayat')] class extends Component {
             @else
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-                    <table class="w-full min-w-[640px] border-collapse">
+                    <table class="w-full min-w-[640px] table-fixed border-collapse">
+                        <colgroup>
+                            <col class="w-[24%]">
+                            <col class="w-[18%]">
+                            <col class="w-[18%]">
+                            <col class="w-[22%]">
+                            <col class="w-[18%]">
+                        </colgroup>
                         <thead>
                             <tr>
                                 @foreach (['Periode' => 'left', 'Dibayar' => 'left', 'Diterima' => 'left', 'Nominal' => 'right', 'Status' => 'left'] as $judul => $rata)
@@ -277,10 +284,10 @@ new #[Title('Riwayat')] class extends Component {
                         <tbody>
                             @foreach ($baris as $b)
                                 <tr wire:key="tabel-{{ $b->id }}" class="border-t border-row-divider first:border-t-0">
-                                    <td class="px-5 py-3.5 font-semibold whitespace-nowrap">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</td>
+                                    <td class="px-5 py-3.5 whitespace-nowrap teks-badan-kuat">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</td>
                                     <td class="px-5 py-3.5 whitespace-nowrap">{{ $tanggal($b->tanggal_bayar) }}</td>
                                     <td class="px-5 py-3.5 whitespace-nowrap text-ink-muted">{{ $tanggal($b->diverifikasi_pada) }}</td>
-                                    <td class="num px-5 py-3.5 text-right font-semibold whitespace-nowrap">{{ Format::rupiah($b->nominal_bayar) }}</td>
+                                    <td class="num px-5 py-3.5 text-right whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</td>
                                     <td class="px-5 py-3.5"><x-status jenis="ok">Lunas</x-status></td>
                                 </tr>
                             @endforeach
@@ -292,8 +299,8 @@ new #[Title('Riwayat')] class extends Component {
                 <ul class="m-0 list-none overflow-hidden rounded-2xl border border-border bg-surface p-0 md:hidden">
                     @foreach ($baris as $b)
                         <li wire:key="daftar-{{ $b->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 border-t border-row-divider px-4 py-3.5 first:border-t-0">
-                            <span class="font-semibold">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</span>
-                            <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
+                            <span class="teks-badan-kuat">{{ $b->tagihan->periode->locale('id')->translatedFormat('F Y') }}</span>
+                            <span class="num teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</span>
                             <span class="teks-bantuan">Dibayar {{ $tanggal($b->tanggal_bayar) }}, Diterima {{ $tanggal($b->diverifikasi_pada) }}</span>
                             <span class="justify-self-end self-center text-status-ok">
                                 <svg width="14" height="14" viewBox="0 0 16 16" role="img" aria-label="Lunas"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -303,14 +310,14 @@ new #[Title('Riwayat')] class extends Component {
                 </ul>
 
                 @if ($sisa > 0)
-                    <button
-                        type="button"
+                    <x-tombol
+                        varian="sekunder"
                         wire:click="tampilkanLagi"
                         wire:loading.attr="disabled"
                         wire:target="tampilkanLagi"
-                        class="tombol w-full border border-border-strong bg-surface text-ink hover:bg-surface-muted md:w-fit"
+                        class="w-full md:w-fit"
                         data-test="tampilkan-lagi"
-                    >Lainnya</button>
+                    >Lainnya</x-tombol>
                 @endif
             @endif
         @endif
@@ -371,10 +378,20 @@ new #[Title('Riwayat')] class extends Component {
             @else
                 {{-- Desktop: tabel kartu --}}
                 <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface lg:block">
-                    <table class="w-full min-w-[900px] border-collapse">
+                    <table class="w-full min-w-[920px] table-fixed border-collapse">
+                        {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat filter diganti. Penghuni memakai sisanya. --}}
+                        <colgroup>
+                            <col class="w-30">
+                            <col>
+                            <col class="w-22">
+                            <col class="w-36">
+                            <col class="w-26">
+                            <col class="w-40">
+                            <col class="w-38">
+                        </colgroup>
                         <thead>
                             <tr>
-                                @foreach (['Periode' => 'left', 'Penghuni' => 'left', 'Kamar' => 'left', 'Nominal' => 'right', 'Dibayar' => 'left', 'Diterima' => 'left', 'Odoo' => 'left'] as $judul => $rata)
+                                @foreach (['Periode' => 'left', 'Penghuni' => 'left', 'Kamar' => 'left', 'Nominal' => 'right', 'Dibayar' => 'left', 'Diterima' => 'left', 'Pembukuan' => 'left'] as $judul => $rata)
                                     <th scope="col" @class(['border-b border-border px-5 py-3.5 whitespace-nowrap teks-kolom', 'text-left' => $rata === 'left', 'text-right' => $rata === 'right'])>{{ $judul }}</th>
                                 @endforeach
                             </tr>
@@ -387,25 +404,25 @@ new #[Title('Riwayat')] class extends Component {
                                 @endphp
                                 <tr wire:key="tabel-{{ $b->id }}" class="border-t border-row-divider first:border-t-0">
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}</td>
-                                    <td class="px-5 py-3 font-semibold">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="font-normal text-ink-muted">(sudah keluar)</span>@endif</td>
+                                    <td class="px-5 py-3 [overflow-wrap:anywhere] teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="text-ink-muted teks-badan">(sudah keluar)</span>@endif</td>
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $kontrak->kamar?->nomor_kamar }}</td>
-                                    <td class="num px-5 py-3 text-right font-semibold whitespace-nowrap">{{ Format::rupiah($b->nominal_bayar) }}</td>
+                                    <td class="num px-5 py-3 text-right whitespace-nowrap teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap">{{ $tanggal($b->tanggal_bayar) }}</td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-ink-muted">
-                                        {{ $waktu($b->diverifikasi_pada) }}
+                                    <td class="px-5 py-3 text-ink-muted">
+                                        <span class="whitespace-nowrap">{{ $waktu($b->diverifikasi_pada) }}</span>
                                         @if ($b->diverifikasiOleh)
-                                            <span class="block teks-bantuan">oleh {{ $b->diverifikasiOleh->nama }}</span>
+                                            <span class="block [overflow-wrap:anywhere] teks-bantuan">oleh {{ $b->diverifikasiOleh->nama }}</span>
                                         @endif
                                     </td>
                                     <td class="px-5 py-3 whitespace-nowrap" data-test="status-odoo">
                                         @if ($sinkron === null)
-                                            <span class="teks-bantuan" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
+                                            <span class="teks-bantuan">Data Lama</span>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                             <x-status jenis="ok">Terkirim</x-status>
                                         @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                             <x-status jenis="tunggu">Menunggu</x-status>
                                         @elseif ($this->bisaLihatSinkronisasi)
-                                            <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal</x-status></a>
+                                            <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="tautan-status no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
                                         @else
                                             <x-status jenis="gagal">Gagal</x-status>
                                         @endif
@@ -425,20 +442,20 @@ new #[Title('Riwayat')] class extends Component {
                         @endphp
                         <li wire:key="daftar-{{ $b->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                             <div class="flex items-baseline justify-between gap-3">
-                                <span class="font-semibold">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="font-normal text-ink-muted">(sudah keluar)</span>@endif</span>
-                                <span class="num font-semibold">{{ Format::rupiah($b->nominal_bayar) }}</span>
+                                <span class="teks-badan-kuat">{{ $kontrak->penghuni?->user?->nama }}@if ($keluar($kontrak->penghuni)) <span class="text-ink-muted teks-badan">(sudah keluar)</span>@endif</span>
+                                <span class="num teks-badan-kuat">{{ Format::rupiah($b->nominal_bayar) }}</span>
                             </div>
                             <span class="teks-bantuan">{{ $b->tagihan->periode->locale('id')->translatedFormat('M Y') }}, Kamar {{ $kontrak->kamar?->nomor_kamar }}, Diterima {{ $waktu($b->diverifikasi_pada) }}</span>
                             <div class="flex items-center gap-2" data-test="status-odoo">
-                                <span class="teks-bantuan">Odoo</span>
+                                <span class="teks-bantuan">Pembukuan</span>
                                 @if ($sinkron === null)
-                                    <span class="teks-bantuan" title="Riwayat lama, tidak dikirim ke Odoo">Data Migrasi</span>
+                                    <span class="teks-bantuan">Data Lama</span>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Terkirim)
                                     <x-status jenis="ok">Terkirim</x-status>
                                 @elseif ($sinkron->status_sinkronisasi === StatusSinkronisasi::Menunggu)
                                     <x-status jenis="tunggu">Menunggu</x-status>
                                 @elseif ($this->bisaLihatSinkronisasi)
-                                    <a href="{{ route('sinkronisasi-erp.index') }}" wire:navigate class="no-underline"><x-status jenis="gagal">Gagal</x-status></a>
+                                    <a href="{{ route('sinkronisasi-erp.index', ['status' => 'gagal', 'ref' => $sinkron->referensi_unik]) }}" wire:navigate class="tautan-status no-underline" data-test="tautan-gagal"><x-status jenis="gagal">Gagal</x-status></a>
                                 @else
                                     <x-status jenis="gagal">Gagal</x-status>
                                 @endif

@@ -26,9 +26,7 @@ new #[Title('Pengaturan')] class extends Component {
     #[Computed]
     public function pengaturan(): PengaturanOperasional
     {
-        $pengaturan = PengaturanOperasional::query()
-            ->with('diperbaruiOleh:id,nama')
-            ->find(PengaturanOperasional::ID_TETAP);
+        $pengaturan = PengaturanOperasional::query()->find(PengaturanOperasional::ID_TETAP);
 
         if ($pengaturan === null) {
             $pesan = 'Baris pengaturan_operasional (id 1) tidak ada. Jalankan PengaturanOperasionalSeeder.';
@@ -80,8 +78,8 @@ new #[Title('Pengaturan')] class extends Component {
 
         <form wire:submit="simpan" class="flex flex-col gap-[26px] rounded-2xl border border-border bg-surface p-4 sm:p-6">
             <fieldset class="m-0 border-0 p-0">
-                <legend class="mb-1 p-0 teks-tombol">Tanggal Jatuh Tempo</legend>
-                <p id="bantuan-hari" class="mt-0 mb-2.5 teks-bantuan">Tanggal 1 sampai 28, setiap bulan.</p>
+                <legend class="mb-1 p-0 teks-label">Tanggal Jatuh Tempo</legend>
+                <p id="bantuan-hari" class="mt-0 mb-2.5 teks-bantuan">Tanggal 1–28.</p>
 
                 <div role="radiogroup" aria-describedby="bantuan-hari" class="grid grid-cols-7 gap-1.5 lg:grid-cols-[repeat(14,40px)]">
                     @foreach (range(1, 28) as $hari)
@@ -96,7 +94,7 @@ new #[Title('Pengaturan')] class extends Component {
                             />
                             <label
                                 for="hari-{{ $hari }}"
-                                class="num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-tombol-kecil"
+                                class="pilihan num flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border bg-surface peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary teks-chip"
                             >{{ $hari }}</label>
                         </div>
                     @endforeach
@@ -107,37 +105,30 @@ new #[Title('Pengaturan')] class extends Component {
                 @enderror
             </fieldset>
 
-            <div>
-                <label for="batas-peringatan" class="mb-1 block teks-tombol">Batas Peringatan</label>
-                <p id="bantuan-batas" class="mt-0 mb-2 teks-bantuan">Jumlah hari sebelum kontrak berakhir.</p>
-                <div class="flex items-center gap-2.5">
-                    <input
-                        id="batas-peringatan"
+            <flux:field>
+                <flux:label>Batas Peringatan</flux:label>
+                {{-- Satuan "hari" menjadi akhiran di dalam isian, dan dibacakan sebagai keterangan isian. --}}
+                <flux:input.group class="w-40">
+                    <flux:input
                         type="number"
                         inputmode="numeric"
                         min="1"
                         max="365"
                         wire:model="batas_peringatan_kontrak_hari"
-                        aria-describedby="bantuan-batas"
-                        @if ($errors->has('batas_peringatan_kontrak_hari')) aria-invalid="true" @endif
-                        class="num w-28 rounded-lg border bg-surface px-3 teks-isian {{ $errors->has('batas_peringatan_kontrak_hari') ? 'border-[#B3261E]' : 'border-border-strong' }}"
+                        aria-describedby="satuan-batas"
+                        class:input="num"
+                        data-test="input-batas"
                     />
-                    <span>hari</span>
-                </div>
-                @error('batas_peringatan_kontrak_hari')
-                    <p class="mt-2 mb-0 teks-galat" role="alert">{{ $message }}</p>
-                @enderror
-            </div>
+                    <flux:input.group.suffix id="satuan-batas" class="text-ink-muted teks-label">hari</flux:input.group.suffix>
+                </flux:input.group>
+                <flux:error name="batas_peringatan_kontrak_hari" />
+            </flux:field>
 
-            <div class="flex flex-col gap-3 border-t border-divider pt-[18px] sm:flex-row sm:items-center sm:gap-4">
-                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
+            <div class="flex flex-col border-t border-divider pt-[18px] sm:flex-row">
+                <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-pengaturan">
                     <span wire:loading.remove wire:target="simpan">Simpan</span>
                     <span wire:loading wire:target="simpan">Menyimpan</span>
-                </flux:button>
-
-                @if ($this->pengaturan->diperbaruiOleh)
-                    <span class="max-sm:text-center teks-bantuan">Terakhir diubah oleh {{ $this->pengaturan->diperbaruiOleh->nama }}</span>
-                @endif
+                </x-tombol>
             </div>
         </form>
     @else

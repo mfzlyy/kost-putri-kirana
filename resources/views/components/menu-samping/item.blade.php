@@ -11,9 +11,9 @@
 
 @php
     // Angka antrean: pil 22px, 13px, angka tabular. Item aktif berlatar Primary, item biasa berlatar putih transparan.
-    $kelasAngka = 'teks-pil inline-flex h-[22px] flex-none items-center rounded-full px-2 text-white';
-    $kelasAngkaAktif = 'bg-primary font-semibold';
-    $kelasAngkaBiasa = 'bg-primary-container/[.14]';
+    $kelasAngka = 'inline-flex h-[22px] flex-none items-center rounded-full px-2 text-white';
+    $kelasAngkaAktif = 'teks-pil-aktif bg-primary';
+    $kelasAngkaBiasa = 'teks-pil bg-primary-container/[.14]';
 @endphp
 
 <a
@@ -21,9 +21,9 @@
     wire:navigate
     @if ($aktif) aria-current="page" @endif
     {{ $attributes->class([
-        'flex min-h-11 pendek:min-h-10 items-center justify-between gap-2 rounded-lg px-3 no-underline',
+        'menu-sidebar flex min-h-11 pendek:min-h-10 items-center justify-between gap-2 rounded-lg px-3 no-underline',
         'teks-menu-aktif bg-primary-container text-on-primary-container' => $aktif,
-        'teks-menu text-on-sidebar hover:bg-white/[.08] hover:text-white' => ! $aktif,
+        'teks-menu text-on-sidebar' => ! $aktif,
     ]) }}
 >
     {{-- Label satu baris; bila tetap tidak muat dipotong dengan elipsis dan title berisi teks lengkap. --}}

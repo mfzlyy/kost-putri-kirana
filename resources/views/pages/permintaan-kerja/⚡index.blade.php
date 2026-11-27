@@ -168,7 +168,7 @@ new #[Title('Pekerjaan')] class extends Component {
                     @foreach ($perluDikerjakan as $tiket)
                         <li
                             wire:key="perlu-{{ $tiket->id }}"
-                            class="relative flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4 text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary md:p-5"
+                            class="kartu-klik relative flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4 text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary md:p-5"
                             data-test="kartu-tiket"
                         >
                             <div class="flex items-center justify-between gap-3">
@@ -187,19 +187,18 @@ new #[Title('Pekerjaan')] class extends Component {
                                 <x-status :jenis="$this->jenisStatus($tiket->status_tiket)">{{ $tiket->status_tiket->label() }}</x-status>
                             </div>
 
-                            <div class="relative z-10 mt-1 flex max-sm:[&>*]:flex-1">
+                            <div class="relative z-10 mt-1 flex">
                                 @if ($tiket->status_tiket === StatusTiket::Ditugaskan)
-                                    <flux:button
-                                        type="button"
-                                        variant="primary"
+                                    <x-tombol
+                                        ukuran="kecil"
                                         wire:click="mulai({{ $tiket->id }})"
                                         wire:loading.attr="disabled"
                                         wire:target="mulai({{ $tiket->id }})"
                                         class="max-sm:w-full"
                                         data-test="mulai-tiket"
-                                    >Mulai</flux:button>
+                                    >Mulai</x-tombol>
                                 @else
-                                    <a href="{{ route('permintaan-kerja.detail', $tiket) }}" wire:navigate class="tombol border border-border-strong bg-surface text-ink no-underline hover:bg-surface-muted hover:text-ink max-sm:w-full" data-test="selesai-tiket">Selesai</a>
+                                    <x-tombol ukuran="kecil" :href="route('permintaan-kerja.detail', $tiket)" wire:navigate class="max-sm:w-full" data-test="selesai-tiket">Selesai</x-tombol>
                                 @endif
                             </div>
                         </li>
@@ -212,13 +211,13 @@ new #[Title('Pekerjaan')] class extends Component {
             <div class="flex flex-col gap-3">
                 <h2 class="m-0 teks-bagian">Selesai Bulan Ini</h2>
 
-                <ul class="m-0 flex list-none flex-col overflow-hidden rounded-2xl border border-border bg-surface p-0" data-test="daftar-selesai">
+                <ul class="daftar-klik m-0 flex list-none flex-col overflow-hidden rounded-2xl border border-border bg-surface p-0" data-test="daftar-selesai">
                     @foreach ($selesaiBulanIni as $tiket)
-                        <li wire:key="selesai-{{ $tiket->id }}" class="relative border-t border-row-divider first:border-t-0 hover:bg-surface-muted" data-test="kartu-selesai">
-                            <a href="{{ route('permintaan-kerja.detail', $tiket) }}" wire:navigate class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 px-4 py-3.5 text-ink no-underline hover:text-ink">
+                        <li wire:key="selesai-{{ $tiket->id }}" class="relative border-t border-row-divider first:border-t-0" data-test="kartu-selesai">
+                            <a href="{{ route('permintaan-kerja.detail', $tiket) }}" wire:navigate class="baris-klik grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-0.5 px-4 py-3.5 text-ink no-underline hover:text-ink">
                                 <span class="min-w-0">
                                     <span class="num me-2 teks-bantuan" data-test="nomor-tiket">{{ $tiket->nomor_tiket }}</span>
-                                    <span class="font-[650]">{{ $tiket->fasilitas->nama_fasilitas }}, {{ $this->lokasiTiket($tiket) }}</span>
+                                    <span class="teks-badan-kuat">{{ $tiket->fasilitas->nama_fasilitas }}, {{ $this->lokasiTiket($tiket) }}</span>
                                 </span>
                                 <span class="num justify-self-end teks-badan-kuat" data-test="biaya-selesai">{{ Format::rupiah($tiket->biaya_perbaikan) }}</span>
                                 <span class="teks-bantuan">Selesai {{ $this->tanggalPendek($this->waktuStatus($tiket, StatusTiket::Selesai)) }}</span>

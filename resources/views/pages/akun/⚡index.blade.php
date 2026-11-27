@@ -254,24 +254,24 @@ new #[Title('Akun')] class extends Component {
 <section class="flex w-full flex-col gap-6">
     <x-judul-halaman judul="Akun">
         <flux:modal.trigger name="tambah-akun">
-            <flux:button variant="primary" data-test="tambah-akun-button">
+            <x-tombol data-test="tambah-akun-button">
                 Tambah
-            </flux:button>
+            </x-tombol>
         </flux:modal.trigger>
     </x-judul-halaman>
 
     <div class="baris-filter flex flex-col gap-3 lg:-m-1 lg:flex-row lg:flex-wrap lg:gap-x-4 lg:gap-y-3 lg:overflow-hidden lg:p-1">
-        <div role="group" aria-label="Saring peran" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+        <x-chip-filter.baris label="Saring peran">
             <x-chip-filter :aktif="$filterPeran === ''" :jumlah="$this->hitungan['penghuni'] + $this->hitungan['vendor']" wire:click="$set('filterPeran', '')">Semua</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'penghuni'" :jumlah="$this->hitungan['penghuni']" wire:click="$set('filterPeran', 'penghuni')">Penghuni</x-chip-filter>
             <x-chip-filter :aktif="$filterPeran === 'vendor'" :jumlah="$this->hitungan['vendor']" wire:click="$set('filterPeran', 'vendor')">Vendor</x-chip-filter>
-        </div>
+        </x-chip-filter.baris>
 
-        <div role="group" aria-label="Saring status" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 lg:relative lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:before:absolute lg:before:-start-2 lg:before:top-1.5 lg:before:h-6 lg:before:w-px lg:before:bg-border lg:before:content-['']">
+        <x-chip-filter.baris label="Saring status" class="lg:relative lg:before:absolute lg:before:-start-2 lg:before:top-1.5 lg:before:h-6 lg:before:w-px lg:before:bg-border lg:before:content-['']">
             <x-chip-filter :aktif="$filterStatus === ''" :jumlah="$this->hitungan['aktif'] + $this->hitungan['nonaktif']" wire:click="$set('filterStatus', '')">Semua</x-chip-filter>
             <x-chip-filter :aktif="$filterStatus === 'aktif'" :jumlah="$this->hitungan['aktif']" wire:click="$set('filterStatus', 'aktif')">Aktif</x-chip-filter>
             <x-chip-filter :aktif="$filterStatus === 'nonaktif'" :jumlah="$this->hitungan['nonaktif']" wire:click="$set('filterStatus', 'nonaktif')">Nonaktif</x-chip-filter>
-        </div>
+        </x-chip-filter.baris>
     </div>
 
     <div wire:loading.class="opacity-60" class="transisi-opasitas flex flex-col gap-4">
@@ -281,8 +281,16 @@ new #[Title('Akun')] class extends Component {
         </p>
     @else
         {{-- Desktop: tabel dalam kartu --}}
-        <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
-            <table class="w-full min-w-[720px] border-collapse">
+        <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
+            <table class="w-full min-w-[720px] table-fixed border-collapse">
+                {{-- Lebar kolom tetap: kepala kolom tidak bergeser saat chip atau halaman diganti. Nama dan Email membagi sisanya. --}}
+                <colgroup>
+                    <col>
+                    <col>
+                    <col class="w-30">
+                    <col class="w-32">
+                    <col class="w-40">
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col" class="border-b border-border px-5 py-3.5 text-start whitespace-nowrap teks-kolom">Nama</th>
@@ -295,8 +303,8 @@ new #[Title('Akun')] class extends Component {
                 <tbody>
                     @foreach ($this->daftarAkun as $akun)
                         <tr wire:key="akun-tabel-{{ $akun->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
-                            <td class="px-5 font-semibold">{{ $akun->nama }}</td>
-                            <td class="px-5 break-all text-ink-muted">{{ $akun->email }}</td>
+                            <td class="px-5 [overflow-wrap:anywhere] teks-badan-kuat">{{ $akun->nama }}</td>
+                            <td class="px-5 text-ink-muted"><span class="block [overflow-wrap:anywhere]">{{ $akun->email }}</span></td>
                             <td class="px-5">{{ $akun->peran->label() }}</td>
                             <td class="px-5">
                                 @if ($akun->isAktif())
@@ -307,21 +315,9 @@ new #[Title('Akun')] class extends Component {
                             </td>
                             <td class="px-5 text-end whitespace-nowrap">
                                 @if ($akun->isAktif())
-                                    <button
-                                        type="button"
-                                        class="min-h-10 cursor-pointer px-2 text-danger teks-tombol-kecil"
-                                        wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
-                                    >
-                                        Nonaktifkan
-                                    </button>
+                                    <x-tombol varian="bahaya" ukuran="kecil" class="min-w-30" wire:click="konfirmasiNonaktifkan({{ $akun->id }})">Nonaktifkan</x-tombol>
                                 @else
-                                    <button
-                                        type="button"
-                                        class="min-h-10 cursor-pointer px-2 text-primary teks-tombol-kecil"
-                                        wire:click="aktifkan({{ $akun->id }})"
-                                    >
-                                        Aktifkan
-                                    </button>
+                                    <x-tombol varian="positif" ukuran="kecil" class="min-w-30" wire:click="aktifkan({{ $akun->id }})">Aktifkan</x-tombol>
                                 @endif
                             </td>
                         </tr>
@@ -335,31 +331,17 @@ new #[Title('Akun')] class extends Component {
             @foreach ($this->daftarAkun as $akun)
                 <li wire:key="akun-kartu-{{ $akun->id }}" class="flex flex-col gap-1 border-t border-row-divider px-4 py-3.5 first:border-t-0">
                     <div class="flex items-center justify-between gap-3">
-                        <span class="min-w-0 font-[650] break-words">{{ $akun->nama }}</span>
+                        <span class="min-w-0 break-words teks-badan-kuat">{{ $akun->nama }}</span>
                         <span class="shrink-0 teks-badan">{{ $akun->peran->label() }}</span>
                     </div>
                     <span class="break-all teks-bantuan">{{ $akun->email }}</span>
-                    <div class="flex items-center justify-between gap-3">
-                        @if ($akun->isAktif())
-                            <x-status jenis="ok">{{ $akun->status_akun->label() }}</x-status>
-                            <button
-                                type="button"
-                                class="min-h-10 cursor-pointer px-1 text-danger teks-tombol-kecil"
-                                wire:click="konfirmasiNonaktifkan({{ $akun->id }})"
-                            >
-                                Nonaktifkan
-                            </button>
-                        @else
-                            <x-status jenis="belum">{{ $akun->status_akun->label() }}</x-status>
-                            <button
-                                type="button"
-                                class="min-h-10 cursor-pointer px-1 text-primary teks-tombol-kecil"
-                                wire:click="aktifkan({{ $akun->id }})"
-                            >
-                                Aktifkan
-                            </button>
-                        @endif
-                    </div>
+                    @if ($akun->isAktif())
+                        <x-status jenis="ok">{{ $akun->status_akun->label() }}</x-status>
+                        <x-tombol varian="bahaya" ukuran="kecil" class="mt-1.5 w-full" wire:click="konfirmasiNonaktifkan({{ $akun->id }})">Nonaktifkan</x-tombol>
+                    @else
+                        <x-status jenis="belum">{{ $akun->status_akun->label() }}</x-status>
+                        <x-tombol varian="positif" ukuran="kecil" class="mt-1.5 w-full" wire:click="aktifkan({{ $akun->id }})">Aktifkan</x-tombol>
+                    @endif
                 </li>
             @endforeach
         </ul>
@@ -383,10 +365,7 @@ new #[Title('Akun')] class extends Component {
             <dd>{{ $akunNonaktif?->peran->label() }}</dd>
         </x-slot:ringkasan>
 
-        <x-slot:akibat>
-            <li>Tidak bisa masuk sampai diaktifkan.</li>
-            <li>Sesi berjalan langsung berakhir.</li>
-        </x-slot:akibat>
+        <x-slot:akibat>Akun ini langsung keluar dan tidak bisa masuk sampai diaktifkan lagi.</x-slot:akibat>
     </x-dialog-konfirmasi>
 
     <flux:modal
@@ -402,7 +381,7 @@ new #[Title('Akun')] class extends Component {
                     <h2 id="judul-tambah-akun" class="teks-judul-dialog m-0">Tambah Akun</h2>
                 </div>
                 <flux:modal.close>
-                    <button type="button" aria-label="Tutup" class="-me-2 -mt-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink">
+                    <button type="button" aria-label="Tutup" class="tombol-ikon -me-2 -mt-2 flex size-10 shrink-0 items-center justify-center text-ink-muted">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                     </button>
                 </flux:modal.close>
@@ -411,11 +390,11 @@ new #[Title('Akun')] class extends Component {
             {{-- Header ponsel --}}
             <div class="flex h-14 shrink-0 items-center gap-1 border-b border-divider bg-surface px-2 sm:hidden">
                 <flux:modal.close>
-                    <button type="button" aria-label="Tutup" class="flex size-11 cursor-pointer items-center justify-center rounded-lg text-ink">
+                    <button type="button" aria-label="Tutup" class="tombol-ikon flex size-11 items-center justify-center text-ink">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
                     </button>
                 </flux:modal.close>
-                <span class="teks-bagian">Tambah Akun</span>
+                <span class="teks-judul-dialog">Tambah Akun</span>
             </div>
 
             {{-- Isi: hanya bagian ini yang bergulir --}}
@@ -436,7 +415,7 @@ new #[Title('Akun')] class extends Component {
                                 />
                                 <label
                                     for="peran-{{ $nilai }}"
-                                    class="flex h-11 cursor-pointer items-center justify-center hover:bg-surface-muted peer-checked:bg-chip-active peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-primary teks-tombol"
+                                    class="pilihan flex h-11 cursor-pointer items-center justify-center peer-checked:bg-chip-active peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2 peer-focus-visible:outline-primary teks-chip"
                                 >{{ $label }}</label>
                             </div>
                         @endforeach
@@ -462,12 +441,11 @@ new #[Title('Akun')] class extends Component {
 
                 @if ($peran === 'vendor')
                     <div class="flex flex-col gap-4 rounded-xl bg-background p-4" data-test="panel-vendor">
-                        <p class="m-0 font-[650]">Data Vendor</p>
+                        <p class="m-0 teks-badan-kuat">Data Vendor</p>
 
                         <flux:field>
                             <flux:label>Nama Vendor</flux:label>
                             <flux:input wire:model.blur="nama_vendor" required maxlength="120" />
-                            <flux:description>Awalnya diisi dari nama akun.</flux:description>
                             <flux:error name="nama_vendor" />
                         </flux:field>
 
@@ -508,12 +486,12 @@ new #[Title('Akun')] class extends Component {
             {{-- Footer menempel --}}
             <div class="flex shrink-0 justify-end gap-2 border-t border-divider px-7 py-[18px] max-sm:px-4">
                 <flux:modal.close>
-                    <flux:button type="button" variant="outline" class="border-border-strong! max-sm:hidden">Batal</flux:button>
+                    <x-tombol varian="sekunder" class="max-sm:hidden">Batal</x-tombol>
                 </flux:modal.close>
 
-                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
+                <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="simpan" data-test="simpan-akun-button">
                     Buat
-                </flux:button>
+                </x-tombol>
             </div>
         </form>
     </flux:modal>

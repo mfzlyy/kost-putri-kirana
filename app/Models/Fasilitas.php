@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -50,6 +51,30 @@ class Fasilitas extends Model
         }
 
         $query->orderBy('fasilitas.nama_fasilitas')->orderBy('fasilitas.id');
+    }
+
+    /**
+     * Lokasi fasilitas sebagaimana ditulis di Odoo: "Kamar <nomor>" atau "Area Bersama".
+     */
+    public function lokasiErp(): string
+    {
+        return $this->kamar_id === null ? 'Area Bersama' : 'Kamar '.Str::squish($this->kamar->nomor_kamar);
+    }
+
+    /**
+     * Nama peralatan (maintenance.equipment) di Odoo untuk fasilitas ini, misalnya "AC Kamar 03" atau
+     * "Pompa air Area Bersama". Lokasi yang sudah tertulis di nama fasilitas tidak ditambahkan lagi.
+     * [ASUMSI] Format nama ini belum ditetapkan pemilik; peralatan di Odoo dibuat mengikuti hasil method ini.
+     */
+    public function namaPeralatanErp(): string
+    {
+        $nama = Str::squish($this->nama_fasilitas);
+        $lokasi = $this->lokasiErp();
+
+        // Batas kata: "Kamar 10" tidak dianggap memuat "Kamar 1".
+        $sudahMemuat = preg_match('/(?<![\pL\pN])'.preg_quote($lokasi, '/').'(?![\pL\pN])/iu', $nama) === 1;
+
+        return $sudahMemuat ? $nama : "{$nama} {$lokasi}";
     }
 
     /**

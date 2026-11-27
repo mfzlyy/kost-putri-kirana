@@ -7,10 +7,13 @@ use App\Models\PengaturanOperasional;
 use App\Models\Tagihan;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function () {
     Carbon::setTestNow(Carbon::parse('2026-11-05 09:00:00', 'Asia/Jakarta'));
+    // Baris sinkronisasi menunggu tidak boleh dikirim ke Odoo saat tes.
+    Queue::fake();
     PengaturanOperasional::factory()->lengkap(10, 30)->create();
 });
 
@@ -103,7 +106,7 @@ it('F-14 butir 3: penghuni tidak melihat status Odoo, nama pengelola, atau kolom
 
     $html = $this->actingAs($kontrak->penghuni->user)->get('/riwayat-transaksi')->assertOk()->getContent();
 
-    foreach (['Odoo', 'Terkirim', 'Gagal', 'Menunggu', 'Pengelola Rahasia', 'oleh ', '>Penghuni</th>', '>Kamar</th>', $kontrak->penghuni->no_telepon] as $terlarang) {
+    foreach (['Odoo', 'Pembukuan', 'Terkirim', 'Gagal', 'Menunggu', 'Pengelola Rahasia', 'oleh ', '>Penghuni</th>', '>Kamar</th>', $kontrak->penghuni->no_telepon] as $terlarang) {
         expect($html)->not->toContain($terlarang);
     }
 });

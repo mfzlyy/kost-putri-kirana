@@ -139,8 +139,8 @@ it('angka antrean Verifikasi memakai gaya aktif di halamannya dan gaya biasa di 
         return $cocok[0] ?? '';
     })();
 
-    expect($angka($aktif))->toContain('bg-primary')->toContain('font-semibold')->not->toContain('bg-primary-container/[.14]')
-        ->and($angka($lain))->toContain('bg-primary-container/[.14]')->not->toContain('font-semibold')
+    expect($angka($aktif))->toContain('bg-primary')->toContain('teks-pil-aktif')->not->toContain('bg-primary-container/[.14]')
+        ->and($angka($lain))->toContain('bg-primary-container/[.14]')->not->toContain('teks-pil-aktif')
         ->and($angka($aktif))->toContain('h-[22px]')->toContain('rounded-full')->toContain('teks-pil')->toContain('flex-none');
     expect($aktif)->toContain('1 bukti menunggu');
 });
@@ -165,9 +165,9 @@ it('tombol utama memakai satu kata Title Case', function () {
 });
 
 it('Verifikasi: tombol Terima, Tolak, dan Buka satu kata; dialog berjudul Title Case', function () {
-    siapkanBuktiMenunggu('02', 'Rina Maharani');
+    $p = siapkanBuktiMenunggu('02', 'Rina Maharani');
 
-    $html = $this->actingAs(User::factory()->pengelola()->create())->get('/verifikasi-pembayaran')->getContent();
+    $html = $this->actingAs(User::factory()->pengelola()->create())->get('/verifikasi-pembayaran?bukti='.$p->id)->getContent();
 
     expect($html)->toMatch('#data-test="buka-terima">Terima</button>#')
         ->and($html)->toMatch('#data-test="buka-tolak"\s*>Tolak</button>#')
@@ -175,4 +175,44 @@ it('Verifikasi: tombol Terima, Tolak, dan Buka satu kata; dialog berjudul Title 
         ->and($html)->toContain('Terima Pembayaran Kamar 02?')
         ->and($html)->toContain('Tolak Bukti Kamar 02?');
     expect(Pembayaran::query()->menunggu()->count())->toBe(1);
+});
+
+it('20D: docs/inventaris-teks.md ada, berkolom lengkap, dan dikelompokkan per peran', function () {
+    $isi = file_get_contents(base_path('docs/inventaris-teks.md'));
+
+    expect($isi)->toContain('| No | Halaman | Lokasi (file:baris) | Jenis | Teks lama | Keputusan | Teks baru | Alasan |')
+        ->toContain('| HAPUS |')
+        ->toContain('| PERSINGKAT |')
+        ->toContain('| TETAP |');
+
+    foreach (['Pemilik', 'Pengelola', 'Penghuni', 'Vendor', 'Tamu/Masuk', 'Semua'] as $peran) {
+        expect($isi)->toContain("\n## {$peran}\n");
+    }
+});
+
+it('20D: teks berkeputusan HAPUS atau PERSINGKAT tidak lagi ada di view', function () {
+    $lama = [
+        'Terakhir diubah oleh', 'ditutup dan tersimpan di riwayat', 'Jumlah hari sebelum kontrak berakhir',
+        'Tanggal 1 sampai 28', 'tagihan, semua periode', 'Pemilik akun ini langsung keluar', 'Akun tidak bisa diganti',
+        'Awalnya diisi dari nama akun', 'Diisi dari tarif Kamar', 'Pilih kamar untuk mengisi tarif',
+        'Pengelola belum mengatur batasnya', 'Riwayat lama, tidak dikirim ke Odoo', 'Tampil ke penghuni',
+        'dicatat lewat migrasi data', 'Data Migrasi', '>Odoo<',
+        'tercatat di sini', 'Akun dibuat oleh pengelola kos',
+    ];
+
+    foreach (File::allFiles(resource_path('views')) as $berkas) {
+        foreach ($lama as $teks) {
+            expect($berkas->getContents())->not->toContain($teks, $berkas->getRelativePathname());
+        }
+    }
+});
+
+it('20D: halaman Masuk tetap memuat judul panel dan bantuan lupa password', function () {
+    $this->get('/login')
+        ->assertOk()
+        ->assertSee('Delapan kamar, satu catatan.')
+        ->assertSee('Cek tagihan dan lapor kerusakan dari ponsel.')
+        ->assertSee('Lupa password? Hubungi pengelola kos.')
+        ->assertDontSee('tercatat di sini')
+        ->assertDontSee('Akun dibuat oleh pengelola kos.');
 });

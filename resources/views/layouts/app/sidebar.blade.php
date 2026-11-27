@@ -26,13 +26,14 @@
                     x-data
                     x-on:click="$dispatch('flux-sidebar-toggle')"
                     aria-label="Tutup menu"
-                    class="-me-2 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-primary-container hover:bg-white/10 lg:hidden"
+                    class="sorot-gelap -me-2 flex size-11 shrink-0 items-center justify-center text-primary-container lg:hidden"
                 >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
                 </button>
             </div>
 
-            <nav aria-label="Menu utama" class="flex min-h-0 flex-1 flex-col gap-0.5 pendek:gap-0 overflow-y-auto [scrollbar-color:rgba(220,237,234,.25)_transparent] [scrollbar-width:thin]">
+            {{-- -m-1 p-1: ruang 4px untuk cincin fokus item agar tidak terpotong wadah bergulir; posisi item tetap. --}}
+            <nav aria-label="Menu utama" class="-m-1 flex min-h-0 flex-1 flex-col gap-0.5 pendek:gap-0 overflow-y-auto p-1 [scrollbar-color:rgba(220,237,234,.25)_transparent] [scrollbar-width:thin]">
                 @foreach ($menu as $item)
                     <x-menu-samping.item
                         :href="route($item['route'])"
@@ -56,14 +57,14 @@
                 x-data
                 x-on:click="$dispatch('flux-sidebar-toggle')"
                 aria-label="Buka menu"
-                class="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-primary-container hover:bg-white/10"
+                class="sorot-gelap flex size-11 shrink-0 items-center justify-center text-primary-container"
             >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
             </button>
 
             <x-app-logo :sidebar="true" ukuran="kecil" />
 
-            <span class="ms-auto text-on-sidebar-muted! teks-bantuan">{{ $pengguna->peran->label() }}</span>
+            <span class="ms-auto teks-peran">{{ $pengguna->peran->label() }}</span>
         </header>
 
         {{ $slot }}

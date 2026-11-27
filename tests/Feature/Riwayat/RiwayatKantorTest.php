@@ -10,10 +10,13 @@ use App\Models\Tagihan;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function () {
     Carbon::setTestNow(Carbon::parse('2026-11-05 09:00:00', 'Asia/Jakarta'));
+    // Baris sinkronisasi menunggu tidak boleh dikirim ke Odoo saat tes.
+    Queue::fake();
     PengaturanOperasional::factory()->lengkap(10, 30)->create();
 });
 
@@ -176,20 +179,31 @@ it('F-14: kolom kamar memakai kamar kontrak tagihan itu, walau penghuni sudah pi
     $komponen->assertSee('Sep 2026, Kamar 05,')->assertSee('Okt 2026, Kamar 06,');
 });
 
-it('F-14 butir 3: status Odoo terkirim, menunggu, gagal, dan data migrasi', function () {
-    dataRiwayatKantor();
+it('F-14 butir 3: kolom Pembukuan menampilkan terkirim, menunggu, gagal, dan data lama', function () {
+    $data = dataRiwayatKantor();
 
     $komponen = halamanRiwayatKantor()
         ->assertSee('Terkirim')
         ->assertSee('Menunggu')
         ->assertSee('Gagal')
-        ->assertSee('Data Migrasi')
-        ->assertSee('title="Riwayat lama, tidak dikirim ke Odoo"', false)
-        ->assertSee('Odoo')
-        ->assertDontSee('Terkirim ke Odoo')
-        ->assertDontSee('Odoo gagal');
+        ->assertSee('Data Lama')
+        ->assertDontSee('Data Migrasi')
+        ->assertSeeInOrder(['Diterima', 'Pembukuan'])
+        // Istilah Odoo tidak tampil di luar halaman Sinkronisasi.
+        ->assertDontSee('Odoo');
 
-    expect($komponen->html())->toContain('href="'.route('sinkronisasi-erp.index').'"');
+    // Label yang sama di kartu ponsel.
+    expect(substr_count($komponen->html(), '<span class="teks-bantuan">Pembukuan</span>'))->toBe(5);
+
+    // F-25: tautan membawa pengelola ke baris yang gagal, di tabel desktop dan kartu ponsel.
+    $tautan = 'href="'.e(route('sinkronisasi-erp.index', [
+        'status' => 'gagal',
+        'ref' => $data['anisa_nov']->sinkronisasi->referensi_unik,
+    ])).'"';
+
+    expect(substr_count($komponen->html(), $tautan))->toBe(2)
+        ->and($tautan)->toContain('status=gagal&amp;ref=KPK-PAY-')
+        ->and(substr_count($komponen->html(), 'data-test="tautan-gagal"'))->toBe(2);
 });
 
 it('F-14 butir 3: pemilik melihat Gagal tanpa tautan ke Sinkronisasi ERP', function () {
@@ -200,11 +214,11 @@ it('F-14 butir 3: pemilik melihat Gagal tanpa tautan ke Sinkronisasi ERP', funct
     expect($html)->not->toContain(route('sinkronisasi-erp.index'));
 });
 
-it('F-14: tanpa data migrasi pembayaran dengan sinkronisasi tidak diberi label Data migrasi', function () {
+it('F-14: tanpa data migrasi pembayaran dengan sinkronisasi tidak diberi label Data Lama', function () {
     $kontrak = buatKontrakUji('01', 'Anisa Putri');
     buatPembayaranDiterima($kontrak, '2026-10-01', '2026-10-08', '2026-10-09 10:00', sinkron: 'terkirim');
 
-    halamanRiwayatKantor()->assertDontSee('Data Migrasi');
+    halamanRiwayatKantor()->assertDontSee('Data Lama');
 });
 
 it('F-14: paginasi 20 per halaman, ringkasan dari seluruh hasil filter, dan halaman kembali ke 1 saat filter berubah', function () {
@@ -289,6 +303,24 @@ it('F-14: vendor mendapat 403 dan tamu diarahkan ke login', function () {
 
     auth()->logout();
     $this->get('/riwayat-transaksi')->assertRedirect(route('login'));
+});
+
+it('F-14: halaman dengan lebih dari 20 baris memakai teks paginasi berbahasa Indonesia', function () {
+    foreach (range(1, 21) as $n) {
+        $kontrak = buatKontrakUji(sprintf('%02d', $n), 'Penghuni '.$n);
+        buatPembayaranDiterima($kontrak, '2026-10-01', '2026-10-08', '2026-10-09 10:00');
+    }
+
+    $this->actingAs(User::factory()->pengelola()->create())
+        ->get('/riwayat-transaksi')
+        ->assertOk()
+        ->assertSee('data-flux-pagination', false)
+        ->assertSeeTextInOrder(['Menampilkan', '1', '–', '20', 'dari', '21'])
+        ->assertSee('aria-label="Sebelumnya"', false)
+        ->assertSee('aria-label="Berikutnya"', false)
+        ->assertDontSee('Showing')
+        ->assertDontSee('results')
+        ->assertDontSee('laquo');
 });
 
 it('F-14: halaman kantor tidak memuat aksi ubah', function () {

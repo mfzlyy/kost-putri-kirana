@@ -205,13 +205,13 @@ new #[Title('Pekerjaan')] class extends Component {
 
 <section class="flex w-full max-w-[880px] flex-col gap-6">
     <div class="flex flex-col gap-2">
-        <a href="{{ route('permintaan-kerja.index') }}" wire:navigate class="w-fit max-lg:hidden">Pekerjaan</a>
+        <a href="{{ route('permintaan-kerja.index') }}" wire:navigate class="tautan-aksi w-fit max-lg:hidden">Pekerjaan</a>
         <div class="flex items-start gap-1">
             <a
                 href="{{ route('permintaan-kerja.index') }}"
                 wire:navigate
                 aria-label="Kembali ke pekerjaan"
-                class="-ms-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-ink lg:hidden"
+                class="tombol-ikon -ms-2 inline-flex size-11 shrink-0 items-center justify-center text-ink lg:hidden"
             >
                 <flux:icon.arrow-left class="size-5" />
             </a>
@@ -257,7 +257,7 @@ new #[Title('Pekerjaan')] class extends Component {
             <ol class="m-0 flex list-none flex-col gap-2.5 p-0" data-test="riwayat-status">
                 @foreach ($riwayat as $baris)
                     <li wire:key="riwayat-{{ $baris->id }}" class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 teks-badan">
-                        <span class="font-[650]">{{ $baris->status_sesudah->label() }}</span>
+                        <span class="teks-badan-kuat">{{ $baris->status_sesudah->label() }}</span>
                         <span class="num teks-bantuan">{{ Format::tanggalJam($baris->waktu_perubahan) }}</span>
                     </li>
                 @endforeach
@@ -267,15 +267,13 @@ new #[Title('Pekerjaan')] class extends Component {
 
     @if ($tiket->status_tiket === StatusTiket::Ditugaskan)
         <div class="flex">
-            <flux:button
-                type="button"
-                variant="primary"
+            <x-tombol
                 wire:click="mulai"
                 wire:loading.attr="disabled"
                 wire:target="mulai"
                 class="max-sm:w-full"
                 data-test="mulai-tiket"
-            >Mulai</flux:button>
+            >Mulai</x-tombol>
         </div>
     @elseif ($tiket->status_tiket === StatusTiket::Dikerjakan)
         <form wire:submit="periksa" novalidate class="flex flex-col gap-[18px] rounded-2xl border border-border bg-surface p-4 sm:p-6" data-test="form-selesaikan">
@@ -284,7 +282,7 @@ new #[Title('Pekerjaan')] class extends Component {
             <flux:field class="sm:max-w-[320px]">
                 <flux:label>Biaya Perbaikan</flux:label>
                 <flux:input.group>
-                    <flux:input.group.prefix class="font-semibold text-ink-muted">Rp</flux:input.group.prefix>
+                    <flux:input.group.prefix class="text-ink-muted teks-label">Rp</flux:input.group.prefix>
                     <flux:input
                         wire:model="biaya"
                         inputmode="numeric"
@@ -301,7 +299,7 @@ new #[Title('Pekerjaan')] class extends Component {
             </flux:field>
 
             <div class="flex flex-col gap-2 border-t border-divider pt-[18px] sm:flex-row">
-                <flux:button type="submit" variant="primary" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="periksa" data-test="selesai-tiket">Selesai</flux:button>
+                <x-tombol type="submit" class="max-sm:w-full" wire:loading.attr="disabled" wire:target="periksa" data-test="selesai-tiket">Selesai</x-tombol>
             </div>
         </form>
 
@@ -318,10 +316,7 @@ new #[Title('Pekerjaan')] class extends Component {
                 <dd class="num">{{ $this->ringkasanBiaya }}</dd>
             </x-slot:ringkasan>
 
-            <x-slot:akibat>
-                <li>Status tidak bisa dikembalikan.</li>
-                <li>Biaya dicatat untuk dikirim ke Odoo.</li>
-            </x-slot:akibat>
+            <x-slot:akibat>Pekerjaan akan ditandai selesai dan biaya dicatat. Setelah ini tidak bisa diubah.</x-slot:akibat>
         </x-dialog-konfirmasi>
     @endif
 </section>

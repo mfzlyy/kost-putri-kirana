@@ -112,14 +112,48 @@ it('F-17: item daftar menampilkan nomor, fasilitas, status, lokasi dengan tangga
         ->assertSeeInOrder(['KLH-0002', 'Pompa air', 'Ditugaskan', 'Area Bersama, 3 Nov', 'CV Sejuk Abadi']);
 });
 
-it('F-17 butir 4: tanpa pilihan tiket teratas terpilih, id ngawur diabaikan, id tidak ada diabaikan', function () {
-    $lama = tiketKantor('KLH-0001', '2026-11-01 08:00');
+it('20D: tanpa pilihan, id ngawur, atau id tidak ada: daftar selebar konten tanpa panel', function () {
+    tiketKantor('KLH-0001', '2026-11-01 08:00');
+    tiketKantor('KLH-0002', '2026-11-02 08:00');
+
+    foreach (['', '999999', 'abc', '-1'] as $nilai) {
+        $komponen = halamanKantor(params: ['tiket' => $nilai])
+            ->assertDontSeeHtml('data-test="panel-tiket"')
+            ->assertDontSeeHtml('data-test="isi-panel"')
+            ->assertDontSeeHtml('aria-current="true"')
+            ->assertDontSeeHtml('lg:grid-cols-')
+            ->assertSee('KLH-0001')
+            ->assertSee('KLH-0002');
+
+        expect($komponen->instance()->dipilih)->toBeNull();
+    }
+});
+
+it('20D: ?tiket= membuka panel dua kolom berisi tiket itu; kembali() menutupnya', function () {
+    tiketKantor('KLH-0001', '2026-11-01 08:00');
     $baru = tiketKantor('KLH-0002', '2026-11-02 08:00');
 
-    expect(halamanKantor()->instance()->panel->id)->toBe($lama->id)
-        ->and(halamanKantor(params: ['tiket' => (string) $baru->id])->instance()->panel->id)->toBe($baru->id)
-        ->and(halamanKantor(params: ['tiket' => '999999'])->instance()->panel->id)->toBe($lama->id)
-        ->and(halamanKantor(params: ['tiket' => 'abc'])->instance()->panel->id)->toBe($lama->id);
+    $komponen = halamanKantor(params: ['tiket' => (string) $baru->id])
+        ->assertSeeHtml('data-test="panel-tiket"')
+        ->assertSeeHtml('lg:grid-cols-[minmax(280px,2fr)_minmax(0,3fr)]')
+        ->assertSeeHtml('<h2 id="judul-panel" tabindex="-1"')
+        ->assertSeeHtml('aria-label="Tutup detail"');
+
+    expect($komponen->instance()->dipilih->id)->toBe($baru->id)
+        ->and(substr_count($komponen->html(), 'aria-current="true"'))->toBe(1);
+
+    $komponen->call('kembali')
+        ->assertSet('tiket', '')
+        ->assertDontSeeHtml('data-test="panel-tiket"');
+});
+
+it('20D: tiket pilihan di luar filter tetap tampil di panel walau daftar kosong', function () {
+    $selesai = tiketKantor('KLH-0001', '2026-11-01 08:00', StatusTiket::Selesai);
+
+    halamanKantor(params: ['tiket' => (string) $selesai->id])
+        ->assertSee('Tidak ada tiket yang sesuai filter.')
+        ->assertSeeHtml('data-test="panel-tiket"')
+        ->assertSee('KLH-0001');
 });
 
 it('F-18: panel menampilkan pelapor, diajukan, deskripsi (baris baru dipertahankan, di-escape), dan riwayat bernama pengubah', function () {
@@ -289,10 +323,10 @@ it('F-18: pemilik juga melihat riwayat lengkap dengan nama pengubah', function (
         ->assertSeeInOrder(['Riwayat Status', 'Diajukan', '2 Nov, 08.15', 'Maya Sari', 'Ditugaskan', '2 Nov, 10.00', 'Budi Pengelola']);
 });
 
-it('F-17: ?tiket= yang tidak ada tidak menimbulkan galat dan menampilkan tiket teratas', function () {
+it('F-17: ?tiket= yang tidak ada tidak menimbulkan galat dan hanya menampilkan daftar', function () {
     tiketKantor('KLH-0001', '2026-11-01 08:00');
 
-    halamanKantor(params: ['tiket' => '424242'])->assertOk()->assertSee('KLH-0001')->assertSeeHtml('data-test="panel-tiket"');
+    halamanKantor(params: ['tiket' => '424242'])->assertOk()->assertSee('KLH-0001')->assertDontSeeHtml('data-test="panel-tiket"');
 });
 
 it('Bagian D: angka menu Keluhan tidak tampil saat 0 dan tidak ada untuk penghuni dan vendor', function () {

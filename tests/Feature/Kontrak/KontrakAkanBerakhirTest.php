@@ -118,6 +118,6 @@ it('ISU-02: batas belum diatur menampilkan callout dan tidak memakai angka bawaa
 
     bagianAkanBerakhir(User::factory()->pemilik()->create())
         ->assertSee('Batas peringatan belum diatur.')
-        ->assertSee('Pengelola belum mengatur batasnya di Pengaturan.')
+        ->assertDontSee('Pengelola belum mengatur batasnya di Pengaturan.')
         ->assertDontSee('Atur di Pengaturan');
 });

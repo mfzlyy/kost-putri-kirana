@@ -92,12 +92,12 @@ new #[Title('Profil')] class extends Component {
                     <dd class="num m-0">{{ Format::telepon($penghuni->no_telepon) }}</dd>
 
                     <dt class="text-ink-muted">Nomor Identitas</dt>
-                    <dd class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <dd class="m-0 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span class="num tracking-[0.02em]" aria-live="polite" data-test="nik">{{ $this->identitasTerbuka ? $this->identitasUtuh : $penghuni->no_identitas_tersamar }}</span>
                         @if ($this->identitasTerbuka)
-                            <button type="button" aria-pressed="true" wire:click="sembunyikanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="sembunyikan-identitas">Sembunyikan</button>
+                            <x-tombol varian="sekunder" ukuran="kecil" aria-pressed="true" wire:click="sembunyikanIdentitas" data-test="sembunyikan-identitas">Sembunyikan</x-tombol>
                         @else
-                            <button type="button" aria-pressed="false" wire:click="tampilkanIdentitas" class="-my-2.5 cursor-pointer py-2.5 text-primary teks-tombol-kecil" data-test="tampilkan-identitas">Tampilkan</button>
+                            <x-tombol varian="sekunder" ukuran="kecil" aria-pressed="false" wire:click="tampilkanIdentitas" data-test="tampilkan-identitas">Tampilkan</x-tombol>
                         @endif
                     </dd>
                 </dl>
@@ -125,14 +125,14 @@ new #[Title('Profil')] class extends Component {
     @endif
 
     {{-- Ponsel penghuni tidak punya menu pengguna sidebar, jadi Ganti password dan Keluar ada di sini. --}}
-    <section class="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface md:hidden" aria-label="Akun" data-test="kotak-akun">
-        <a href="{{ route('security.edit') }}" wire:navigate class="flex min-h-11 items-center justify-between gap-2 border-b border-row-divider px-4 font-semibold text-ink no-underline hover:text-ink">
+    <section class="daftar-klik flex flex-col overflow-hidden rounded-2xl border border-border bg-surface md:hidden" aria-label="Akun" data-test="kotak-akun">
+        <a href="{{ route('security.edit') }}" wire:navigate class="baris-klik flex min-h-11 items-center justify-between gap-2 border-b border-row-divider px-4 text-ink no-underline hover:text-ink teks-badan-kuat">
             Ganti Password
             <flux:icon.chevron-right class="size-[18px] text-ink-muted" />
         </a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="flex min-h-11 w-full cursor-pointer items-center px-4 text-left font-semibold text-danger" data-test="keluar-ponsel">Keluar</button>
+            <button type="submit" class="tautan-bahaya flex min-h-11 w-full items-center px-4 text-left teks-badan-kuat" data-test="keluar-ponsel">Keluar</button>
         </form>
     </section>
 </section>

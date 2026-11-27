@@ -8,7 +8,7 @@ Baca hanya bagian yang relevan dengan tugas yang sedang dikerjakan.
 
 - `docs/PRD.md`: fitur F-01 s.d. F-29 beserta kriteria penerimaannya, halaman per peran (Bagian 6), transisi status (Bagian 7), integrasi ERP (Bagian 8). Sebelum mengerjakan fitur, baca bagian F-xx-nya.
 - `docs/BRD.md`: aturan bisnis ATB-xx, matriks hak akses (Bagian 5), kebutuhan nonfungsional NFR-xx.
-- `docs/erd/erd_kost_putri_kirana.sql` dan `docs/erd/erd_aturan_tambahan.sql`: sumber kebenaran skema basis data (tabel, tipe, enum, CHECK, indeks unik parsial).
+- `docs/erd/ERD.sql` dan `docs/erd/ERD2.sql`: sumber kebenaran skema basis data (tabel, tipe, enum, CHECK, indeks unik parsial).
 - `docs/diagram/`: gambar untuk laporan. Jangan dijadikan acuan skema atau nama.
 
 Bila dokumen saling bertentangan, pakai ERD SQL untuk skema, PRD untuk perilaku fitur, dan BRD untuk aturan bisnis. Bila masih ragu, tanyakan dulu sebelum menulis kode.
@@ -73,7 +73,10 @@ Sebelum menyatakan pekerjaan selesai, `php artisan test` harus lulus dan `vendor
   - pembayaran berstatus diterima (ATB-06);
   - tiket berstatus selesai (ATB-09): biaya perbaikan, ditambah pemeliharaan bila fasilitas punya `odoo_equipment_id`.
 - Format referensi unik: `KPK-PAY-000123` (pembayaran), `KPK-TKT-0001-B` (biaya perbaikan), `KPK-TKT-0001-M` (pemeliharaan).
-- Sebelum `create`, selalu `search_read` berdasarkan referensi. Bila referensi sudah ada, jangan buat catatan baru; tandai `terkirim` saja. Setiap panggilan JSON-2 berjalan dalam transaksi Odoo terpisah, jadi pengecekan ini yang mencegah data ganda. Bila faktur ditemukan tetapi belum selesai (masih draft atau belum dibayar), lanjutkan langkah yang tersisa; jangan memanggil `action_post` pada faktur yang sudah posted (ditolak Odoo).
+- Sebelum `create`, selalu `search_read` berdasarkan referensi. Bila catatan sudah ada, lanjutkan dari keadaannya (draft → post, belum dibayar → bayar) tanpa membuat catatan baru, lalu tandai `terkirim`. Keadaan yang tidak bisa dilanjutkan otomatis (cancel, partial, ganda) ditandai `gagal` untuk diperiksa manual.
+- Pemicu: `SinkronisasiErp` created (semua jenis) men-dispatch `KirimSinkronisasiErp` setelah commit. Baris lama atau yang tertinggal dikirim dengan `php artisan erp:kirim-tertunda`.
+- Kirim ulang dari halaman Sinkronisasi (pengelola) hanya untuk status gagal; lewat antrean, tanpa HTTP di request halaman.
+- Fasilitas ditautkan ke `maintenance.equipment` lewat `php artisan erp:cocokkan-peralatan` (nama = `Fasilitas::namaPeralatanErp()`).
 - Model Odoo yang dipakai:
   - `account.move`: faktur pelanggan `out_invoice` dan tagihan vendor `in_invoice`, dengan field `ref`. Baris faktur selalu diberi `tax_ids` kosong (`[[6, 0, []]]`) karena Odoo memasang pajak bawaan 12%;
   - `account.payment.register`: wizard untuk mencatat pembayaran faktur, dibuat dengan context `active_model` dan `active_ids`, lalu `action_create_payments` dengan `dont_redirect_to_payments`;
