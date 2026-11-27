@@ -105,8 +105,9 @@ new #[Title('Penghuni')] class extends Component {
             @endif
         </div>
     @else
-        {{-- Desktop: tabel dalam kartu. Nomor identitas selalu tersamar di daftar, untuk semua peran. --}}
-        <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
+        {{-- Desktop: tabel dalam kartu. Nomor identitas selalu tersamar di daftar, untuk semua peran.
+             relative menahan teks sr-only di kepala tabel tetap di dalam area gulir; nama dan email boleh turun baris. --}}
+        <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
             <table class="w-full min-w-[860px] border-collapse">
                 <thead>
                     <tr>
@@ -125,11 +126,13 @@ new #[Title('Penghuni')] class extends Component {
                     @foreach ($this->daftarPenghuni as $penghuni)
                         @php($nomorKamar = $penghuni->kontrakAktif?->kamar?->nomor_kamar)
                         <tr wire:key="penghuni-tabel-{{ $penghuni->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
-                            <td class="px-5 font-semibold whitespace-nowrap">{{ $penghuni->user?->nama }}</td>
+                            <td class="px-5 font-semibold">{{ $penghuni->user?->nama }}</td>
                             <td class="num px-5 {{ $nomorKamar ? '' : 'text-ink-muted' }}">{{ $nomorKamar ?? '-' }}</td>
                             <td class="num px-5 whitespace-nowrap">{{ Format::telepon($penghuni->no_telepon) }}</td>
                             <td class="num px-5 tracking-[0.02em] whitespace-nowrap">{{ $penghuni->no_identitas_tersamar }}</td>
-                            <td class="px-5 whitespace-nowrap text-ink-muted">{{ $penghuni->user?->email }}</td>
+                            @php([$namaEmail, $domainEmail] = array_pad(explode('@', (string) $penghuni->user?->email, 2), 2, ''))
+                            {{-- Email patah di "@" bila kolom sempit; potongan di tengah kata hanya bila satu bagian tetap tidak muat. --}}
+                            <td class="px-5 text-ink-muted"><span class="block min-w-40 [overflow-wrap:anywhere]">{{ $namaEmail }}<wbr>{{ '@'.$domainEmail }}</span></td>
                             <td class="px-5">
                                 @if ($penghuni->status_penghuni === StatusPenghuni::Aktif)
                                     <x-status jenis="ok">Aktif</x-status>

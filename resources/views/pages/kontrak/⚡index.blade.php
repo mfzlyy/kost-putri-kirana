@@ -328,8 +328,9 @@ new #[Title('Kontrak')] class extends Component {
             @endif
         </div>
     @else
-        {{-- Desktop: tabel dalam kartu --}}
-        <div class="hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
+        {{-- Desktop: tabel dalam kartu. relative menahan teks sr-only di kepala tabel tetap di dalam area gulir;
+             nama boleh turun baris. --}}
+        <div class="relative hidden overflow-x-auto rounded-2xl border border-border bg-surface md:block">
             <table class="w-full min-w-[820px] border-collapse">
                 <thead>
                     <tr>
@@ -349,7 +350,7 @@ new #[Title('Kontrak')] class extends Component {
                         @php($aktif = $kontrak->status_kontrak === StatusKontrak::Aktif)
                         <tr wire:key="kontrak-tabel-{{ $kontrak->id }}" class="h-[60px] border-t border-row-divider first:border-t-0">
                             <td class="num px-5 teks-nomor-kamar">{{ $kontrak->kamar?->nomor_kamar }}</td>
-                            <td class="px-5 font-semibold whitespace-nowrap">{{ $kontrak->penghuni?->user?->nama }}</td>
+                            <td class="px-5 font-semibold">{{ $kontrak->penghuni?->user?->nama }}</td>
                             <td class="px-5 whitespace-nowrap">{{ $tanggalId($kontrak->tanggal_mulai) }}</td>
                             <td class="px-5 whitespace-nowrap">{{ $tanggalId($kontrak->tanggal_berakhir) }}</td>
                             <td class="num px-5 text-end font-semibold whitespace-nowrap">{{ Format::rupiah($kontrak->tarif_bulanan) }}</td>

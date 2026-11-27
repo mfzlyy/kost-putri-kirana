@@ -176,6 +176,19 @@ it('select setinggi 44px sama dengan input, tanpa padding vertikal bawaan Flux',
     expect($css)->toMatch('/select\[data-flux-select-native\] \{\s*height: 44px !important;\s*min-height: 44px !important;\s*max-height: 44px !important;\s*padding-block: 0 !important;/');
 });
 
+it('tabel Penghuni dan Kontrak tidak menggulirkan halaman: teks sr-only tertahan dan nama boleh turun baris', function (string $url) {
+    buatKontrakUji('01', 'Anindya Putri Rahmawati Kusumaningrum');
+
+    $html = $this->actingAs(User::factory()->pengelola()->create())->get($url)->assertOk()->getContent();
+
+    expect($html)->toMatch('#<div class="relative hidden overflow-x-auto [^"]*">\s*<table\b#');
+
+    preg_match('#<td\b([^>]*)>\s*Anindya Putri Rahmawati Kusumaningrum\s*</td>#', $html, $sel);
+
+    expect($sel)->not->toBeEmpty()
+        ->and($sel[1])->not->toContain('whitespace-nowrap');
+})->with(['/penghuni', '/kontrak']);
+
 it('x-ringkasan-angka adalah container dengan tata letak berbasis lebar kartu', function () {
     $html = Blade::render('<x-ringkasan-angka :items="$items" />', ['items' => [
         ['label' => 'A', 'nilai' => '1'], ['label' => 'B', 'nilai' => '2'], ['label' => 'C', 'nilai' => '3'],

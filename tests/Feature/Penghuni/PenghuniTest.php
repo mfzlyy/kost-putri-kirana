@@ -39,7 +39,8 @@ it('F-06: pengelola melihat nama, kamar, telepon berformat, NIK tersamar, email,
     $this->actingAs(User::factory()->pengelola()->create())
         ->get('/penghuni')
         ->assertOk()
-        ->assertSeeInOrder(['Anisa Putri', '01', '0812 3456 7801', '32**********8901', 'p01@contoh.test', 'Aktif', 'Ubah'])
+        // Email dipisah <wbr> di "@" supaya patah baris rapi di kolom sempit.
+        ->assertSeeInOrder(['Anisa Putri', '01', '0812 3456 7801', '32**********8901', 'p01<wbr>@contoh.test', 'Aktif', 'Ubah'], false)
         ->assertDontSee('Nomor identitas disamarkan di daftar.')
         ->assertDontSee(NIK_UJI_DAFTAR)
         ->assertDontSee('3216 0123 4567 8901')
